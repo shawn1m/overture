@@ -1,7 +1,7 @@
 # overture
 [![Build Status](https://travis-ci.org/holyshawn/overture.png)](https://travis-ci.org/holyshawn/overture)
 
-Overture is a light weight upstream dns switcher written in golang in order to purify dns address.
+Overture is a light weight upstream dns switcher written in golang in order to purify dns records.
 
 Overture means an orchestral piece at the beginning of an classical music composition, just like dns which is nearly the first step of surfing the internet.
 
@@ -16,7 +16,7 @@ Overture force IPv6 DNS question and custom domain to use alternative dns, if re
 
 ## Usages
 
-Download from the release, just run:
+Download from the [release](https://github.com/holyshawn/overture/releases), just run:
 
     ./overture # Start with the default config file -> ./config.json
 
