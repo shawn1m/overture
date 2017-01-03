@@ -21,21 +21,9 @@ func Init() {
 	ip_net_list = getIPNetworkList(Config.IPNetworkFilePath)
 	custom_domain_list = getDomainList(Config.DomainFilePath, Config.DomainBase64Decode)
 
-	addr, err := net.ResolveUDPAddr("udp", Config.BindAddress)
-	if err != nil {
-		log.Error("Wrong listen address: ", err)
-		os.Exit(1)
-	}
-	conn, err := net.ListenUDP("udp", addr)
-	if err != nil {
-		log.Error("Listening failed:", err)
-		os.Exit(1)
-	}
-	defer conn.Close()
-
 	log.Info("Start overture on " + Config.BindAddress + ".")
-	for {
-		handleUDPQuestion(conn)
+	for{
+		ListenAndReceive(Config.BindAddress, 10000)
 	}
 }
 

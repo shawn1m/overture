@@ -26,7 +26,7 @@ func main() {
 		log.SetLevel(log.InfoLevel)
 	}
 
-	log.Info("If you need any help or want to check the update, please visit the project repository: https://github.com/holyshawn/overture")
+	log.Info("If you need any help or want to check update, please visit the project repository: https://github.com/holyshawn/overture")
 
 	runtime.GOMAXPROCS(processor_number)
 	overture.Config = overture.ParseConfig(config_file_path)
