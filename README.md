@@ -67,11 +67,13 @@ Tips:
 
 ## To Do
 
-+ TCP Full support
++ TCP remote dns support
 
 ## Acknowledgements
 
 + @clowwindy: the author of the [ChinaDNS](https://github.com/shadowsocks/ChinaDNS)
++ @miekg: the author of the [dns](https://github.com/miekg/dns)
++ @sirupsen: the author of the [logrus](https://github.com/Sirupsen/logrus)
 + @17mon: the author of the [china_ip_list](https://github.com/17mon/china_ip_list)
 + @gfwlist: the author of the [gfwlist](https://github.com/gfwlist/gfwlist)
 

@@ -3,26 +3,46 @@ package overture
 import (
 	log "github.com/Sirupsen/logrus"
 	"net"
+	"github.com/miekg/dns"
 )
 
-func handleUDPQuestion(conn *net.UDPConn) {
+
+func ListenAndReceive(address string, nbWorkers int) error {
+
+       c, err := net.ListenPacket("udp", address)
+       if err != nil {
+            return err
+       }
+
+       for i := 0; i < nbWorkers; i++ {
+           go func() {
+               handleQuestion(c)
+            }()
+       }
+       return nil
+}
+
+func handleQuestion(conn net.PacketConn) {
 
 	question_buffer := make([]byte, 512)
-	n, remote_addr, err := conn.ReadFromUDP(question_buffer)
+	n, addr, err := conn.ReadFrom(question_buffer)
 	if err != nil {
-		log.Warn("Read UDP message failed. ", err)
+		log.Warn("Read question message failed. ", err)
 		return
 	}
 
 	go func() {
-		temp_dns_addr := chooseDNSAddr(question_buffer[:n])
-		response_data := getResponse(question_buffer[:n], temp_dns_addr)
+		question_message := new(dns.Msg)
+		question_message.Unpack(question_buffer[:n])
+		temp_dns_addr := chooseDNSAddr(question_message)
+		response_message := getResponse("tcp", question_message, temp_dns_addr)
 		if temp_dns_addr == Config.PrimaryDNSAddress {
-			MatchDomesticIPResponse(&response_data, question_buffer[:n])
+			ResponseMatchIPNetwork(response_message, question_message, ip_net_list)
 		} else {
 			log.Debug("Finally use alternative DNS.")
 		}
-		logResponseAnswer(response_data)
-		conn.WriteToUDP(response_data, remote_addr)
+		logResponse(response_message)
+		b, _ := response_message.Pack()
+		conn.WriteTo(b, addr)
 	}()
 }

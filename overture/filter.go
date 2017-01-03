@@ -7,10 +7,7 @@ import (
 	"strings"
 )
 
-func chooseDNSAddr(question_data []byte) string {
-
-	message := new(dns.Msg)
-	message.Unpack(question_data)
+func chooseDNSAddr(message *dns.Msg) string {
 
 	log.Debug("Question: " + message.Question[0].String())
 
@@ -33,11 +30,9 @@ func chooseDNSAddr(question_data []byte) string {
 	return Config.PrimaryDNSAddress
 }
 
-func MatchDomesticIPResponse(response_data *[]byte, question_data []byte) {
+func ResponseMatchIPNetwork(response_message *dns.Msg, question_message *dns.Msg, ip_net_list []*net.IPNet) {
 
-	message := new(dns.Msg)
-	message.Unpack(*response_data)
-	for _, answer := range message.Answer {
+	for _, answer := range question_message.Answer {
 		if answer.Header().Rrtype != dns.TypeA {
 			continue
 		}
@@ -46,17 +41,15 @@ func MatchDomesticIPResponse(response_data *[]byte, question_data []byte) {
 			break
 		}
 		log.Debug("IP network match fail, finally use alternative DNS.")
-		*response_data = getResponse(question_data, Config.AlternativeDNSAddress)
+		response_message = getResponse("tcp", question_message, Config.AlternativeDNSAddress)
 		return
 	}
 
 	log.Debug("Finally use primary DNS.")
 }
 
-func logResponseAnswer(response_data []byte) {
+func logResponse(message *dns.Msg) {
 
-	message := new(dns.Msg)
-	message.Unpack(response_data)
 	for _, answer := range message.Answer {
 		log.Debug("Answer: " + answer.String())
 	}
