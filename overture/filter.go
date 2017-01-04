@@ -7,32 +7,32 @@ import (
 	"strings"
 )
 
-func chooseDNSAddr(message *dns.Msg) string {
+func chooseDNSServer(message *dns.Msg) dnsServer {
 
 	log.Debug("Question: " + message.Question[0].String())
 
 	question_name := message.Question[0].Name[:len(message.Question[0].Name)-1]
 
 	if isQuestionInIPv6(message) && Config.RedirectIPv6Record {
-		return Config.AlternativeDNSAddress
+		return Config.AlternativeDNSServer
 	}
 
 	for _, domain := range custom_domain_list {
 
 		if strings.HasSuffix(question_name, domain) {
 			log.Debug("Matched: Custom domain " + question_name + " " + domain)
-			return Config.AlternativeDNSAddress
+			return Config.AlternativeDNSServer
 		}
 	}
 
 	log.Debug("Domain match fail, try to use primary DNS.")
 
-	return Config.PrimaryDNSAddress
+	return Config.PrimaryDNSServer
 }
 
-func ResponseMatchIPNetwork(response_message *dns.Msg, question_message *dns.Msg, ip_net_list []*net.IPNet) {
+func MatchIPNetwork(response_message *dns.Msg, question_message *dns.Msg, ip_net_list []*net.IPNet) {
 
-	for _, answer := range question_message.Answer {
+	for _, answer := range response_message.Answer {
 		if answer.Header().Rrtype != dns.TypeA {
 			continue
 		}
@@ -41,14 +41,16 @@ func ResponseMatchIPNetwork(response_message *dns.Msg, question_message *dns.Msg
 			break
 		}
 		log.Debug("IP network match fail, finally use alternative DNS.")
-		response_message = getResponse("tcp", question_message, Config.AlternativeDNSAddress)
-		return
+		err := getResponse(response_message, question_message, Config.AlternativeDNSServer)
+		if err != nil {
+			log.Warn("Get dns response failed: ", err)
+		}
 	}
 
 	log.Debug("Finally use primary DNS.")
 }
 
-func logResponse(message *dns.Msg) {
+func logAnswer(message *dns.Msg) {
 
 	for _, answer := range message.Answer {
 		log.Debug("Answer: " + answer.String())

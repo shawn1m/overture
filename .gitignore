@@ -33,6 +33,7 @@ vendor/
 
 main
 config.json
+config.test.json
 .idea/
 publish.sh
 .DS_Store
