@@ -22,9 +22,7 @@ func Init() {
 	custom_domain_list = getDomainList(Config.DomainFilePath, Config.DomainBase64Decode)
 
 	log.Info("Start overture on " + Config.BindAddress + ".")
-	for{
-		ListenAndReceive(Config.BindAddress, 10000)
-	}
+	initServer()
 }
 
 func getDomainList(path string, base64_decode bool) []string {

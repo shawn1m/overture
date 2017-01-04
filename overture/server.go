@@ -2,47 +2,35 @@ package overture
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"net"
 	"github.com/miekg/dns"
+	"reflect"
 )
 
+func initServer() {
 
-func ListenAndReceive(address string, nbWorkers int) error {
-
-       c, err := net.ListenPacket("udp", address)
-       if err != nil {
-            return err
-       }
-
-       for i := 0; i < nbWorkers; i++ {
-           go func() {
-               handleQuestion(c)
-            }()
-       }
-       return nil
+	handler := dns.NewServeMux()
+	handler.HandleFunc(".", handleRequest)
+	server := &dns.Server{Addr: Config.BindAddress, Net: "udp", Handler:handler}
+	err := server.ListenAndServe()
+	if err != nil{
+		log.Fatal("Listen failed: ", err)
+	}
 }
 
-func handleQuestion(conn net.PacketConn) {
+func handleRequest(writer dns.ResponseWriter, question_message *dns.Msg) {
 
-	question_buffer := make([]byte, 512)
-	n, addr, err := conn.ReadFrom(question_buffer)
+	temp_dns_server := chooseDNSServer(question_message)
+	response_message := new(dns.Msg)
+	err := getResponse(response_message, question_message, temp_dns_server)
 	if err != nil {
-		log.Warn("Read question message failed. ", err)
+		log.Warn("Get dns response failed: ", err)
 		return
 	}
-
-	go func() {
-		question_message := new(dns.Msg)
-		question_message.Unpack(question_buffer[:n])
-		temp_dns_addr := chooseDNSAddr(question_message)
-		response_message := getResponse("tcp", question_message, temp_dns_addr)
-		if temp_dns_addr == Config.PrimaryDNSAddress {
-			ResponseMatchIPNetwork(response_message, question_message, ip_net_list)
-		} else {
-			log.Debug("Finally use alternative DNS.")
-		}
-		logResponse(response_message)
-		b, _ := response_message.Pack()
-		conn.WriteTo(b, addr)
-	}()
+	if reflect.DeepEqual(temp_dns_server, Config.PrimaryDNSServer) {
+		MatchIPNetwork(response_message, question_message, ip_net_list)
+	} else {
+		log.Debug("Finally use alternative DNS.")
+	}
+	logAnswer(response_message)
+	writer.WriteMsg(response_message)
 }

@@ -11,6 +11,7 @@ Overture force IPv6 DNS question and custom domain to use alternative dns, if re
 
 + Full IPv6 support
 + IPv6 record redirection, especially for **CERNET IPv6** users
++ TCP upstream dns server with custom port
 + Custom IP network filter
 + Custom domain filter, base64 decode support
 
@@ -34,10 +35,11 @@ Extra Help:
 
 Tips:
 
-+ You may need sudo to start overture on port 53
++ You may need sudo to start overture on port 53.
 + You may find default IP network  file and domain file from acknowledgements parts or just download here.
 + [ip_network file ](https://github.com/17mon/china_ip_list/raw/master/china_ip_list.txt)
 + [base64 domain file](https://github.com/gfwlist/gfwlist/raw/master/gfwlist.txt)
++ You may need some third-party software such as dnsmasq to cache your dns records.
 
 ###  Configuration Syntax
 
@@ -47,7 +49,10 @@ Configuration file is "config.json":
 {
   "BindAddress": ":53",
   "PrimaryDNSAddress": "114.114.114.114:53",
+  "PrimaryDNSMethod": "udp",
   "AlternativeDNSAddress": "208.67.222.222:443",
+  "AlternativeDNSMethod": "tcp",
+  "Timeout": 6,
   "RedirectIPv6Record": true,
   "IPNetworkFilePath": "/xx/xx.txt",
   "DomainFilePath": "/xx/xx.txt",
@@ -67,7 +72,8 @@ Tips:
 
 ## To Do
 
-+ TCP remote dns support
++ edns support
++ ttl revision support
 
 ## Acknowledgements
 
