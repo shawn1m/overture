@@ -27,7 +27,7 @@ func handleRequest(writer dns.ResponseWriter, question_message *dns.Msg) {
 		return
 	}
 	if reflect.DeepEqual(temp_dns_server, Config.PrimaryDNSServer) {
-		MatchIPNetwork(response_message, question_message, ip_net_list)
+		matchIPNetwork(response_message, question_message, ip_net_list)
 	} else {
 		log.Debug("Finally use alternative DNS.")
 	}
