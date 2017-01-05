@@ -7,6 +7,8 @@ Overture means an orchestral piece at the beginning of an classical music compos
 
 Overture force IPv6 DNS question and custom domain to use alternative dns, if response answer is matched with custom ip network, use primary dns otherwise use alternative dns.
 
+**Warn: If you use the release version, try to follow the README file from compatible version tags, this README is usually from develop branch.**
+
 ## Features
 
 + Full IPv6 support
