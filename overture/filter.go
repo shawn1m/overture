@@ -30,7 +30,7 @@ func chooseDNSServer(message *dns.Msg) dnsServer {
 	return Config.PrimaryDNSServer
 }
 
-func MatchIPNetwork(response_message *dns.Msg, question_message *dns.Msg, ip_net_list []*net.IPNet) {
+func matchIPNetwork(response_message *dns.Msg, question_message *dns.Msg, ip_net_list []*net.IPNet) {
 
 	for _, answer := range response_message.Answer {
 		if answer.Header().Rrtype != dns.TypeA {
@@ -45,6 +45,7 @@ func MatchIPNetwork(response_message *dns.Msg, question_message *dns.Msg, ip_net
 		if err != nil {
 			log.Warn("Get dns response failed: ", err)
 		}
+		return
 	}
 
 	log.Debug("Finally use primary DNS.")
