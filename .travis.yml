@@ -12,10 +12,10 @@ deploy:
   api_key:
     secure: "JH5dTK6/eC4mEpgdQ8QUO5glIcFZFjoEvoav88d3hZciYEpc9HA6WU01E4yDcjnSNP5m1aS3O6Ttcmhlzkcop7SdoFlAP+TgQsRX1ddFE3XkDdCQiFeXSTPU25Fn7iD3lS/OQpZ/Si28dxYSbO0A2xEPeSGkPZ7YVtNIm0gonCro/2yGxtiLmFf8+ajiDX5wpnuAn427pwtMOe8ZUh27Y/1uWPVscVErqOKn6xhH9Cy2YyfwO6dGp1k8by9T4LF4d/w2f8QidmjxCGVU0wfngZUS6NTdCjk9GlspDDvg7/OaSkBT6ld8d+ITvXrAssOH6VhdnNG62JdwNJDfHbsqLMYKRRo871tQR3+/KebImG0Zc9KeLIlyhEirHDWK8U8kJ1F5hLDVJPFNCi6JzAfTgJ2Rll14CyRW33P3Cd5AIylGEXj67Hcv3iFVk98WyYmcSxbhYdTJGJ5po2GhFFDp4RzIwuLU68W5rtMEiKu8xjJQFyv8NE3kHAcLQzIUQs6QxdeJRmzpJdNsXfCsAdQqTLYtQ7s9rAwGM8HPGtE2TopaH6C3ZsZI6ik4cOp5lf3naop7UsNv+Ojk03N+j1GI0pNRpz6IeCPrXrnYY6x9fo0FnoSIPyLh8EHLttq7SzVDc1cDl7jhnXxQF33usQyXnZxM/ytrtk5VgIGRgl5blO0="
   file:
-    - release/overture-darwin-amd64.zip
-    - release/overture-linux-386.zip
-    - release/overture-windows-amd64.zip
-    - release/overture-windows-386.zip
+    - overture-darwin-amd64.zip
+    - overture-linux-386.zip
+    - overture-windows-amd64.zip
+    - overture-windows-386.zip
   skip_cleanup: true
   on:
     tags: true
