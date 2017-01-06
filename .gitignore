@@ -39,3 +39,5 @@ publish.sh
 .DS_Store
 release/
 push.sh
+*.txt
+overture-*
