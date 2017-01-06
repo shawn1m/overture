@@ -23,7 +23,7 @@ Download from the [release](https://github.com/holyshawn/overture/releases), jus
 
     ./overture # Start with the default config file -> ./config.json
 
-Or use your own config directory:
+Or use your own config file:
 
     ./overture -c /xxx/xxx/x.json # Use your own config file
 
@@ -38,7 +38,7 @@ Extra Help:
 Tips:
 
 + You may need sudo to start overture on port 53.
-+ You may find default IP network  file and domain file from acknowledgements parts or just download here.
++ You may find default IP network  file and domain file from acknowledgements or just download below files, these files are also included in release.
 + [ip_network file ](https://github.com/17mon/china_ip_list/raw/master/china_ip_list.txt)
 + [base64 domain file](https://github.com/gfwlist/gfwlist/raw/master/gfwlist.txt)
 + You may need some third-party software such as dnsmasq to cache your dns records.
@@ -53,7 +53,7 @@ Configuration file is "config.json":
   "PrimaryDNSAddress": "114.114.114.114:53",
   "PrimaryDNSMethod": "udp",
   "AlternativeDNSAddress": "208.67.222.222:443",
-  "AlternativeDNSMethod": "tcp",
+  "AlternativeDNSMethod": "udp",
   "Timeout": 6,
   "RedirectIPv6Record": true,
   "IPNetworkFilePath": "/xx/xx.txt",
@@ -68,6 +68,7 @@ Tips:
 + DNS:
     + 114DNS 114.114.114.114:53
     + OpenDNS 208.67.222.222:443 \[2620:0:ccc::2\]:443
++ Method: "tcp" or "udp"
 + RedirectIPv6Record: Redirect IPv6 DNS Question to alternative dns
 + Path: For windows user, please use path like "C:\\xx\\xx.txt"
 + DomainBase64Decode: Could be empty field
