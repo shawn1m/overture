@@ -31,6 +31,7 @@ func handleRequest(writer dns.ResponseWriter, question_message *dns.Msg) {
 	} else {
 		log.Debug("Finally use alternative DNS.")
 	}
+	setMinimalTTL(response_message, 86400 * 7)
 	logAnswer(response_message)
 	writer.WriteMsg(response_message)
 }

@@ -51,6 +51,14 @@ func matchIPNetwork(response_message *dns.Msg, question_message *dns.Msg, ip_net
 	log.Debug("Finally use primary DNS.")
 }
 
+func setMinimalTTL(message *dns.Msg, ttl uint32){
+	for _, answer := range(message.Answer){
+		if answer.Header().Ttl < ttl{
+			answer.Header().Ttl = ttl
+		}
+	}
+}
+
 func logAnswer(message *dns.Msg) {
 
 	for _, answer := range message.Answer {
