@@ -19,6 +19,8 @@ func initServer() {
 
 func handleRequest(writer dns.ResponseWriter, question_message *dns.Msg) {
 
+
+	setEdns0Subnet(question_message, "211.162.26.246")
 	temp_dns_server := chooseDNSServer(question_message)
 	response_message := new(dns.Msg)
 	err := getResponse(response_message, question_message, temp_dns_server)

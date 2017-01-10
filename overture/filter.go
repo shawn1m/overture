@@ -19,7 +19,7 @@ func chooseDNSServer(message *dns.Msg) dnsServer {
 
 	for _, domain := range custom_domain_list {
 
-		if strings.HasSuffix(question_name, domain) {
+		if question_name == domain || strings.HasSuffix(question_name, "." + domain) {
 			log.Debug("Matched: Custom domain " + question_name + " " + domain)
 			return Config.AlternativeDNSServer
 		}
@@ -52,11 +52,32 @@ func matchIPNetwork(response_message *dns.Msg, question_message *dns.Msg, ip_net
 }
 
 func setMinimalTTL(message *dns.Msg, ttl uint32){
+
 	for _, answer := range(message.Answer){
 		if answer.Header().Ttl < ttl{
 			answer.Header().Ttl = ttl
 		}
 	}
+}
+
+func setEdns0Subnet(message *dns.Msg, ip string){
+
+	o := new(dns.OPT)
+	o.Hdr.Name = "."
+	o.Hdr.Rrtype = dns.TypeOPT
+	e := new(dns.EDNS0_SUBNET)
+	e.Code = dns.EDNS0SUBNET
+	e.Address = net.ParseIP(ip)
+	if e.Address.To4() != nil{
+		e.Family = 1	// 1 for IPv4 source address, 2 for IPv6
+		e.SourceNetmask = 32	// 32 for IPV4, 128 for IPv6
+	}else{
+		e.Family = 2	// 1 for IPv4 source address, 2 for IPv6
+		e.SourceNetmask = 128	// 32 for IPV4, 128 for IPv6
+	}
+	e.SourceScope = 0
+	o.Option = append(o.Option, e)
+	message.Extra = append(message.Extra, o)
 }
 
 func logAnswer(message *dns.Msg) {
