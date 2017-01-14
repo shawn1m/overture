@@ -29,7 +29,6 @@ func main() {
 	log.Info("If you need any help or want to check update, please visit the project repository: https://github.com/holyshawn/overture")
 
 	runtime.GOMAXPROCS(processor_number)
-	overture.Config = overture.ParseConfig(config_file_path)
 
-	overture.Init()
+	overture.Init(config_file_path)
 }

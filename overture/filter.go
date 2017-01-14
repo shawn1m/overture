@@ -19,7 +19,7 @@ func chooseDNSServer(message *dns.Msg) dnsServer {
 
 	for _, domain := range custom_domain_list {
 
-		if question_name == domain || strings.HasSuffix(question_name, "." + domain) {
+		if question_name == domain || strings.HasSuffix(question_name, "."+domain) {
 			log.Debug("Matched: Custom domain " + question_name + " " + domain)
 			return Config.AlternativeDNSServer
 		}
@@ -30,7 +30,7 @@ func chooseDNSServer(message *dns.Msg) dnsServer {
 	return Config.PrimaryDNSServer
 }
 
-func matchIPNetwork(response_message *dns.Msg, question_message *dns.Msg, ip_net_list []*net.IPNet) {
+func matchIPNetwork(response_message *dns.Msg, question_message *dns.Msg, remote_address string, ip_net_list []*net.IPNet) {
 
 	for _, answer := range response_message.Answer {
 		if answer.Header().Rrtype != dns.TypeA {
@@ -41,7 +41,7 @@ func matchIPNetwork(response_message *dns.Msg, question_message *dns.Msg, ip_net
 			break
 		}
 		log.Debug("IP network match fail, finally use alternative DNS.")
-		err := getResponse(response_message, question_message, Config.AlternativeDNSServer)
+		err := getResponse(response_message, question_message, remote_address, Config.AlternativeDNSServer)
 		if err != nil {
 			log.Warn("Get dns response failed: ", err)
 		}
@@ -51,33 +51,33 @@ func matchIPNetwork(response_message *dns.Msg, question_message *dns.Msg, ip_net
 	log.Debug("Finally use primary DNS.")
 }
 
-func setMinimalTTL(message *dns.Msg, ttl uint32){
+func setMinimalTTL(message *dns.Msg, ttl uint32) {
 
-	for _, answer := range(message.Answer){
-		if answer.Header().Ttl < ttl{
+	for _, answer := range message.Answer {
+		if answer.Header().Ttl < ttl {
 			answer.Header().Ttl = ttl
 		}
 	}
 }
 
-func setEdns0Subnet(message *dns.Msg, ip string){
+func setEDNSClientSubnet(message *dns.Msg, ip string) {
 
-	o := new(dns.OPT)
-	o.Hdr.Name = "."
-	o.Hdr.Rrtype = dns.TypeOPT
-	e := new(dns.EDNS0_SUBNET)
-	e.Code = dns.EDNS0SUBNET
-	e.Address = net.ParseIP(ip)
-	if e.Address.To4() != nil{
-		e.Family = 1	// 1 for IPv4 source address, 2 for IPv6
-		e.SourceNetmask = 32	// 32 for IPV4, 128 for IPv6
-	}else{
-		e.Family = 2	// 1 for IPv4 source address, 2 for IPv6
-		e.SourceNetmask = 128	// 32 for IPV4, 128 for IPv6
+	option := new(dns.OPT)
+	option.Hdr.Name = "."
+	option.Hdr.Rrtype = dns.TypeOPT
+	edns0_subnet := new(dns.EDNS0_SUBNET)
+	edns0_subnet.Code = dns.EDNS0SUBNET
+	edns0_subnet.Address = net.ParseIP(ip)
+	if edns0_subnet.Address.To4() != nil {
+		edns0_subnet.Family = 1         // 1 for IPv4 source address, 2 for IPv6
+		edns0_subnet.SourceNetmask = 32 // 32 for IPV4, 128 for IPv6
+	} else {
+		edns0_subnet.Family = 2          // 1 for IPv4 source address, 2 for IPv6
+		edns0_subnet.SourceNetmask = 128 // 32 for IPV4, 128 for IPv6
 	}
-	e.SourceScope = 0
-	o.Option = append(o.Option, e)
-	message.Extra = append(message.Extra, o)
+	edns0_subnet.SourceScope = 0
+	option.Option = append(option.Option, edns0_subnet)
+	message.Extra = append(message.Extra, option)
 }
 
 func logAnswer(message *dns.Msg) {

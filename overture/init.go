@@ -6,6 +6,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"net"
+	"net/http"
 	"os"
 	"regexp"
 	"strings"
@@ -16,10 +17,25 @@ var (
 	custom_domain_list []string
 )
 
-func Init() {
+var Config *configType
+var Const *constType
+
+type constType struct {
+	ExternalIPAddress       string
+	ReservedIPNetworkList   []*net.IPNet
+}
+
+func Init(config_file_path string) {
+
+	Config = parseConfig(config_file_path)
+	Const = new(constType)
 
 	ip_net_list = getIPNetworkList(Config.IPNetworkFilePath)
 	custom_domain_list = getDomainList(Config.DomainFilePath, Config.DomainBase64Decode)
+	if Config.EDNSClientSubnetPolicy == "auto"{
+		Const.ExternalIPAddress = getExternalIPAddress()
+		Const.ReservedIPNetworkList = getReservedIPNetworkList()
+	}
 
 	log.Info("Start overture on " + Config.BindAddress + ".")
 	initServer()
@@ -79,5 +95,40 @@ func getIPNetworkList(path string) []*net.IPNet {
 		log.Warn("There is no element in IP network file.")
 	}
 
+	return result
+}
+
+func getReservedIPNetworkList() []*net.IPNet {
+
+	result := make([]*net.IPNet, 0)
+	local_cidr_list := []string{"127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"}
+	for _, local_cidr := range(local_cidr_list){
+		_, ip_net, err := net.ParseCIDR(local_cidr)
+		if err != nil {
+			break
+		}
+		result = append(result, ip_net)
+	}
+	return result
+}
+
+func getExternalIPAddress() string{
+	resp, err := http.Get("http://ip.cn")
+	if err != nil {
+		log.Warn("Get external IP address failed:", err)
+		return ""
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Warn("Get external IP address failed:", err)
+		return ""
+	}
+	re := regexp.MustCompile(`\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b`)
+	result := re.FindString(string(body))
+	if len(result) == 0 {
+		log.Warn("External IP address is empty")
+	}
+	log.Info("External IP is " + result)
 	return result
 }
