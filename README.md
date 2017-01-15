@@ -52,6 +52,7 @@ Configuration file is "config.json":
 ```json
 {
   "BindAddress": ":53",
+  "TCPDNS": false,
   "PrimaryDNSAddress": "119.29.29.29:53",
   "PrimaryDNSProtocol": "udp",
   "AlternativeDNSAddress": "208.67.222.222:443",
@@ -70,6 +71,7 @@ Configuration file is "config.json":
 Tips:
 
 + BindAddress: No IP means listen both IPv4 and IPv6
++ TCPDNS: Listen TCP DNS
 + DNS:
     + DNSPod 119.29.29.29:53
     + OpenDNS 208.67.222.222:443 \[2620:0:ccc::2\]:443
