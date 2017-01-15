@@ -10,34 +10,34 @@ import (
 	"os"
 	"regexp"
 	"strings"
-)
-
-var (
-	ip_net_list        []*net.IPNet
-	custom_domain_list []string
+	"time"
+	"github.com/miekg/dns"
+	"strconv"
 )
 
 var Config *configType
-var Const *constType
-
-type constType struct {
-	ExternalIPAddress       string
-	ReservedIPNetworkList   []*net.IPNet
-}
 
 func Init(config_file_path string) {
 
 	Config = parseConfig(config_file_path)
-	Const = new(constType)
 
-	ip_net_list = getIPNetworkList(Config.IPNetworkFilePath)
-	custom_domain_list = getDomainList(Config.DomainFilePath, Config.DomainBase64Decode)
-	if Config.EDNSClientSubnetPolicy == "auto"{
-		Const.ExternalIPAddress = getExternalIPAddress()
-		Const.ReservedIPNetworkList = getReservedIPNetworkList()
+	Config.IPNetworkList = getIPNetworkList(Config.IPNetworkFilePath)
+	Config.DomainList = getDomainList(Config.DomainFilePath, Config.DomainBase64Decode)
+	switch Config.EDNSClientSubnetPolicy {
+	case "auto":
+		log.Info("EDNS client subnet auto mode")
+		Config.ExternalIPAddress = getExternalIPAddress()
+		Config.ReservedIPNetworkList = getReservedIPNetworkList()
+	case "custom":
+		log.Info("EDNS client subnet custom mode with " + Config.EDNSClientSubnetIP)
+	case "disable":
+		log.Info("EDNS client subnet disabled")
 	}
 
-	log.Info("Start overture on " + Config.BindAddress + ".")
+	if Config.MinimumTTL > 0 {
+		log.Info("Minimum TTL is " + strconv.Itoa(Config.MinimumTTL))
+	}
+
 	initServer()
 }
 
@@ -65,9 +65,9 @@ func getDomainList(path string, base64_decode bool) []string {
 	}
 
 	if len(result) > 0 {
-		log.Info("Load domain file successful.")
+		log.Info("Load domain file successful")
 	} else {
-		log.Warn("There is no element in domain file.")
+		log.Warn("There is no element in domain file")
 	}
 	return result
 }
@@ -90,9 +90,9 @@ func getIPNetworkList(path string) []*net.IPNet {
 		result = append(result, ip_net)
 	}
 	if len(result) > 0 {
-		log.Info("Load IP network file successful.")
+		log.Info("Load IP network file successful")
 	} else {
-		log.Warn("There is no element in IP network file.")
+		log.Warn("There is no element in IP network file")
 	}
 
 	return result
@@ -102,7 +102,7 @@ func getReservedIPNetworkList() []*net.IPNet {
 
 	result := make([]*net.IPNet, 0)
 	local_cidr_list := []string{"127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"}
-	for _, local_cidr := range(local_cidr_list){
+	for _, local_cidr := range local_cidr_list {
 		_, ip_net, err := net.ParseCIDR(local_cidr)
 		if err != nil {
 			break
@@ -112,8 +112,27 @@ func getReservedIPNetworkList() []*net.IPNet {
 	return result
 }
 
-func getExternalIPAddress() string{
-	resp, err := http.Get("http://ip.cn")
+func getExternalIPAddress() string {
+	timeout := time.Duration(Config.Timeout) * time.Second
+	client := http.Client{
+		Timeout: timeout,
+	}
+	host := "ip.cn"
+	dns_client := dns.Client{}
+	dns_message := dns.Msg{}
+	dns_message.SetQuestion(host + ".", dns.TypeA)
+	response, _, err := dns_client.Exchange(&dns_message, Config.PrimaryDNSServer.Address)
+	if err != nil {
+		log.Warn("DNS lookup for external ip failed, please check your internet configuration:", err)
+		return ""
+	}
+	request, err := http.NewRequest("GET", "http://" + response.Answer[0].(*dns.A).A.String(), nil)
+	if err != nil {
+		log.Warn("Get external IP address failed: ", err)
+		return ""
+	}
+	request.Host = host
+	resp, err:= client.Do(request)
 	if err != nil {
 		log.Warn("Get external IP address failed:", err)
 		return ""

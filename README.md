@@ -1,13 +1,13 @@
 # overture
 [![Build Status](https://travis-ci.org/holyshawn/overture.png)](https://travis-ci.org/holyshawn/overture)
 
-Overture is a light weight upstream dns switcher written in golang in order to purify dns records.
+Overture is a lightweight upstream dns switcher written in golang in order to purify dns records.
 
-Overture means an orchestral piece at the beginning of an classical music composition, just like dns which is nearly the first step of surfing the internet.
+Overture means an orchestral piece at the beginning of a classical music composition, just like dns which is nearly the first step of surfing the internet.
 
 Overture force IPv6 and custom domain DNS queries to use alternative dns, if response answer is matched with custom ip network, use primary dns otherwise use alternative dns.
 
-**Warn: If you use the release version, try to follow the README file from compatible version tags, this README is usually from develop branch.**
+**Warn: If you use the release version, just try to follow the README file from compatible version tags, this README file is usually in development.**
 
 ## Features
 
@@ -16,6 +16,8 @@ Overture force IPv6 and custom domain DNS queries to use alternative dns, if res
 + TCP upstream dns server with custom port
 + Custom IP network filter
 + Custom domain filter, base64 decode support
++ Minimum TTL setting support
++ EDNS client subnet support
 
 ## Usages
 
@@ -38,7 +40,7 @@ Extra Help:
 Tips:
 
 + You may need sudo to start overture on port 53.
-+ You may find default IP network  file and domain file from acknowledgements or just download below files, these files are also included in release.
++ You may find default IP network file and domain file from acknowledgements or just download below files. These files are also included in the release.
 + [ip_network file ](https://github.com/17mon/china_ip_list/raw/master/china_ip_list.txt)
 + [base64 domain file](https://github.com/gfwlist/gfwlist/raw/master/gfwlist.txt)
 + You may need some third-party software such as dnsmasq to cache your dns records.
@@ -50,15 +52,18 @@ Configuration file is "config.json":
 ```json
 {
   "BindAddress": ":53",
-  "PrimaryDNSAddress": "114.114.114.114:53",
-  "PrimaryDNSMethod": "udp",
+  "PrimaryDNSAddress": "119.29.29.29:53",
+  "PrimaryDNSProtocol": "udp",
   "AlternativeDNSAddress": "208.67.222.222:443",
-  "AlternativeDNSMethod": "udp",
+  "AlternativeDNSProtocol": "tcp",
   "Timeout": 6,
   "RedirectIPv6Record": true,
   "IPNetworkFilePath": "/xx/xx.txt",
   "DomainFilePath": "/xx/xx.txt",
-  "DomainBase64Decode": true
+  "DomainBase64Decode": true,
+  "MinimumTTL": -1,
+  "EDNSClientSubnetPolicy": "disable",
+  "EDNSClientSubnetIP": ""
 }
 ```
 
@@ -66,17 +71,23 @@ Tips:
 
 + BindAddress: No IP means listen both IPv4 and IPv6
 + DNS:
-    + 114DNS 114.114.114.114:53
+    + DNSPod 119.29.29.29:53
     + OpenDNS 208.67.222.222:443 \[2620:0:ccc::2\]:443
-+ Method: "tcp" or "udp"
++ Protocol: "tcp" or "udp"
 + RedirectIPv6Record: Redirect IPv6 DNS Question to alternative dns
 + Path: For windows user, please use path like "C:\\xx\\xx.txt"
 + DomainBase64Decode: Could be empty field
++ MinimumTTL: Set the minimum TTL value (second) in order to improve cache, use -1 to disable.
++ EDNSClientSubnetPolicy: Improve DNS accuracy, only works for primary dns. [RFC7871](https://tools.ietf.org/html/rfc7871)
+    + auto: If client IP is not in the reserved ip network, use client IP. Otherwise, use server external IP.
+    + custom: Always use EDNSClientSubnetIP.
+    + disable: Disable this feature.
+    + DNSPod, OpenDNS and GoogleDNS support this feature.
 
 ## To Do
 
-+ edns support
-+ ttl revision support
++ ~~edns support~~
++ ~~ttl revision support~~
 
 ## Acknowledgements
 
@@ -88,4 +99,4 @@ Tips:
 
 ## License
 
-This project is under the MIT License. See the [LICENSE](LICENSE) file for the full license text
+This project is under the MIT license. See the [LICENSE](LICENSE) file for the full license text
