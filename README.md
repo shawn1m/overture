@@ -5,7 +5,7 @@ Overture is a lightweight upstream dns switcher written in golang in order to pu
 
 Overture means an orchestral piece at the beginning of a classical music composition, just like dns which is nearly the first step of surfing the internet.
 
-Overture force IPv6 and custom domain DNS queries to use alternative dns, if response answer is matched with custom ip network, use primary dns otherwise use alternative dns.
+Overture force IPv6 and custom domain DNS queries to use alternative dns. Normally, when overture is using primary dns, if response answer is empty or is not matched with custom ip network then use alternative dns.
 
 **Warn: If you use the release version, just try to follow the README file from compatible version tags, this README file is usually in development.**
 
@@ -74,7 +74,7 @@ Tips:
     + DNSPod 119.29.29.29:53
     + OpenDNS 208.67.222.222:443 \[2620:0:ccc::2\]:443
 + Protocol: "tcp" or "udp"
-+ RedirectIPv6Record: Redirect IPv6 DNS Question to alternative dns
++ RedirectIPv6Record: Redirect IPv6 DNS query to alternative dns
 + Path: For windows user, please use path like "C:\\xx\\xx.txt"
 + DomainBase64Decode: Could be empty field
 + MinimumTTL: Set the minimum TTL value (second) in order to improve cache, use -1 to disable.
