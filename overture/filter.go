@@ -17,7 +17,7 @@ func chooseDNSServer(message *dns.Msg) dnsServer {
 		return Config.AlternativeDNSServer
 	}
 
-	for _, domain := range custom_domain_list {
+	for _, domain := range Config.DomainList {
 
 		if question_name == domain || strings.HasSuffix(question_name, "."+domain) {
 			log.Debug("Matched: Custom domain " + question_name + " " + domain)
@@ -32,15 +32,8 @@ func chooseDNSServer(message *dns.Msg) dnsServer {
 
 func matchIPNetwork(response_message *dns.Msg, question_message *dns.Msg, remote_address string, ip_net_list []*net.IPNet) {
 
-	for _, answer := range response_message.Answer {
-		if answer.Header().Rrtype != dns.TypeA {
-			continue
-		}
-		log.Debug("Try to match response ip address with IP network.")
-		if isIPMatchList(net.ParseIP(answer.(*dns.A).A.String()), ip_net_list) {
-			break
-		}
-		log.Debug("IP network match fail, finally use alternative DNS.")
+	if len(response_message.Answer) == 0 {
+		log.Debug("Primary DNS answer is empty, finally use alternative DNS")
 		err := getResponse(response_message, question_message, remote_address, Config.AlternativeDNSServer)
 		if err != nil {
 			log.Warn("Get dns response failed: ", err)
@@ -48,10 +41,26 @@ func matchIPNetwork(response_message *dns.Msg, question_message *dns.Msg, remote
 		return
 	}
 
-	log.Debug("Finally use primary DNS.")
+	for _, answer := range response_message.Answer {
+		if answer.Header().Rrtype != dns.TypeA {
+			continue
+		}
+		log.Debug("Try to match response ip address with IP network")
+		if isIPMatchList(net.ParseIP(answer.(*dns.A).A.String()), ip_net_list, true) {
+			break
+		}
+		log.Debug("IP network match fail, finally use alternative DNS")
+		err := getResponse(response_message, question_message, remote_address, Config.AlternativeDNSServer)
+		if err != nil {
+			log.Warn("Get dns response failed: ", err)
+		}
+		return
+	}
+
+	log.Debug("Finally use primary DNS")
 }
 
-func setMinimalTTL(message *dns.Msg, ttl uint32) {
+func setMinimumTTL(message *dns.Msg, ttl uint32) {
 
 	for _, answer := range message.Answer {
 		if answer.Header().Ttl < ttl {
@@ -78,28 +87,4 @@ func setEDNSClientSubnet(message *dns.Msg, ip string) {
 	edns0_subnet.SourceScope = 0
 	option.Option = append(option.Option, edns0_subnet)
 	message.Extra = append(message.Extra, option)
-}
-
-func logAnswer(message *dns.Msg) {
-
-	for _, answer := range message.Answer {
-		log.Debug("Answer: " + answer.String())
-	}
-}
-
-func isIPMatchList(ip net.IP, ip_net_list []*net.IPNet) bool {
-
-	for _, ip_net := range ip_net_list {
-		if ip_net.Contains(ip) {
-			log.Debug("Matched: IP network " + ip.String() + " " + ip_net.String())
-			return true
-		}
-	}
-
-	return false
-}
-
-func isQuestionInIPv6(message *dns.Msg) bool {
-
-	return message.Question[0].Qtype == dns.TypeAAAA
 }

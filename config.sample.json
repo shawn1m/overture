@@ -1,15 +1,15 @@
 {
   "BindAddress": ":53",
-  "PrimaryDNSAddress": "114.114.114.114:53",
+  "PrimaryDNSAddress": "119.29.29.29:53",
   "PrimaryDNSProtocol": "udp",
   "AlternativeDNSAddress": "208.67.222.222:443",
-  "AlternativeDNSProtocol": "udp",
+  "AlternativeDNSProtocol": "tcp",
   "Timeout": 6,
   "RedirectIPv6Record": true,
   "IPNetworkFilePath": "./china_ip_list.txt",
   "DomainFilePath": "./gfwlist.txt",
   "DomainBase64Decode": true,
-  "MinimalTTL": 604800,
+  "MinimumTTL": -1,
   "EDNSClientSubnetPolicy": "disable",
   "EDNSClientSubnetIP": ""
 }

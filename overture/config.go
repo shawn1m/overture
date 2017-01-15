@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	log "github.com/Sirupsen/logrus"
 	"io/ioutil"
+	"net"
 	"os"
+	"fmt"
 )
 
 type dnsServer struct {
@@ -23,7 +25,7 @@ type jsonType struct {
 	IPNetworkFilePath      string
 	DomainFilePath         string
 	DomainBase64Decode     bool
-	MinimalTTL             int
+	MinimumTTL             int
 	EDNSClientSubnetPolicy string
 	EDNSClientSubnetIP     string
 }
@@ -37,9 +39,14 @@ type configType struct {
 	IPNetworkFilePath      string
 	DomainFilePath         string
 	DomainBase64Decode     bool
-	MinimalTTL             int
+	MinimumTTL             int
 	EDNSClientSubnetPolicy string
 	EDNSClientSubnetIP     string
+
+	DomainList             []string
+	IPNetworkList          []*net.IPNet
+	ExternalIPAddress      string
+	ReservedIPNetworkList  []*net.IPNet
 }
 
 func parseJson(path string) *jsonType {
@@ -64,13 +71,17 @@ func parseJson(path string) *jsonType {
 		os.Exit(1)
 	}
 
+	if log.GetLevel() == log.DebugLevel{
+		fmt.Printf("%+v\n", *result)
+	}
+
 	return result
 }
 
 func parseConfig(path string) *configType {
 
 	json_result := parseJson(path)
-	config := &configType{
+	result := &configType{
 		BindAddress: json_result.BindAddress,
 		PrimaryDNSServer: dnsServer{
 			Address:  json_result.PrimaryDNSAddress,
@@ -80,15 +91,15 @@ func parseConfig(path string) *configType {
 			Address:  json_result.AlternativeDNSAddress,
 			Protocol: json_result.AlternativeDNSProtocol,
 		},
-		Timeout:                 json_result.Timeout,
-		RedirectIPv6Record:      json_result.RedirectIPv6Record,
-		IPNetworkFilePath:       json_result.IPNetworkFilePath,
-		DomainFilePath:          json_result.DomainFilePath,
-		DomainBase64Decode:      json_result.DomainBase64Decode,
-		MinimalTTL:              json_result.MinimalTTL,
-		EDNSClientSubnetPolicy:  json_result.EDNSClientSubnetPolicy,
-		EDNSClientSubnetIP: json_result.EDNSClientSubnetIP,
+		Timeout:                json_result.Timeout,
+		RedirectIPv6Record:     json_result.RedirectIPv6Record,
+		IPNetworkFilePath:      json_result.IPNetworkFilePath,
+		DomainFilePath:         json_result.DomainFilePath,
+		DomainBase64Decode:     json_result.DomainBase64Decode,
+		MinimumTTL:             json_result.MinimumTTL,
+		EDNSClientSubnetPolicy: json_result.EDNSClientSubnetPolicy,
+		EDNSClientSubnetIP:     json_result.EDNSClientSubnetIP,
 	}
 
-	return config
+	return result
 }
