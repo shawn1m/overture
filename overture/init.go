@@ -118,15 +118,10 @@ func getExternalIPAddress() string {
 		Timeout: timeout,
 	}
 	host := "ip.cn"
-	dns_client := dns.Client{}
-	dns_message := dns.Msg{}
-	dns_message.SetQuestion(host+".", dns.TypeA)
-	response, _, err := dns_client.Exchange(&dns_message, Config.PrimaryDNSServer.Address)
-	if err != nil {
-		log.Warn("DNS lookup for external ip failed, please check your internet configuration:", err)
-		return ""
-	}
-	request, err := http.NewRequest("GET", "http://"+response.Answer[0].(*dns.A).A.String(), nil)
+	question_message, response_message := new(dns.Msg), new(dns.Msg)
+	question_message.SetQuestion(host + ".", dns.TypeA)
+	getResponse(response_message, question_message, "", Config.PrimaryDNSServer)
+	request, err := http.NewRequest("GET", "http://" + response_message.Answer[0].(*dns.A).A.String(), nil)
 	if err != nil {
 		log.Warn("Get external IP address failed: ", err)
 		return ""

@@ -29,7 +29,7 @@ Or use your own config file:
 
     ./overture -c /xxx/xxx/x.json # Use your own config file
 
-Verbose mode :
+Verbose mode:
 
     ./overture -v # This will show more information
     
@@ -69,14 +69,15 @@ Configuration file is "config.json":
 
 Tips:
 
-+ BindAddress: No IP means listen both IPv4 and IPv6, overture will listen both TCP and UDP ports
++ BindAddress: No IP means listen both IPv4 and IPv6, overture will listen both TCP and UDP ports.
 + DNS:
     + DNSPod 119.29.29.29:53
     + OpenDNS 208.67.222.222:443 \[2620:0:ccc::2\]:443
-+ Protocol: "tcp" or "udp"
-+ RedirectIPv6Record: Redirect IPv6 DNS query to alternative dns
-+ Path: For windows user, please use path like "C:\\xx\\xx.txt"
-+ DomainBase64Decode: Could be empty field
+    + GoogleDNS 8.8.8.8:53 \[2001:4860:4860::8888\]:53
++ Protocol: "tcp" or "udp".
++ RedirectIPv6Record: Redirect IPv6 DNS query to alternative dns.
++ Path: For windows user, please use path like "C:\\xx\\xx.txt".
++ DomainBase64Decode: Could be empty field.
 + MinimumTTL: Set the minimum TTL value (second) in order to improve cache, use -1 to disable.
 + EDNSClientSubnetPolicy: Improve DNS accuracy, only works for primary dns. [RFC7871](https://tools.ietf.org/html/rfc7871)
     + auto: If client IP is not in the reserved ip network, use client IP. Otherwise, use server external IP.
@@ -99,4 +100,4 @@ Tips:
 
 ## License
 
-This project is under the MIT license. See the [LICENSE](LICENSE) file for the full license text
+This project is under the MIT license. See the [LICENSE](LICENSE) file for the full license text.

@@ -13,7 +13,6 @@ func initServer() {
 	handler.HandleFunc(".", handleRequest)
 
 	tcp_server := &dns.Server{Addr: Config.BindAddress, Net: "tcp", Handler: handler}
-	log.Info("Start overture on tcp:" + Config.BindAddress)
 	go func() {
 		err := tcp_server.ListenAndServe()
 		if err != nil {
@@ -23,7 +22,7 @@ func initServer() {
 	}()
 
 	udp_server := &dns.Server{Addr: Config.BindAddress, Net: "udp", Handler: handler}
-	log.Info("Start overture on udp:" + Config.BindAddress)
+	log.Info("Start overture on " + Config.BindAddress)
 	err := udp_server.ListenAndServe()
 	if err != nil {
 		log.Fatal("Listen failed: ", err)
@@ -33,10 +32,11 @@ func initServer() {
 
 func handleRequest(writer dns.ResponseWriter, question_message *dns.Msg) {
 
-	temp_dns_server := chooseDNSServer(question_message)
+	temp_dns_server := new(dnsServer)
+	DNSServerFilter(temp_dns_server, question_message)
 	response_message := new(dns.Msg)
 	remote_address, _, _ := net.SplitHostPort(writer.RemoteAddr().String())
-	err := getResponse(response_message, question_message, remote_address, temp_dns_server)
+	err := getResponse(response_message, question_message, remote_address, *temp_dns_server)
 	if err != nil {
 		if err == dns.ErrTruncated {
 			log.Warn("Maybe your primary dns server does not support edns client subnet: ", err)
@@ -46,13 +46,11 @@ func handleRequest(writer dns.ResponseWriter, question_message *dns.Msg) {
 		return
 	}
 	if reflect.DeepEqual(temp_dns_server, Config.PrimaryDNSServer) {
-		matchIPNetwork(response_message, question_message, remote_address, Config.IPNetworkList)
+		PrimaryDNSResponseFilter(response_message, question_message, remote_address, Config.IPNetworkList)
 	} else {
 		log.Debug("Finally use alternative DNS")
 	}
-	if Config.MinimumTTL > 0 {
-		setMinimumTTL(response_message, uint32(Config.MinimumTTL))
-	}
+	MinimumTTLFilter(response_message, uint32(Config.MinimumTTL))
 	logAnswer(response_message)
 	writer.WriteMsg(response_message)
 }
