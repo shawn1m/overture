@@ -7,34 +7,36 @@ import (
 	"strings"
 )
 
-func chooseDNSServer(message *dns.Msg) dnsServer {
+func DNSServerFilter(server *dnsServer, message *dns.Msg) {
 
 	log.Debug("Question: " + message.Question[0].String())
 
 	question_name := message.Question[0].Name[:len(message.Question[0].Name)-1]
 
 	if isQuestionInIPv6(message) && Config.RedirectIPv6Record {
-		return Config.AlternativeDNSServer
+		*server = Config.AlternativeDNSServer
+		return
 	}
 
 	for _, domain := range Config.DomainList {
 
 		if question_name == domain || strings.HasSuffix(question_name, "."+domain) {
 			log.Debug("Matched: Custom domain " + question_name + " " + domain)
-			return Config.AlternativeDNSServer
+			*server = Config.AlternativeDNSServer
+			return
 		}
 	}
 
 	log.Debug("Domain match fail, try to use primary DNS.")
 
-	return Config.PrimaryDNSServer
+	*server =  Config.PrimaryDNSServer
 }
 
-func matchIPNetwork(response_message *dns.Msg, question_message *dns.Msg, remote_address string, ip_net_list []*net.IPNet) {
+func PrimaryDNSResponseFilter(response_message *dns.Msg, question_message *dns.Msg, remote_ip string, ip_net_list []*net.IPNet) {
 
 	if len(response_message.Answer) == 0 {
 		log.Debug("Primary DNS answer is empty, finally use alternative DNS")
-		err := getResponse(response_message, question_message, remote_address, Config.AlternativeDNSServer)
+		err := getResponse(response_message, question_message, remote_ip, Config.AlternativeDNSServer)
 		if err != nil {
 			log.Warn("Get dns response failed: ", err)
 		}
@@ -50,7 +52,7 @@ func matchIPNetwork(response_message *dns.Msg, question_message *dns.Msg, remote
 			break
 		}
 		log.Debug("IP network match fail, finally use alternative DNS")
-		err := getResponse(response_message, question_message, remote_address, Config.AlternativeDNSServer)
+		err := getResponse(response_message, question_message, remote_ip, Config.AlternativeDNSServer)
 		if err != nil {
 			log.Warn("Get dns response failed: ", err)
 		}
@@ -58,6 +60,28 @@ func matchIPNetwork(response_message *dns.Msg, question_message *dns.Msg, remote
 	}
 
 	log.Debug("Finally use primary DNS")
+}
+
+func EDNSClientSubnetFilter(message *dns.Msg, inbound_ip string) {
+
+	switch Config.EDNSClientSubnetPolicy {
+	case "custom":
+		addEDNSClientSubnet(message, Config.EDNSClientSubnetIP)
+	case "auto":
+		if !isIPMatchList(net.ParseIP(inbound_ip), Config.ReservedIPNetworkList, false) {
+			addEDNSClientSubnet(message, inbound_ip)
+		} else {
+			addEDNSClientSubnet(message, Config.ExternalIPAddress)
+		}
+	case "disable":
+	}
+}
+
+func MinimumTTLFilter (message *dns.Msg, ttl uint32) {
+
+	if Config.MinimumTTL > 0 {
+		setMinimumTTL(message, uint32(ttl))
+	}
 }
 
 func setMinimumTTL(message *dns.Msg, ttl uint32) {
@@ -69,7 +93,11 @@ func setMinimumTTL(message *dns.Msg, ttl uint32) {
 	}
 }
 
-func setEDNSClientSubnet(message *dns.Msg, ip string) {
+func addEDNSClientSubnet(message *dns.Msg, ip string) {
+
+	if ip == ""{
+		return
+	}
 
 	option := new(dns.OPT)
 	option.Hdr.Name = "."
