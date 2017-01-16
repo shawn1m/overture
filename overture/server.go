@@ -9,11 +9,21 @@ import (
 )
 
 func initServer() {
-
 	handler := dns.NewServeMux()
 	handler.HandleFunc(".", handleRequest)
+	if Config.TCPDNS == true {
+		server := &dns.Server{Addr: Config.BindAddress, Net: "tcp", Handler: handler}
+		log.Info("Start overture on tcp:" + Config.BindAddress)
+		go func() {
+			err := server.ListenAndServe()
+		        if err != nil {
+				log.Fatal("Listen failed: ", err)
+				os.Exit(1)
+			}
+		}()
+	}
 	server := &dns.Server{Addr: Config.BindAddress, Net: "udp", Handler: handler}
-	log.Info("Start overture on " + Config.BindAddress)
+	log.Info("Start overture on udp:" + Config.BindAddress)
 	err := server.ListenAndServe()
 	if err != nil {
 		log.Fatal("Listen failed: ", err)

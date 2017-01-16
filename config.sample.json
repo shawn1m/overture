@@ -1,5 +1,6 @@
 {
   "BindAddress": ":53",
+  "TCPDNS": false,
   "PrimaryDNSAddress": "119.29.29.29:53",
   "PrimaryDNSProtocol": "udp",
   "AlternativeDNSAddress": "208.67.222.222:443",

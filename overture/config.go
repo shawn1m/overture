@@ -16,6 +16,7 @@ type dnsServer struct {
 
 type jsonType struct {
 	BindAddress            string
+	TCPDNS                 bool
 	PrimaryDNSAddress      string
 	PrimaryDNSProtocol     string
 	AlternativeDNSAddress  string
@@ -32,6 +33,7 @@ type jsonType struct {
 
 type configType struct {
 	BindAddress            string
+	TCPDNS                 bool
 	PrimaryDNSServer       dnsServer
 	AlternativeDNSServer   dnsServer
 	Timeout                int
@@ -83,6 +85,7 @@ func parseConfig(path string) *configType {
 	json_result := parseJson(path)
 	result := &configType{
 		BindAddress: json_result.BindAddress,
+		TCPDNS: json_result.TCPDNS,
 		PrimaryDNSServer: dnsServer{
 			Address:  json_result.PrimaryDNSAddress,
 			Protocol: json_result.PrimaryDNSProtocol,
