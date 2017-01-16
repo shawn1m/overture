@@ -4,27 +4,27 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
 	"net"
-	"reflect"
 	"os"
+	"reflect"
 )
 
 func initServer() {
 	handler := dns.NewServeMux()
 	handler.HandleFunc(".", handleRequest)
-	if Config.TCPDNS == true {
-		server := &dns.Server{Addr: Config.BindAddress, Net: "tcp", Handler: handler}
-		log.Info("Start overture on tcp:" + Config.BindAddress)
-		go func() {
-			err := server.ListenAndServe()
-		        if err != nil {
-				log.Fatal("Listen failed: ", err)
-				os.Exit(1)
-			}
-		}()
-	}
-	server := &dns.Server{Addr: Config.BindAddress, Net: "udp", Handler: handler}
+
+	tcp_server := &dns.Server{Addr: Config.BindAddress, Net: "tcp", Handler: handler}
+	log.Info("Start overture on tcp:" + Config.BindAddress)
+	go func() {
+		err := tcp_server.ListenAndServe()
+		if err != nil {
+			log.Fatal("Listen failed: ", err)
+			os.Exit(1)
+		}
+	}()
+
+	udp_server := &dns.Server{Addr: Config.BindAddress, Net: "udp", Handler: handler}
 	log.Info("Start overture on udp:" + Config.BindAddress)
-	err := server.ListenAndServe()
+	err := udp_server.ListenAndServe()
 	if err != nil {
 		log.Fatal("Listen failed: ", err)
 		os.Exit(1)
@@ -38,9 +38,9 @@ func handleRequest(writer dns.ResponseWriter, question_message *dns.Msg) {
 	remote_address, _, _ := net.SplitHostPort(writer.RemoteAddr().String())
 	err := getResponse(response_message, question_message, remote_address, temp_dns_server)
 	if err != nil {
-		if err == dns.ErrTruncated{
+		if err == dns.ErrTruncated {
 			log.Warn("Maybe your primary dns server does not support edns client subnet: ", err)
-		}else {
+		} else {
 			log.Warn("Get dns response failed: ", err)
 		}
 		return

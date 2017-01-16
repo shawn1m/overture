@@ -1,8 +1,8 @@
 package overture
 
 import (
-	"github.com/miekg/dns"
 	log "github.com/Sirupsen/logrus"
+	"github.com/miekg/dns"
 	"net"
 )
 

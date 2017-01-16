@@ -4,15 +4,15 @@ import (
 	"bufio"
 	"encoding/base64"
 	log "github.com/Sirupsen/logrus"
+	"github.com/miekg/dns"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
-	"github.com/miekg/dns"
-	"strconv"
 )
 
 var Config *configType
@@ -120,19 +120,19 @@ func getExternalIPAddress() string {
 	host := "ip.cn"
 	dns_client := dns.Client{}
 	dns_message := dns.Msg{}
-	dns_message.SetQuestion(host + ".", dns.TypeA)
+	dns_message.SetQuestion(host+".", dns.TypeA)
 	response, _, err := dns_client.Exchange(&dns_message, Config.PrimaryDNSServer.Address)
 	if err != nil {
 		log.Warn("DNS lookup for external ip failed, please check your internet configuration:", err)
 		return ""
 	}
-	request, err := http.NewRequest("GET", "http://" + response.Answer[0].(*dns.A).A.String(), nil)
+	request, err := http.NewRequest("GET", "http://"+response.Answer[0].(*dns.A).A.String(), nil)
 	if err != nil {
 		log.Warn("Get external IP address failed: ", err)
 		return ""
 	}
 	request.Host = host
-	resp, err:= client.Do(request)
+	resp, err := client.Do(request)
 	if err != nil {
 		log.Warn("Get external IP address failed:", err)
 		return ""

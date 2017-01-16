@@ -2,11 +2,11 @@ package overture
 
 import (
 	"encoding/json"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"net"
 	"os"
-	"fmt"
 )
 
 type dnsServer struct {
@@ -16,7 +16,6 @@ type dnsServer struct {
 
 type jsonType struct {
 	BindAddress            string
-	TCPDNS                 bool
 	PrimaryDNSAddress      string
 	PrimaryDNSProtocol     string
 	AlternativeDNSAddress  string
@@ -33,7 +32,6 @@ type jsonType struct {
 
 type configType struct {
 	BindAddress            string
-	TCPDNS                 bool
 	PrimaryDNSServer       dnsServer
 	AlternativeDNSServer   dnsServer
 	Timeout                int
@@ -45,10 +43,10 @@ type configType struct {
 	EDNSClientSubnetPolicy string
 	EDNSClientSubnetIP     string
 
-	DomainList             []string
-	IPNetworkList          []*net.IPNet
-	ExternalIPAddress      string
-	ReservedIPNetworkList  []*net.IPNet
+	DomainList            []string
+	IPNetworkList         []*net.IPNet
+	ExternalIPAddress     string
+	ReservedIPNetworkList []*net.IPNet
 }
 
 func parseJson(path string) *jsonType {
@@ -73,7 +71,7 @@ func parseJson(path string) *jsonType {
 		os.Exit(1)
 	}
 
-	if log.GetLevel() == log.DebugLevel{
+	if log.GetLevel() == log.DebugLevel {
 		fmt.Printf("%+v\n", *result)
 	}
 
@@ -85,7 +83,6 @@ func parseConfig(path string) *configType {
 	json_result := parseJson(path)
 	result := &configType{
 		BindAddress: json_result.BindAddress,
-		TCPDNS: json_result.TCPDNS,
 		PrimaryDNSServer: dnsServer{
 			Address:  json_result.PrimaryDNSAddress,
 			Protocol: json_result.PrimaryDNSProtocol,
