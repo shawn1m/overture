@@ -35,8 +35,8 @@ func handleRequest(writer dns.ResponseWriter, question_message *dns.Msg) {
 	temp_dns_server := new(dnsServer)
 	DNSServerFilter(temp_dns_server, question_message)
 	response_message := new(dns.Msg)
-	remote_address, _, _ := net.SplitHostPort(writer.RemoteAddr().String())
-	err := getResponse(response_message, question_message, remote_address, *temp_dns_server)
+	remote_ip, _, _ := net.SplitHostPort(writer.RemoteAddr().String())
+	err := getResponse(response_message, question_message, remote_ip, *temp_dns_server)
 	if err != nil {
 		if err == dns.ErrTruncated {
 			log.Warn("Maybe your primary dns server does not support edns client subnet: ", err)
@@ -46,7 +46,7 @@ func handleRequest(writer dns.ResponseWriter, question_message *dns.Msg) {
 		return
 	}
 	if reflect.DeepEqual(temp_dns_server, Config.PrimaryDNSServer) {
-		PrimaryDNSResponseFilter(response_message, question_message, remote_address, Config.IPNetworkList)
+		PrimaryDNSResponseFilter(response_message, question_message, remote_ip, Config.IPNetworkList)
 	} else {
 		log.Debug("Finally use alternative DNS")
 	}

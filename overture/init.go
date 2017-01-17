@@ -26,7 +26,7 @@ func Init(config_file_path string) {
 	switch Config.EDNSClientSubnetPolicy {
 	case "auto":
 		log.Info("EDNS client subnet auto mode")
-		Config.ExternalIPAddress = getExternalIPAddress()
+		Config.ExternalIP = getExternalIP()
 		Config.ReservedIPNetworkList = getReservedIPNetworkList()
 	case "custom":
 		log.Info("EDNS client subnet custom mode with " + Config.EDNSClientSubnetIP)
@@ -112,8 +112,8 @@ func getReservedIPNetworkList() []*net.IPNet {
 	return result
 }
 
-func getExternalIPAddress() string {
-	timeout := time.Duration(Config.Timeout) * time.Second
+func getExternalIP() string {
+	timeout := time.Duration(Config.Timeout) * time.Second * 2
 	client := http.Client{
 		Timeout: timeout,
 	}

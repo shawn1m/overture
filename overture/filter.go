@@ -66,12 +66,12 @@ func EDNSClientSubnetFilter(message *dns.Msg, inbound_ip string) {
 
 	switch Config.EDNSClientSubnetPolicy {
 	case "custom":
-		addEDNSClientSubnet(message, Config.EDNSClientSubnetIP)
+		setEDNSClientSubnet(message, Config.EDNSClientSubnetIP)
 	case "auto":
 		if !isIPMatchList(net.ParseIP(inbound_ip), Config.ReservedIPNetworkList, false) {
-			addEDNSClientSubnet(message, inbound_ip)
+			setEDNSClientSubnet(message, inbound_ip)
 		} else {
-			addEDNSClientSubnet(message, Config.ExternalIPAddress)
+			setEDNSClientSubnet(message, Config.ExternalIP)
 		}
 	case "disable":
 	}
@@ -93,16 +93,28 @@ func setMinimumTTL(message *dns.Msg, ttl uint32) {
 	}
 }
 
-func addEDNSClientSubnet(message *dns.Msg, ip string) {
+func setEDNSClientSubnet(message *dns.Msg, ip string) {
 
 	if ip == ""{
 		return
 	}
 
-	option := new(dns.OPT)
-	option.Hdr.Name = "."
-	option.Hdr.Rrtype = dns.TypeOPT
-	edns0_subnet := new(dns.EDNS0_SUBNET)
+	option := message.IsEdns0()
+
+	if option == nil{
+		option = new(dns.OPT)
+		option.Hdr.Name = "."
+		option.Hdr.Rrtype = dns.TypeOPT
+		message.Extra = append(message.Extra, option)
+	}
+
+	edns0_subnet := isEDNSClientSubnet(option)
+
+	if edns0_subnet == nil{
+		edns0_subnet = new(dns.EDNS0_SUBNET)
+		option.Option = append(option.Option, edns0_subnet)
+	}
+
 	edns0_subnet.Code = dns.EDNS0SUBNET
 	edns0_subnet.Address = net.ParseIP(ip)
 	if edns0_subnet.Address.To4() != nil {
@@ -113,6 +125,15 @@ func addEDNSClientSubnet(message *dns.Msg, ip string) {
 		edns0_subnet.SourceNetmask = 128 // 32 for IPV4, 128 for IPv6
 	}
 	edns0_subnet.SourceScope = 0
-	option.Option = append(option.Option, edns0_subnet)
-	message.Extra = append(message.Extra, option)
+}
+
+
+func isEDNSClientSubnet(option *dns.OPT) *dns.EDNS0_SUBNET{
+	for _, s := range option.Option {
+		switch e := s.(type) {
+		case *dns.EDNS0_SUBNET:
+			return e
+		}
+	}
+	return nil
 }

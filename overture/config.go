@@ -43,10 +43,10 @@ type configType struct {
 	EDNSClientSubnetPolicy string
 	EDNSClientSubnetIP     string
 
-	DomainList            []string
-	IPNetworkList         []*net.IPNet
-	ExternalIPAddress     string
-	ReservedIPNetworkList []*net.IPNet
+	DomainList             []string
+	IPNetworkList          []*net.IPNet
+	ExternalIP             string
+	ReservedIPNetworkList  []*net.IPNet
 }
 
 func parseJson(path string) *jsonType {
