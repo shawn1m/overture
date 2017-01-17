@@ -41,7 +41,7 @@ func handleRequest(writer dns.ResponseWriter, question_message *dns.Msg) {
 		if err == dns.ErrTruncated {
 			log.Warn("Maybe your primary dns server does not support edns client subnet: ", err)
 		} else {
-			log.Warn("Get dns response failed: ", err)
+			log.Debug("Get dns response failed: ", err)
 		}
 		return
 	}
