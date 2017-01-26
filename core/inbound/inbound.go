@@ -1,15 +1,16 @@
 package inbound
 
 import (
+	"net"
+	"os"
+	"reflect"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/miekg/dns"
 	"github.com/holyshawn/overture/core/config"
 	"github.com/holyshawn/overture/core/switcher"
 	"github.com/holyshawn/overture/core/outbound"
 	"github.com/holyshawn/overture/core/common"
-	log "github.com/Sirupsen/logrus"
-	"github.com/miekg/dns"
-	"net"
-	"os"
-	"reflect"
 )
 
 func InitServer(addr string) {
@@ -34,10 +35,10 @@ func InitServer(addr string) {
 	}
 }
 
-func handleRequest(writer dns.ResponseWriter, question_message *dns.Msg) {
+func handleRequest(w dns.ResponseWriter, q *dns.Msg) {
 
-	remote_ip, _, _ := net.SplitHostPort(writer.RemoteAddr().String())
-	o := outbound.NewOutbound(question_message, remote_ip, new(config.DNSUpstream))
+	inboundIP, _, _ := net.SplitHostPort(w.RemoteAddr().String())
+	o := outbound.NewOutbound(q, inboundIP, new(config.DNSUpstream))
 	s := switcher.NewSwitcher(o)
 	s.ChooseNameSever()
 
@@ -45,12 +46,12 @@ func handleRequest(writer dns.ResponseWriter, question_message *dns.Msg) {
 			log.Debug("Get dns response failed: ", err)
 			return
 		}
-		if reflect.DeepEqual(o.DomainNameServer, config.Config.PrimaryDNSServer) {
+		if reflect.DeepEqual(o.DNSUpstream, config.Config.PrimaryDNSServer) {
 			s.HandleResponseFromPrimaryDNS()
 		} else {
 			log.Debug("Finally use alternative DNS")
 		}
 		o.HandleMinimumTTL()
 		common.LogAnswer(o.ResponseMessage)
-		writer.WriteMsg(o.ResponseMessage)
+		w.WriteMsg(o.ResponseMessage)
 	}

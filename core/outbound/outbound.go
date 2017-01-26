@@ -16,7 +16,7 @@ type Outbound struct {
 	ResponseMessage        *dns.Msg
 	QuestionMessage        *dns.Msg
 	InboundIP              string
-	DomainNameServer       *config.DNSUpstream
+	DNSUpstream            *config.DNSUpstream
 	EDNSClientSubnetPolicy string
 	EDNSClientSubnetIP     string
 	ExternalIP             string
@@ -29,7 +29,7 @@ func NewOutbound(q *dns.Msg, inboundIP string, d *config.DNSUpstream) *Outbound 
 		ResponseMessage: new(dns.Msg),
 		QuestionMessage: q,
 		InboundIP: inboundIP,
-		DomainNameServer: d,
+		DNSUpstream: d,
 		EDNSClientSubnetPolicy: config.Config.EDNSClientSubnetPolicy,
 		EDNSClientSubnetIP: config.Config.EDNSClientSubnetIP,
 		ExternalIP: config.Config.ExternalIP,
@@ -39,13 +39,13 @@ func NewOutbound(q *dns.Msg, inboundIP string, d *config.DNSUpstream) *Outbound 
 
 func (o *Outbound) ExchangeFromRemote() error {
 
-	if reflect.DeepEqual(o.DomainNameServer, config.Config.PrimaryDNSServer) {
+	if reflect.DeepEqual(o.DNSUpstream, config.Config.PrimaryDNSServer) {
 		o.HandleEDNSsClientSubnet()
 	}
 	c := new(dns.Client)
-	c.Net = o.DomainNameServer.Protocol
+	c.Net = o.DNSUpstream.Protocol
 	c.Timeout = time.Duration(c.Timeout) * time.Second
-	temp, _, err := c.Exchange(o.QuestionMessage, o.DomainNameServer.Address)
+	temp, _, err := c.Exchange(o.QuestionMessage, o.DNSUpstream.Address)
 	if err != nil {
 		if err == dns.ErrTruncated {
 			log.Warn("Maybe your primary dns server does not support edns client subnet")
