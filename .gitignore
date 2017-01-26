@@ -31,13 +31,8 @@ _testmain.go
 # external packages folder
 vendor/
 
-main
 config.json
-config.test.json
 .idea/
-publish.sh
 .DS_Store
-release/
-push.sh
 *.txt
 overture-*
