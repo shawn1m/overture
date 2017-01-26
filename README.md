@@ -76,7 +76,7 @@ Tips:
     + GoogleDNS 8.8.8.8:53 \[2001:4860:4860::8888\]:53
 + Protocol: "tcp" or "udp".
 + RedirectIPv6Record: Redirect IPv6 DNS query to alternative dns.
-+ Path: For windows user, please use path like "C:\\\xx\\\xx.txt".
++ Path: For windows user, if you want to use absolute path, please use like this: "C:\\\xx\\\xx.txt".
 + DomainBase64Decode: Could be empty field.
 + MinimumTTL: Set the minimum TTL value (second) in order to improve cache, use -1 to disable.
 + EDNSClientSubnetPolicy: Improve DNS accuracy, only works for primary dns. [RFC7871](https://tools.ietf.org/html/rfc7871)
@@ -98,7 +98,7 @@ Tips:
 + @17mon: the author of the [china_ip_list](https://github.com/17mon/china_ip_list)
 + @gfwlist: the author of the [gfwlist](https://github.com/gfwlist/gfwlist)
 
-+ Pull requests: @V-E-O
++ Pull requests: @V-E-O, @sh1r0
 
 ## License
 

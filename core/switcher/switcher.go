@@ -34,7 +34,7 @@ func (s *Switcher) ChooseNameSever() {
 	qn := s.outbound.QuestionMessage.Question[0].Name[:len(s.outbound.QuestionMessage.Question[0].Name)-1]
 
 	if common.IsQuestionInIPv6(s.outbound.QuestionMessage) && s.redirectIPv6Record {
-		s.outbound.DomainNameServer = config.Config.AlternativeDNSServer
+		s.outbound.DNSUpstream = config.Config.AlternativeDNSServer
 		return
 	}
 
@@ -42,21 +42,21 @@ func (s *Switcher) ChooseNameSever() {
 
 		if qn == d || strings.HasSuffix(qn, "."+ d) {
 			log.Debug("Matched: Custom domain " + qn + " " + d)
-			s.outbound.DomainNameServer = config.Config.AlternativeDNSServer
+			s.outbound.DNSUpstream = config.Config.AlternativeDNSServer
 			return
 		}
 	}
 
 	log.Debug("Domain match fail, try to use primary DNS")
 
-	s.outbound.DomainNameServer = config.Config.PrimaryDNSServer
+	s.outbound.DNSUpstream = config.Config.PrimaryDNSServer
 }
 
 func (s *Switcher) HandleResponseFromPrimaryDNS() {
 
 	if len(s.outbound.ResponseMessage.Answer) == 0 {
 		log.Debug("Primary DNS answer is empty, finally use alternative DNS")
-		s.outbound.DomainNameServer = config.Config.AlternativeDNSServer
+		s.outbound.DNSUpstream = config.Config.AlternativeDNSServer
 		err := s.outbound.ExchangeFromRemote()
 		if err != nil {
 			log.Warn("Get dns response failed: ", err)
@@ -73,7 +73,7 @@ func (s *Switcher) HandleResponseFromPrimaryDNS() {
 			break
 		}
 		log.Debug("IP network match fail, finally use alternative DNS")
-		s.outbound.DomainNameServer = config.Config.AlternativeDNSServer
+		s.outbound.DNSUpstream = config.Config.AlternativeDNSServer
 		err := s.outbound.ExchangeFromRemote()
 		if err != nil {
 			log.Warn("Get dns response failed: ", err)

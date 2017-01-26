@@ -9,8 +9,8 @@ import (
 
 func LogAnswer(m *dns.Msg) {
 
-	for _, answer := range m.Answer {
-		log.Debug("Answer: " + answer.String())
+	for _, a := range m.Answer {
+		log.Debug("Answer: " + a.String())
 	}
 }
 
