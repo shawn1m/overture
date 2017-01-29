@@ -11,8 +11,8 @@ import (
 func main() {
 
 	var (
-		configPath string
-		logVerbose bool
+		configPath      string
+		logVerbose      bool
 		processorNumber int
 	)
 

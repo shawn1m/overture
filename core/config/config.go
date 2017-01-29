@@ -2,11 +2,12 @@ package config
 
 import (
 	"encoding/json"
-	log "github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"net"
 	"os"
 
+	log "github.com/Sirupsen/logrus"
+	"github.com/holyshawn/overture/core/cache"
 )
 
 var Config *configType
@@ -28,6 +29,7 @@ type jsonType struct {
 	DomainFilePath         string `json:"DomainFilePath"`
 	DomainBase64Decode     bool   `json:"DomainBase64Decode"`
 	MinimumTTL             int    `json:"MinimumTTL"`
+	CacheSize              int    `json:"CacheSize"`
 	EDNSClientSubnetPolicy string `json:"EDNSClientSubnetPolicy"`
 	EDNSClientSubnetIP     string `json:"EDNSClientSubnetIP"`
 }
@@ -42,13 +44,15 @@ type configType struct {
 	DomainFilePath         string
 	DomainBase64Decode     bool
 	MinimumTTL             int
+	CacheSize              int
 	EDNSClientSubnetPolicy string
 	EDNSClientSubnetIP     string
 
-	DomainList             []string
-	IPNetworkList          []*net.IPNet
-	ExternalIP             string
-	ReservedIPNetworkList  []*net.IPNet
+	DomainList            []string
+	IPNetworkList         []*net.IPNet
+	ExternalIP            string
+	ReservedIPNetworkList []*net.IPNet
+	CachePool             *cache.Cache
 }
 
 func parseJson(path string) *jsonType {
@@ -97,6 +101,7 @@ func parseConfig(path string) *configType {
 		DomainFilePath:         j.DomainFilePath,
 		DomainBase64Decode:     j.DomainBase64Decode,
 		MinimumTTL:             j.MinimumTTL,
+		CacheSize:              j.CacheSize,
 		EDNSClientSubnetPolicy: j.EDNSClientSubnetPolicy,
 		EDNSClientSubnetIP:     j.EDNSClientSubnetIP,
 	}
@@ -104,13 +109,10 @@ func parseConfig(path string) *configType {
 	return c
 }
 
-func NewConfig(path string) *configType{
+func NewConfig(path string) *configType {
 
 	c := parseConfig(path)
 
 	return c
 
 }
-
-
-
