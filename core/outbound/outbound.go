@@ -4,43 +4,47 @@ import (
 	"errors"
 	"net"
 	"time"
-	"reflect"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/miekg/dns"
-	"github.com/holyshawn/overture/core/config"
 	"github.com/holyshawn/overture/core/common"
+	"github.com/holyshawn/overture/core/config"
+	"github.com/miekg/dns"
 )
 
 type Outbound struct {
 	ResponseMessage        *dns.Msg
 	QuestionMessage        *dns.Msg
-	InboundIP              string
+	inboundIP              string
 	DNSUpstream            *config.DNSUpstream
 	EDNSClientSubnetPolicy string
 	EDNSClientSubnetIP     string
-	ExternalIP             string
+	externalIP             string
 	MinimumTTL             int
+	IPUsed                 string
 }
 
-func NewOutbound(q *dns.Msg, inboundIP string, d *config.DNSUpstream) *Outbound {
+func NewOutbound(q *dns.Msg, inboundIP string) *Outbound {
 
-	return &Outbound{
-		ResponseMessage: new(dns.Msg),
-		QuestionMessage: q,
-		InboundIP: inboundIP,
-		DNSUpstream: d,
+	o := &Outbound{
+		ResponseMessage:        new(dns.Msg),
+		QuestionMessage:        q,
+		inboundIP:              inboundIP,
+		DNSUpstream:            config.Config.PrimaryDNSServer,
 		EDNSClientSubnetPolicy: config.Config.EDNSClientSubnetPolicy,
-		EDNSClientSubnetIP: config.Config.EDNSClientSubnetIP,
-		ExternalIP: config.Config.ExternalIP,
-		MinimumTTL: config.Config.MinimumTTL,
+		EDNSClientSubnetIP:     config.Config.EDNSClientSubnetIP,
+		externalIP:             config.Config.ExternalIP,
+		MinimumTTL:             config.Config.MinimumTTL,
 	}
+
+	o.IPUsed = o.getEDNSClientSubnetIP()
+
+	return o
 }
 
-func (o *Outbound) ExchangeFromRemote() error {
+func (o *Outbound) ExchangeFromRemote(isEDNSClientSubnet bool) error {
 
-	if reflect.DeepEqual(o.DNSUpstream, config.Config.PrimaryDNSServer) {
-		o.HandleEDNSsClientSubnet()
+	if  isEDNSClientSubnet {
+		o.HandleEDNSClientSubnet()
 	}
 	c := new(dns.Client)
 	c.Net = o.DNSUpstream.Protocol
@@ -74,19 +78,25 @@ func (o *Outbound) ExchangeFromLocal() bool {
 	return false
 }
 
-func (o *Outbound) HandleEDNSsClientSubnet() {
+func (o *Outbound) HandleEDNSClientSubnet() {
+
+	setEDNSClientSubnet(o.QuestionMessage, o.IPUsed)
+}
+
+func (o *Outbound) getEDNSClientSubnetIP() string{
 
 	switch o.EDNSClientSubnetPolicy {
 	case "custom":
-		setEDNSClientSubnet(o.QuestionMessage, o.EDNSClientSubnetIP)
+		return o.EDNSClientSubnetIP
 	case "auto":
-		if !common.IsIPMatchList(net.ParseIP(o.InboundIP), config.Config.ReservedIPNetworkList, false) {
-			setEDNSClientSubnet(o.QuestionMessage, o.InboundIP)
+		if !common.IsIPMatchList(net.ParseIP(o.inboundIP), config.Config.ReservedIPNetworkList, false) {
+			return o.inboundIP
 		} else {
-			setEDNSClientSubnet(o.QuestionMessage, o.ExternalIP)
+			return o.externalIP
 		}
 	case "disable":
 	}
+	return ""
 }
 
 func (o *Outbound) HandleMinimumTTL() {
@@ -98,9 +108,9 @@ func (o *Outbound) HandleMinimumTTL() {
 
 func setMinimumTTL(m *dns.Msg, ttl uint32) {
 
-	for _, answer := range m.Answer {
-		if answer.Header().Ttl < ttl {
-			answer.Header().Ttl = ttl
+	for _, a := range m.Answer {
+		if a.Header().Ttl < ttl {
+			a.Header().Ttl = ttl
 		}
 	}
 }
@@ -119,7 +129,7 @@ func setEDNSClientSubnet(m *dns.Msg, ip string) {
 	o.Hdr.Name = "."
 	o.Hdr.Rrtype = dns.TypeOPT
 
-	es := isEDNSClientSubnet(o)
+	es := IsEDNSClientSubnet(o)
 	if es == nil {
 		es = new(dns.EDNS0_SUBNET)
 		o.Option = append(o.Option, es)
@@ -136,7 +146,7 @@ func setEDNSClientSubnet(m *dns.Msg, ip string) {
 	es.SourceScope = 0
 }
 
-func isEDNSClientSubnet(o *dns.OPT) *dns.EDNS0_SUBNET {
+func IsEDNSClientSubnet(o *dns.OPT) *dns.EDNS0_SUBNET {
 	for _, s := range o.Option {
 		switch e := s.(type) {
 		case *dns.EDNS0_SUBNET:

@@ -1,22 +1,23 @@
 package core
 
 import (
+	"bufio"
+	"encoding/base64"
 	"io/ioutil"
-	"regexp"
-	"time"
 	"net"
 	"net/http"
-	"encoding/base64"
-	"strings"
 	"os"
+	"regexp"
 	"strconv"
-	"bufio"
+	"strings"
+	"time"
 
-	"github.com/miekg/dns"
 	log "github.com/Sirupsen/logrus"
 	"github.com/holyshawn/overture/core/config"
 	"github.com/holyshawn/overture/core/inbound"
 	"github.com/holyshawn/overture/core/outbound"
+	"github.com/holyshawn/overture/core/cache"
+	"github.com/miekg/dns"
 )
 
 func Init(config_file_path string) {
@@ -39,6 +40,8 @@ func Init(config_file_path string) {
 	if config.Config.MinimumTTL > 0 {
 		log.Info("Minimum TTL is " + strconv.Itoa(config.Config.MinimumTTL))
 	}
+
+	config.Config.CachePool = cache.New(config.Config.CacheSize)
 
 	inbound.InitServer(config.Config.BindAddress)
 }
@@ -123,9 +126,9 @@ func getExternalIP() string {
 	host := "ip.cn"
 	q := new(dns.Msg)
 	q.SetQuestion(host+".", dns.TypeA)
-	o := outbound.NewOutbound(q, "", config.Config.PrimaryDNSServer)
-	err := o.ExchangeFromRemote()
-	if err != nil{
+	o := outbound.NewOutbound(q, "")
+	err := o.ExchangeFromRemote(true)
+	if err != nil || len(o.ResponseMessage.Answer) == 0{
 		log.Error("Get external IP address failed, please check your primary DNS ", err)
 		return ""
 	}
