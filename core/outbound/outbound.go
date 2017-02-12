@@ -12,16 +12,18 @@ import (
 )
 
 type Outbound struct {
+
 	ResponseMessage        *dns.Msg
 	QuestionMessage        *dns.Msg
-	inboundIP              string
-	DNSUpstream            *config.DNSUpstream
-	EDNSClientSubnetPolicy string
-	EDNSClientSubnetIP     string
-	externalIP             string
+
+	DNSUpstream            []config.DNSUpstream
 	MinimumTTL             int
 	IPUsed                 string
+
+	inboundIP              string
+	externalIP             string
 }
+
 
 func NewOutbound(q *dns.Msg, inboundIP string) *Outbound {
 
@@ -29,9 +31,7 @@ func NewOutbound(q *dns.Msg, inboundIP string) *Outbound {
 		ResponseMessage:        new(dns.Msg),
 		QuestionMessage:        q,
 		inboundIP:              inboundIP,
-		DNSUpstream:            config.Config.PrimaryDNSServer,
-		EDNSClientSubnetPolicy: config.Config.EDNSClientSubnetPolicy,
-		EDNSClientSubnetIP:     config.Config.EDNSClientSubnetIP,
+		DNSUpstream:            config.Config.PrimaryDNS,
 		externalIP:             config.Config.ExternalIP,
 		MinimumTTL:             config.Config.MinimumTTL,
 	}
@@ -43,24 +43,34 @@ func NewOutbound(q *dns.Msg, inboundIP string) *Outbound {
 
 func (o *Outbound) ExchangeFromRemote(isEDNSClientSubnet bool) error {
 
-	if  isEDNSClientSubnet {
-		o.HandleEDNSClientSubnet()
-	}
-	c := new(dns.Client)
-	c.Net = o.DNSUpstream.Protocol
-	c.Timeout = time.Duration(c.Timeout) * time.Second
-	temp, _, err := c.Exchange(o.QuestionMessage, o.DNSUpstream.Address)
-	if err != nil {
-		if err == dns.ErrTruncated {
-			log.Warn("Maybe your primary dns server does not support edns client subnet")
+	var m *dns.Msg
+
+	for _, u := range o.DNSUpstream{
+		if isEDNSClientSubnet {
+			o.HandleEDNSClientSubnet()
 		}
+		c := new(dns.Client)
+		c.Net = u.Protocol
+		c.Timeout = time.Duration(u.Timeout) * time.Second
+		temp, _, err := c.Exchange(o.QuestionMessage, u.Address)
+		if err != nil {
+			if err == dns.ErrTruncated {
+				log.Warn("Maybe your primary dns server does not support edns client subnet")
+			}
+		}
+		if temp == nil {
+			err = errors.New("Response message is nil, maybe timeout")
+		}
+		m = temp
+		if m != nil{
+			break
+		}
+	}
+	if m == nil {
+		err := errors.New("Response message is nil, maybe timeout")
 		return err
 	}
-	if temp == nil {
-		err = errors.New("Response message is nil, maybe timeout")
-		return err
-	}
-	o.ResponseMessage = temp
+	o.ResponseMessage = m
 	return nil
 }
 
@@ -83,11 +93,11 @@ func (o *Outbound) HandleEDNSClientSubnet() {
 	setEDNSClientSubnet(o.QuestionMessage, o.IPUsed)
 }
 
-func (o *Outbound) getEDNSClientSubnetIP() string{
+func (o *Outbound) getEDNSClientSubnetIP() string {
 
-	switch o.EDNSClientSubnetPolicy {
+	switch o.DNSUpstream[0].EDNSClientSubnet.Policy {
 	case "custom":
-		return o.EDNSClientSubnetIP
+		return o.DNSUpstream[0].EDNSClientSubnet.CustomIP
 	case "auto":
 		if !common.IsIPMatchList(net.ParseIP(o.inboundIP), config.Config.ReservedIPNetworkList, false) {
 			return o.inboundIP

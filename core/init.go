@@ -13,37 +13,49 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/holyshawn/overture/core/cache"
 	"github.com/holyshawn/overture/core/config"
 	"github.com/holyshawn/overture/core/inbound"
 	"github.com/holyshawn/overture/core/outbound"
-	"github.com/holyshawn/overture/core/cache"
 	"github.com/miekg/dns"
 )
 
-func Init(config_file_path string) {
+func Init(configFilePath string) {
 
-	config.Config = config.NewConfig(config_file_path)
+	initConfig(configFilePath)
+
+	inbound.InitServer(config.Config.BindAddress)
+}
+
+func initConfig(configFilePath string){
+
+	config.Config = config.NewConfig(configFilePath)
 
 	config.Config.IPNetworkList = getIPNetworkList(config.Config.IPNetworkFilePath)
 	config.Config.DomainList = getDomainList(config.Config.DomainFilePath, config.Config.DomainBase64Decode)
-	switch config.Config.EDNSClientSubnetPolicy {
-	case "auto":
-		log.Info("EDNS client subnet auto mode")
-		config.Config.ExternalIP = getExternalIP()
-		config.Config.ReservedIPNetworkList = getReservedIPNetworkList()
-	case "custom":
-		log.Info("EDNS client subnet custom mode with " + config.Config.EDNSClientSubnetIP)
-	case "disable":
-		log.Info("EDNS client subnet disabled")
-	}
+	initEDNSClientSubnet(&config.Config.PrimaryDNS[0])
+	initEDNSClientSubnet(&config.Config.AlternativeDNS[0])
+
 
 	if config.Config.MinimumTTL > 0 {
 		log.Info("Minimum TTL is " + strconv.Itoa(config.Config.MinimumTTL))
 	}
 
 	config.Config.CachePool = cache.New(config.Config.CacheSize)
+}
 
-	inbound.InitServer(config.Config.BindAddress)
+func initEDNSClientSubnet(u *config.DNSUpstream){
+
+	switch u.EDNSClientSubnet.Policy {
+	case "auto":
+		log.Info("EDNS client subnet auto mode")
+		config.Config.ExternalIP = getExternalIP()
+		config.Config.ReservedIPNetworkList = getReservedIPNetworkList()
+	case "custom":
+		log.Info("EDNS client subnet custom mode with " + config.Config.PrimaryDNS[0].EDNSClientSubnet.CustomIP)
+	case "disable":
+		log.Info("EDNS client subnet disabled")
+	}
 }
 
 func getDomainList(path string, isBase64 bool) []string {
@@ -119,16 +131,15 @@ func getReservedIPNetworkList() []*net.IPNet {
 
 func getExternalIP() string {
 
-	timeout := time.Duration(config.Config.Timeout) * time.Second * 2
 	c := http.Client{
-		Timeout: timeout,
+		Timeout: time.Duration(config.Config.PrimaryDNS[0].Timeout) * time.Second * 2,
 	}
 	host := "ip.cn"
 	q := new(dns.Msg)
 	q.SetQuestion(host+".", dns.TypeA)
 	o := outbound.NewOutbound(q, "")
 	err := o.ExchangeFromRemote(true)
-	if err != nil || len(o.ResponseMessage.Answer) == 0{
+	if err != nil || len(o.ResponseMessage.Answer) == 0 {
 		log.Error("Get external IP address failed, please check your primary DNS ", err)
 		return ""
 	}

@@ -14,8 +14,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/miekg/dns"
 	log "github.com/Sirupsen/logrus"
+	"github.com/miekg/dns"
 )
 
 // Elem hold an answer and additional section that returned from the cache.
@@ -70,7 +70,7 @@ func (c *Cache) EvictRandom() {
 // InsertMessage inserts a message in the Cache. We will cache it for ttl seconds, which
 // should be a small (60...300) integer.
 func (c *Cache) InsertMessage(s string, m *dns.Msg) {
-	if c.capacity <= 0 || len(m.Answer) == 0{
+	if c.capacity <= 0 || len(m.Answer) == 0 {
 		return
 	}
 
@@ -79,26 +79,7 @@ func (c *Cache) InsertMessage(s string, m *dns.Msg) {
 	if _, ok := c.table[s]; !ok {
 		c.table[s] = &elem{time.Now().UTC().Add(ttl), m.Copy()}
 	}
-	log.Debug("Cache message as " + s)
-	c.EvictRandom()
-	c.Unlock()
-}
-
-// InsertSignature inserts a signature, the expiration time is used as the cache ttl.
-func (c *Cache) InsertSignature(s string, sig *dns.RRSIG) {
-	if c.capacity <= 0 {
-		return
-	}
-	c.Lock()
-
-	if _, ok := c.table[s]; !ok {
-		m := ((int64(sig.Expiration) - time.Now().Unix()) / (1 << 31)) - 1
-		if m < 0 {
-			m = 0
-		}
-		t := time.Unix(int64(sig.Expiration)-(m*(1<<31)), 0).UTC()
-		c.table[s] = &elem{t, &dns.Msg{Answer: []dns.RR{dns.Copy(sig)}}}
-	}
+	log.Debug("Cache: " + s)
 	c.EvictRandom()
 	c.Unlock()
 }
@@ -128,35 +109,4 @@ func Key(q dns.Question, ednsIP string) string {
 	return string(h.Sum(i))
 }
 
-// Key uses the name, type and rdata, which is serialized and then hashed as the key for the lookup.
-func KeyRRset(rrs []dns.RR) string {
-	h := sha1.New()
-	i := []byte(rrs[0].Header().Name)
-	i = append(i, packUint16(rrs[0].Header().Rrtype)...)
-	for _, r := range rrs {
-		switch t := r.(type) { // we only do a few type, serialize these manually
-		case *dns.SOA:
-			// We only fiddle with the serial so store that.
-			i = append(i, packUint32(t.Serial)...)
-		case *dns.SRV:
-			i = append(i, packUint16(t.Priority)...)
-			i = append(i, packUint16(t.Weight)...)
-			i = append(i, packUint16(t.Weight)...)
-			i = append(i, []byte(t.Target)...)
-		case *dns.A:
-			i = append(i, []byte(t.A)...)
-		case *dns.AAAA:
-			i = append(i, []byte(t.AAAA)...)
-		case *dns.NSEC3:
-			i = append(i, []byte(t.NextDomain)...)
-		// Bitmap does not differentiate in SkyDNS.
-		case *dns.DNSKEY:
-		case *dns.NS:
-		case *dns.TXT:
-		}
-	}
-	return string(h.Sum(i))
-}
-
 func packUint16(i uint16) []byte { return []byte{byte(i >> 8), byte(i)} }
-func packUint32(i uint32) []byte { return []byte{byte(i >> 24), byte(i >> 16), byte(i >> 8), byte(i)} }
