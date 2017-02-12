@@ -7,6 +7,7 @@ package cache
 import (
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
 )
 
@@ -22,6 +23,7 @@ func (c *Cache) Hit(q dns.Question, ip string, msgid uint16) *dns.Msg {
 			m.Compress = true
 			// Even if something ended up with the TC bit *in* the cache, set it to off
 			m.Truncated = false
+			log.Debug("Hit: " + key)
 			return m
 		}
 		// Expired! /o\

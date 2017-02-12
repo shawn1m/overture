@@ -12,6 +12,7 @@ import (
 )
 
 type Switcher struct {
+
 	outbound           *outbound.Outbound
 	ipNetworkList      []*net.IPNet
 	domainList         []string
@@ -19,6 +20,7 @@ type Switcher struct {
 }
 
 func NewSwitcher(outbound *outbound.Outbound) *Switcher {
+
 	return &Switcher{
 		outbound:           outbound,
 		ipNetworkList:      config.Config.IPNetworkList,
@@ -34,7 +36,7 @@ func (s *Switcher) ChooseDNS() bool {
 	qn := s.outbound.QuestionMessage.Question[0].Name[:len(s.outbound.QuestionMessage.Question[0].Name)-1]
 
 	if common.IsQuestionInIPv6(s.outbound.QuestionMessage) && s.redirectIPv6Record {
-		s.outbound.DNSUpstream = config.Config.AlternativeDNSServer
+		s.outbound.DNSUpstream = config.Config.AlternativeDNS
 		return true
 	}
 
@@ -42,7 +44,7 @@ func (s *Switcher) ChooseDNS() bool {
 
 		if qn == d || strings.HasSuffix(qn, "."+d) {
 			log.Debug("Matched: Custom domain " + qn + " " + d)
-			s.outbound.DNSUpstream = config.Config.AlternativeDNSServer
+			s.outbound.DNSUpstream = config.Config.AlternativeDNS
 			return true
 		}
 	}
@@ -57,7 +59,7 @@ func (s *Switcher) HandleResponseFromPrimaryDNS() {
 
 	if len(s.outbound.ResponseMessage.Answer) == 0 {
 		log.Debug("Primary DNS answer is empty, finally use alternative DNS")
-		s.outbound.DNSUpstream = config.Config.AlternativeDNSServer
+		s.outbound.DNSUpstream = config.Config.AlternativeDNS
 		err := s.outbound.ExchangeFromRemote(false)
 		if err != nil {
 			log.Warn("Get dns response failed: ", err)
@@ -74,7 +76,7 @@ func (s *Switcher) HandleResponseFromPrimaryDNS() {
 			break
 		}
 		log.Debug("IP network match fail, finally use alternative DNS")
-		s.outbound.DNSUpstream = config.Config.AlternativeDNSServer
+		s.outbound.DNSUpstream = config.Config.AlternativeDNS
 		err := s.outbound.ExchangeFromRemote(false)
 		if err != nil {
 			log.Warn("Get dns response failed: ", err)
