@@ -17,6 +17,7 @@ import (
 	"github.com/holyshawn/overture/core/config"
 	"github.com/holyshawn/overture/core/inbound"
 	"github.com/holyshawn/overture/core/outbound"
+	"github.com/janeczku/go-dnsmasq/hostsfile"
 	"github.com/miekg/dns"
 )
 
@@ -27,12 +28,12 @@ func Init(configFilePath string) {
 	inbound.InitServer(config.Config.BindAddress)
 }
 
-func initConfig(configFilePath string) {
+func initConfig(configFile string) {
 
-	config.Config = config.NewConfig(configFilePath)
+	config.Config = config.NewConfig(configFile)
 
-	config.Config.IPNetworkList = getIPNetworkList(config.Config.IPNetworkFilePath)
-	config.Config.DomainList = getDomainList(config.Config.DomainFilePath, config.Config.DomainBase64Decode)
+	config.Config.IPNetworkList = getIPNetworkList(config.Config.IPNetworkFile)
+	config.Config.DomainList = getDomainList(config.Config.DomainFile, config.Config.DomainBase64Decode)
 
 	if config.Config.MinimumTTL > 0 {
 		log.Info("Minimum TTL is " + strconv.Itoa(config.Config.MinimumTTL))
@@ -40,7 +41,14 @@ func initConfig(configFilePath string) {
 
 	config.Config.CachePool = cache.New(config.Config.CacheSize)
 
+	err := new(error)
+	config.Config.Hosts, *err = hosts.NewHostsfile(config.Config.HostsFile, &hosts.Config{0, false})
+	if err != nil {
+		log.Info("Load hosts file failed")
+	}
+
 	initEDNSClientSubnet()
+
 }
 
 func initEDNSClientSubnet() {

@@ -42,7 +42,12 @@ func NewOutbound(q *dns.Msg, d *config.DNSUpstream, inboundIP string) *Outbound 
 
 func (o *Outbound) ExchangeFromRemote(IsCache bool) {
 
-	m := config.Config.CachePool.Hit(cache.Key(o.QuestionMessage.Question[0], o.EDNSClientSubnetIP) , o.QuestionMessage.Id)
+	if o.ExchangeFromLocal() {
+		o.LogAnswer()
+		return
+	}
+
+	m := config.Config.CachePool.Hit(cache.Key(o.QuestionMessage.Question[0], o.EDNSClientSubnetIP), o.QuestionMessage.Id)
 	if m != nil {
 		log.Debug(o.DNSUpstream.Name + " Hit: " + cache.Key(o.QuestionMessage.Question[0], o.EDNSClientSubnetIP))
 		o.ResponseMessage = m
@@ -86,7 +91,7 @@ func (o *Outbound) ExchangeFromRemote(IsCache bool) {
 	o.LogAnswer()
 }
 
-func (o *Outbound)LogAnswer() {
+func (o *Outbound) LogAnswer() {
 
 	for _, a := range o.ResponseMessage.Answer {
 		log.Debug(o.DNSUpstream.Name + " Answer: " + a.String())
@@ -95,15 +100,33 @@ func (o *Outbound)LogAnswer() {
 
 func (o *Outbound) ExchangeFromLocal() bool {
 
-	raw_ip := o.QuestionMessage.Question[0].Name
-	ip := net.ParseIP(raw_ip[:len(raw_ip)-1])
+	raw_name := o.QuestionMessage.Question[0].Name
+	name := raw_name[:len(raw_name)-1]
+
+	if config.Config.Hosts != nil {
+		ipl, err := config.Config.Hosts.FindHosts(name)
+
+		if err == nil && len(ipl) > 0 {
+			for _, ip := range ipl {
+				a, _ := dns.NewRR(raw_name + " IN A " + ip.String())
+				o.ResponseMessage = new(dns.Msg)
+				o.ResponseMessage.Answer = append(o.ResponseMessage.Answer, a)
+			}
+			o.ResponseMessage.SetReply(o.QuestionMessage)
+			o.ResponseMessage.RecursionAvailable = true
+			return true
+		}
+	}
+
+	ip := net.ParseIP(name)
 	if ip.To4() != nil {
-		a, _ := dns.NewRR(raw_ip + " IN A " + ip.String())
+		a, _ := dns.NewRR(raw_name + " IN A " + ip.String())
 		o.ResponseMessage.Answer = append(o.ResponseMessage.Answer, a)
 		o.ResponseMessage.SetReply(o.QuestionMessage)
 		o.ResponseMessage.RecursionAvailable = true
 		return true
 	}
+
 	return false
 }
 

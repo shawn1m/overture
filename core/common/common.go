@@ -7,7 +7,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-
 func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool) bool {
 
 	for _, ip_net := range ipnl {

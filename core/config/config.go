@@ -8,6 +8,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/holyshawn/overture/core/cache"
+	"github.com/janeczku/go-dnsmasq/hostsfile"
 )
 
 var Config *configType
@@ -26,18 +27,20 @@ type DNSUpstream struct {
 }
 
 type configType struct {
-	BindAddress        string         `json:"BindAddress"`
-	PrimaryDNS         []*DNSUpstream `json:"PrimaryDNS"`
-	AlternativeDNS     []*DNSUpstream `json:"AlternativeDNS"`
-	RedirectIPv6Record bool           `json:"RedirectIPv6Record"`
-	IPNetworkFilePath  string         `json:"IPNetworkFilePath"`
-	DomainFilePath     string         `json:"DomainFilePath"`
-	DomainBase64Decode bool           `json:"DomainBase64Decode"`
-	MinimumTTL         int            `json:"MinimumTTL"`
-	CacheSize          int            `json:"CacheSize"`
+	BindAddress        string `json:"BindAddress"`
+	PrimaryDNS         []*DNSUpstream
+	AlternativeDNS     []*DNSUpstream
+	RedirectIPv6Record bool
+	IPNetworkFile      string
+	DomainFile         string
+	DomainBase64Decode bool
+	HostsFile          string
+	MinimumTTL         int
+	CacheSize          int
 
 	DomainList            []string
 	IPNetworkList         []*net.IPNet
+	Hosts                 *hosts.Hostsfile
 	ExternalIP            string
 	ReservedIPNetworkList []*net.IPNet
 	CachePool             *cache.Cache
