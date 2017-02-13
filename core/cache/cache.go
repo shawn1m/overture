@@ -79,7 +79,7 @@ func (c *Cache) InsertMessage(s string, m *dns.Msg) {
 	if _, ok := c.table[s]; !ok {
 		c.table[s] = &elem{time.Now().UTC().Add(ttl), m.Copy()}
 	}
-	log.Debug("Cache: " + s)
+	log.Debug("Cached: " + s)
 	c.EvictRandom()
 	c.Unlock()
 }

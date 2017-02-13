@@ -7,14 +7,12 @@ package cache
 import (
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
 )
 
 // Hit returns a dns message from the cache. If the message's TTL is expired nil
 // is returned and the message is removed from the cache.
-func (c *Cache) Hit(q dns.Question, ip string, msgid uint16) *dns.Msg {
-	key := Key(q, ip)
+func (c *Cache) Hit(key string, msgid uint16) *dns.Msg {
 	m, exp, hit := c.Search(key)
 	if hit {
 		// Cache hit! \o/
@@ -23,7 +21,6 @@ func (c *Cache) Hit(q dns.Question, ip string, msgid uint16) *dns.Msg {
 			m.Compress = true
 			// Even if something ended up with the TC bit *in* the cache, set it to off
 			m.Truncated = false
-			log.Debug("Hit: " + key)
 			return m
 		}
 		// Expired! /o\

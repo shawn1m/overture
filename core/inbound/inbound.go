@@ -5,14 +5,10 @@ import (
 	"os"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/holyshawn/overture/core/cache"
-	"github.com/holyshawn/overture/core/common"
+	"github.com/holyshawn/overture/core/config"
 	"github.com/holyshawn/overture/core/outbound"
 	"github.com/holyshawn/overture/core/switcher"
 	"github.com/miekg/dns"
-
-	"github.com/holyshawn/overture/core/config"
-	"reflect"
 )
 
 func InitServer(addr string) {
@@ -40,35 +36,19 @@ func InitServer(addr string) {
 func handleRequest(w dns.ResponseWriter, q *dns.Msg) {
 
 	inboundIP, _, _ := net.SplitHostPort(w.RemoteAddr().String())
-	o := outbound.NewOutbound(q, inboundIP)
-	m := config.Config.CachePool.Hit(q.Question[0], o.IPUsed, q.Id)
-	if m != nil {
-		w.WriteMsg(m)
-		return
-	} else {
-		m = config.Config.CachePool.Hit(q.Question[0], "", q.Id)
-	}
-	if m != nil {
-		w.WriteMsg(m)
-		return
-	}
-	s := switcher.NewSwitcher(o)
-	isAlternative := s.ChooseDNS()
+	ol := outbound.NewOutboundList(q, config.Config.PrimaryDNS, inboundIP)
 
-	if err := o.ExchangeFromRemote(!isAlternative); err != nil {
-		log.Debug("Get dns response failed: ", err)
-		return
-	}
-	if !isAlternative {
+	s := switcher.NewSwitcher(ol)
+
+	func() {
+		if s.ChooseDNS() {
+			return
+		}
+
 		s.HandleResponseFromPrimaryDNS()
-	} else {
-		log.Debug("Finally use alternative DNS")
+	}()
+
+	if ol.ResponseMessage != nil {
+		w.WriteMsg(ol.ResponseMessage)
 	}
-	o.HandleMinimumTTL()
-	common.LogAnswer(o.ResponseMessage)
-	w.WriteMsg(o.ResponseMessage)
-	if reflect.DeepEqual(o.DNSUpstream, config.Config.AlternativeDNS) {
-		o.IPUsed = ""
-	}
-	config.Config.CachePool.InsertMessage(cache.Key(q.Question[0], o.IPUsed), o.ResponseMessage)
 }

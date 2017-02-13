@@ -1,77 +1,96 @@
 package outbound
 
 import (
-	"errors"
 	"net"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/holyshawn/overture/core/cache"
 	"github.com/holyshawn/overture/core/common"
 	"github.com/holyshawn/overture/core/config"
 	"github.com/miekg/dns"
 )
 
 type Outbound struct {
+	ResponseMessage *dns.Msg
+	QuestionMessage *dns.Msg
 
-	ResponseMessage        *dns.Msg
-	QuestionMessage        *dns.Msg
+	DNSUpstream        *config.DNSUpstream
+	MinimumTTL         int
+	EDNSClientSubnetIP string
 
-	DNSUpstream            []config.DNSUpstream
-	MinimumTTL             int
-	IPUsed                 string
-
-	inboundIP              string
-	externalIP             string
+	inboundIP  string
+	externalIP string
 }
 
-
-func NewOutbound(q *dns.Msg, inboundIP string) *Outbound {
+func NewOutbound(q *dns.Msg, d *config.DNSUpstream, inboundIP string) *Outbound {
 
 	o := &Outbound{
-		ResponseMessage:        new(dns.Msg),
-		QuestionMessage:        q,
-		inboundIP:              inboundIP,
-		DNSUpstream:            config.Config.PrimaryDNS,
-		externalIP:             config.Config.ExternalIP,
-		MinimumTTL:             config.Config.MinimumTTL,
+		QuestionMessage: q,
+
+		DNSUpstream: d,
+		MinimumTTL:  config.Config.MinimumTTL,
+
+		inboundIP:  inboundIP,
+		externalIP: config.Config.ExternalIP,
 	}
 
-	o.IPUsed = o.getEDNSClientSubnetIP()
+	o.EDNSClientSubnetIP = o.getEDNSClientSubnetIP()
 
 	return o
 }
 
-func (o *Outbound) ExchangeFromRemote(isEDNSClientSubnet bool) error {
+func (o *Outbound) ExchangeFromRemote(IsCache bool) {
 
-	var m *dns.Msg
+	m := config.Config.CachePool.Hit(cache.Key(o.QuestionMessage.Question[0], o.EDNSClientSubnetIP) , o.QuestionMessage.Id)
+	if m != nil {
+		log.Debug(o.DNSUpstream.Name + " Hit: " + cache.Key(o.QuestionMessage.Question[0], o.EDNSClientSubnetIP))
+		o.ResponseMessage = m
+		o.LogAnswer()
+		return
+	}
+	m = config.Config.CachePool.Hit(cache.Key(o.QuestionMessage.Question[0], ""), o.QuestionMessage.Id)
+	if m != nil {
+		o.ResponseMessage = m
+		log.Debug(o.DNSUpstream.Name + " Hit: " + cache.Key(o.QuestionMessage.Question[0], ""))
+		o.LogAnswer()
+		return
+	}
 
-	for _, u := range o.DNSUpstream{
-		if isEDNSClientSubnet {
-			o.HandleEDNSClientSubnet()
-		}
-		c := new(dns.Client)
-		c.Net = u.Protocol
-		c.Timeout = time.Duration(u.Timeout) * time.Second
-		temp, _, err := c.Exchange(o.QuestionMessage, u.Address)
-		if err != nil {
-			if err == dns.ErrTruncated {
-				log.Warn("Maybe your primary dns server does not support edns client subnet")
-			}
-		}
-		if temp == nil {
-			err = errors.New("Response message is nil, maybe timeout")
-		}
-		m = temp
-		if m != nil{
-			break
+	o.HandleEDNSClientSubnet()
+
+	c := new(dns.Client)
+	c.Net = o.DNSUpstream.Protocol
+	c.Timeout = time.Duration(o.DNSUpstream.Timeout) * time.Second
+
+	temp, _, err := c.Exchange(o.QuestionMessage, o.DNSUpstream.Address)
+	if err != nil {
+		if err == dns.ErrTruncated {
+			log.Warn("Maybe your primary dns server does not support edns client subnet")
+			return
 		}
 	}
-	if m == nil {
-		err := errors.New("Response message is nil, maybe timeout")
-		return err
+	if temp == nil {
+		log.Debug(o.DNSUpstream.Name + " Fail: Response message is nil, maybe timeout")
+		return
 	}
-	o.ResponseMessage = m
-	return nil
+
+	o.ResponseMessage = temp
+
+	o.HandleMinimumTTL()
+
+	if IsCache {
+		config.Config.CachePool.InsertMessage(cache.Key(o.QuestionMessage.Question[0], o.EDNSClientSubnetIP), o.ResponseMessage)
+	}
+
+	o.LogAnswer()
+}
+
+func (o *Outbound)LogAnswer() {
+
+	for _, a := range o.ResponseMessage.Answer {
+		log.Debug(o.DNSUpstream.Name + " Answer: " + a.String())
+	}
 }
 
 func (o *Outbound) ExchangeFromLocal() bool {
@@ -90,14 +109,14 @@ func (o *Outbound) ExchangeFromLocal() bool {
 
 func (o *Outbound) HandleEDNSClientSubnet() {
 
-	setEDNSClientSubnet(o.QuestionMessage, o.IPUsed)
+	setEDNSClientSubnet(o.QuestionMessage, o.EDNSClientSubnetIP)
 }
 
 func (o *Outbound) getEDNSClientSubnetIP() string {
 
-	switch o.DNSUpstream[0].EDNSClientSubnet.Policy {
+	switch o.DNSUpstream.EDNSClientSubnet.Policy {
 	case "custom":
-		return o.DNSUpstream[0].EDNSClientSubnet.CustomIP
+		return o.DNSUpstream.EDNSClientSubnet.CustomIP
 	case "auto":
 		if !common.IsIPMatchList(net.ParseIP(o.inboundIP), config.Config.ReservedIPNetworkList, false) {
 			return o.inboundIP
@@ -157,6 +176,7 @@ func setEDNSClientSubnet(m *dns.Msg, ip string) {
 }
 
 func IsEDNSClientSubnet(o *dns.OPT) *dns.EDNS0_SUBNET {
+
 	for _, s := range o.Option {
 		switch e := s.(type) {
 		case *dns.EDNS0_SUBNET:

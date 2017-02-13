@@ -27,35 +27,26 @@ func Init(configFilePath string) {
 	inbound.InitServer(config.Config.BindAddress)
 }
 
-func initConfig(configFilePath string){
+func initConfig(configFilePath string) {
 
 	config.Config = config.NewConfig(configFilePath)
 
 	config.Config.IPNetworkList = getIPNetworkList(config.Config.IPNetworkFilePath)
 	config.Config.DomainList = getDomainList(config.Config.DomainFilePath, config.Config.DomainBase64Decode)
-	initEDNSClientSubnet(&config.Config.PrimaryDNS[0])
-	initEDNSClientSubnet(&config.Config.AlternativeDNS[0])
-
 
 	if config.Config.MinimumTTL > 0 {
 		log.Info("Minimum TTL is " + strconv.Itoa(config.Config.MinimumTTL))
 	}
 
 	config.Config.CachePool = cache.New(config.Config.CacheSize)
+
+	initEDNSClientSubnet()
 }
 
-func initEDNSClientSubnet(u *config.DNSUpstream){
+func initEDNSClientSubnet() {
 
-	switch u.EDNSClientSubnet.Policy {
-	case "auto":
-		log.Info("EDNS client subnet auto mode")
-		config.Config.ExternalIP = getExternalIP()
-		config.Config.ReservedIPNetworkList = getReservedIPNetworkList()
-	case "custom":
-		log.Info("EDNS client subnet custom mode with " + config.Config.PrimaryDNS[0].EDNSClientSubnet.CustomIP)
-	case "disable":
-		log.Info("EDNS client subnet disabled")
-	}
+	config.Config.ReservedIPNetworkList = getReservedIPNetworkList()
+	config.Config.ExternalIP = getExternalIP()
 }
 
 func getDomainList(path string, isBase64 bool) []string {
@@ -132,18 +123,18 @@ func getReservedIPNetworkList() []*net.IPNet {
 func getExternalIP() string {
 
 	c := http.Client{
-		Timeout: time.Duration(config.Config.PrimaryDNS[0].Timeout) * time.Second * 2,
+		Timeout: time.Duration(config.Config.PrimaryDNS[0].Timeout) * time.Second * 5,
 	}
 	host := "ip.cn"
 	q := new(dns.Msg)
 	q.SetQuestion(host+".", dns.TypeA)
-	o := outbound.NewOutbound(q, "")
-	err := o.ExchangeFromRemote(true)
-	if err != nil || len(o.ResponseMessage.Answer) == 0 {
-		log.Error("Get external IP address failed, please check your primary DNS ", err)
+	ol := outbound.NewOutboundList(q, config.Config.PrimaryDNS, "127.0.0.1")
+	ol.GetResponse(false)
+	if ol.ResponseMessage == nil || len(ol.ResponseMessage.Answer) == 0 {
+		log.Error("Get external IP address failed, please check your primary DNS")
 		return ""
 	}
-	req, err := http.NewRequest("GET", "http://"+o.ResponseMessage.Answer[0].(*dns.A).A.String(), nil)
+	req, err := http.NewRequest("GET", "http://"+ol.ResponseMessage.Answer[0].(*dns.A).A.String(), nil)
 	if err != nil {
 		log.Warn("Get external IP address failed: ", err)
 		return ""
