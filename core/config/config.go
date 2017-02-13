@@ -13,13 +13,12 @@ import (
 var Config *configType
 
 type EDNSClientSubnetType struct {
-
-	Policy string
+	Policy   string
 	CustomIP string
 }
 
 type DNSUpstream struct {
-
+	Name             string
 	Address          string
 	Protocol         string
 	Timeout          int
@@ -27,16 +26,15 @@ type DNSUpstream struct {
 }
 
 type configType struct {
-
-	BindAddress            string `json:"BindAddress"`
-	PrimaryDNS             []DNSUpstream `json:"PrimaryDNS"`
-	AlternativeDNS         []DNSUpstream `json:"AlternativeDNS"`
-	RedirectIPv6Record     bool   `json:"RedirectIPv6Record"`
-	IPNetworkFilePath      string `json:"IPNetworkFilePath"`
-	DomainFilePath         string `json:"DomainFilePath"`
-	DomainBase64Decode     bool   `json:"DomainBase64Decode"`
-	MinimumTTL             int    `json:"MinimumTTL"`
-	CacheSize              int    `json:"CacheSize"`
+	BindAddress        string         `json:"BindAddress"`
+	PrimaryDNS         []*DNSUpstream `json:"PrimaryDNS"`
+	AlternativeDNS     []*DNSUpstream `json:"AlternativeDNS"`
+	RedirectIPv6Record bool           `json:"RedirectIPv6Record"`
+	IPNetworkFilePath  string         `json:"IPNetworkFilePath"`
+	DomainFilePath     string         `json:"DomainFilePath"`
+	DomainBase64Decode bool           `json:"DomainBase64Decode"`
+	MinimumTTL         int            `json:"MinimumTTL"`
+	CacheSize          int            `json:"CacheSize"`
 
 	DomainList            []string
 	IPNetworkList         []*net.IPNet
@@ -74,8 +72,6 @@ func parseJson(path string) *configType {
 
 func NewConfig(path string) *configType {
 
-	c := parseJson(path)
-
-	return c
+	return parseJson(path)
 
 }

@@ -7,12 +7,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-func LogAnswer(m *dns.Msg) {
-
-	for _, a := range m.Answer {
-		log.Debug("Answer: " + a.String())
-	}
-}
 
 func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool) bool {
 
