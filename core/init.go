@@ -5,20 +5,16 @@ import (
 	"encoding/base64"
 	"io/ioutil"
 	"net"
-	"net/http"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/holyshawn/overture/core/cache"
 	"github.com/holyshawn/overture/core/config"
 	"github.com/holyshawn/overture/core/inbound"
-	"github.com/holyshawn/overture/core/outbound"
 	"github.com/janeczku/go-dnsmasq/hostsfile"
-	"github.com/miekg/dns"
 )
 
 func Init(configFilePath string) {
@@ -54,7 +50,6 @@ func initConfig(configFile string) {
 func initEDNSClientSubnet() {
 
 	config.Config.ReservedIPNetworkList = getReservedIPNetworkList()
-	config.Config.ExternalIP = getExternalIP()
 }
 
 func getDomainList(path string, isBase64 bool) []string {
@@ -126,44 +121,4 @@ func getReservedIPNetworkList() []*net.IPNet {
 		ipnl = append(ipnl, ip_net)
 	}
 	return ipnl
-}
-
-func getExternalIP() string {
-
-	c := http.Client{
-		Timeout: time.Duration(config.Config.PrimaryDNS[0].Timeout) * time.Second * 5,
-	}
-	host := "ip.cn"
-	q := new(dns.Msg)
-	q.SetQuestion(host+".", dns.TypeA)
-	ol := outbound.NewOutboundList(q, config.Config.PrimaryDNS, "127.0.0.1")
-	ol.GetResponse(false)
-	if ol.ResponseMessage == nil || len(ol.ResponseMessage.Answer) == 0 {
-		log.Error("Get external IP address failed, please check your primary DNS")
-		return ""
-	}
-	req, err := http.NewRequest("GET", "http://"+ol.ResponseMessage.Answer[0].(*dns.A).A.String(), nil)
-	if err != nil {
-		log.Warn("Get external IP address failed: ", err)
-		return ""
-	}
-	req.Host = host
-	res, err := c.Do(req)
-	if err != nil {
-		log.Warn("Get external IP address failed: ", err)
-		return ""
-	}
-	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		log.Warn("Get external IP address failed: ", err)
-		return ""
-	}
-	re := regexp.MustCompile(`\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b`)
-	eip := re.FindString(string(body))
-	if len(eip) == 0 {
-		log.Warn("External IP address is empty")
-	}
-	log.Info("External IP is " + eip)
-	return eip
 }

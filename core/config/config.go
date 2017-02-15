@@ -14,8 +14,9 @@ import (
 var Config *configType
 
 type EDNSClientSubnetType struct {
-	Policy   string
-	CustomIP string
+	Policy     string
+	ExternalIP string
+	CustomIP   string
 }
 
 type DNSUpstream struct {
@@ -41,7 +42,6 @@ type configType struct {
 	DomainList            []string
 	IPNetworkList         []*net.IPNet
 	Hosts                 *hosts.Hostsfile
-	ExternalIP            string
 	ReservedIPNetworkList []*net.IPNet
 	CachePool             *cache.Cache
 }
