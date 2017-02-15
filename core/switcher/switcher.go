@@ -1,3 +1,7 @@
+// Copyright (c) 2016 holyshawn. All rights reserved.
+// Use of this source code is governed by The MIT License (MIT) that can be
+// found in the LICENSE file.
+
 package switcher
 
 import (
@@ -28,23 +32,28 @@ func NewSwitcher(outbound *outbound.OutboundListType) *Switcher {
 	}
 }
 
-func (s *Switcher) ChooseDNS() bool {
+func (s *Switcher) ExchangeForIPv6() bool {
 
-	qn := s.ol.QuestionMessage.Question[0].Name[:len(s.ol.QuestionMessage.Question[0].Name)-1]
-
-	if common.IsQuestionInIPv6(s.ol.QuestionMessage) && s.redirectIPv6Record {
+	if (s.ol.QuestionMessage.Question[0].Qtype == dns.TypeAAAA) && s.redirectIPv6Record {
 		s.ol.UpdateDNSUpstream(config.Config.AlternativeDNS)
-		s.ol.ExchangeFromRemote(true)
+		s.ol.ExchangeFromRemote(true, true)
 		log.Debug("Finally use alternative DNS")
 		return true
 	}
+
+	return false
+}
+
+func (s *Switcher) ExchangeForDomain() bool {
+
+	qn := s.ol.QuestionMessage.Question[0].Name[:len(s.ol.QuestionMessage.Question[0].Name)-1]
 
 	for _, d := range s.domainList {
 
 		if qn == d || strings.HasSuffix(qn, "."+d) {
 			log.Debug("Matched: Custom domain " + qn + " " + d)
 			s.ol.UpdateDNSUpstream(config.Config.AlternativeDNS)
-			s.ol.ExchangeFromRemote(true)
+			s.ol.ExchangeFromRemote(true, true)
 			log.Debug("Finally use alternative DNS")
 			return true
 		}
@@ -55,14 +64,12 @@ func (s *Switcher) ChooseDNS() bool {
 	return false
 }
 
-func (s *Switcher) HandleResponseFromPrimaryDNS() {
-
-	s.ol.ExchangeFromRemote(false)
+func (s *Switcher) ExchangeForPrimaryDNSResponse() {
 
 	if s.ol.ResponseMessage == nil || len(s.ol.ResponseMessage.Answer) == 0 {
 		log.Debug("Primary DNS answer is empty, finally use alternative DNS")
 		s.ol.UpdateDNSUpstream(config.Config.AlternativeDNS)
-		s.ol.ExchangeFromRemote(true)
+		s.ol.ExchangeFromRemote(true, true)
 		return
 	}
 
@@ -76,13 +83,18 @@ func (s *Switcher) HandleResponseFromPrimaryDNS() {
 		}
 		log.Debug("IP network match fail, finally use alternative DNS")
 		s.ol.UpdateDNSUpstream(config.Config.AlternativeDNS)
-		s.ol.ExchangeFromRemote(true)
+		s.ol.ExchangeFromRemote(true, true)
 		return
 	}
 
 	go func() {
-		s.ol.ExchangeFromRemote(true)
+		s.ol.ExchangeFromRemote(true, false)
 	}()
 
 	log.Debug("Finally use primary DNS")
+}
+
+func IsQuestionInIPv6(m *dns.Msg) bool {
+
+	return m.Question[0].Qtype == dns.TypeAAAA
 }

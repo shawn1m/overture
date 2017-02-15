@@ -1,7 +1,10 @@
+// Copyright (c) 2016 holyshawn. All rights reserved.
+// Use of this source code is governed by The MIT License (MIT) that can be
+// found in the LICENSE file.
+
 package common
 
 import (
-	"github.com/miekg/dns"
 	"net"
 
 	log "github.com/Sirupsen/logrus"
@@ -19,9 +22,4 @@ func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool) bool {
 	}
 
 	return false
-}
-
-func IsQuestionInIPv6(m *dns.Msg) bool {
-
-	return m.Question[0].Qtype == dns.TypeAAAA
 }

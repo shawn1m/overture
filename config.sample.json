@@ -1,15 +1,36 @@
 {
   "BindAddress": ":53",
-  "PrimaryDNSAddress": "119.29.29.29:53",
-  "PrimaryDNSProtocol": "udp",
-  "AlternativeDNSAddress": "208.67.222.222:443",
-  "AlternativeDNSProtocol": "tcp",
-  "Timeout": 6,
+  "PrimaryDNS": [
+    {
+      "Name": "DNSPod",
+      "Address": "119.29.29.29:53",
+      "Protocol": "udp",
+      "Timeout": 6,
+      "EDNSClientSubnet": {
+        "Policy": "disable",
+        "ExternalIP": "",
+        "CustomIP": ""
+      }
+    }
+  ],
+  "AlternativeDNS":[
+    {
+      "Name": "OpenDNS",
+      "Address": "208.67.222.222:443",
+      "Protocol": "tcp",
+      "Timeout": 6,
+      "EDNSClientSubnet":{
+        "Policy": "disable",
+        "ExternalIP": "",
+        "CustomIP": ""
+      }
+    }
+  ],
   "RedirectIPv6Record": true,
-  "IPNetworkFilePath": "./china_ip_list.txt",
-  "DomainFilePath": "./gfwlist.txt",
+  "IPNetworkFile": "./china_ip_list.txt",
+  "DomainFile": "./gfwlist.txt",
   "DomainBase64Decode": true,
-  "MinimumTTL": -1,
-  "EDNSClientSubnetPolicy": "disable",
-  "EDNSClientSubnetIP": ""
+  "HostsFile": "./hosts",
+  "MinimumTTL": 0,
+  "CacheSize" : 0
 }

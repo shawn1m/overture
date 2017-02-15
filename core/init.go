@@ -1,3 +1,7 @@
+// Copyright (c) 2016 holyshawn. All rights reserved.
+// Use of this source code is governed by The MIT License (MIT) that can be
+// found in the LICENSE file.
+
 package core
 
 import (
@@ -26,7 +30,7 @@ func Init(configFilePath string) {
 
 func initConfig(configFile string) {
 
-	config.Config = config.NewConfig(configFile)
+	config.Config = config.New(configFile)
 
 	config.Config.IPNetworkList = getIPNetworkList(config.Config.IPNetworkFile)
 	config.Config.DomainList = getDomainList(config.Config.DomainFile, config.Config.DomainBase64Decode)
@@ -39,8 +43,8 @@ func initConfig(configFile string) {
 
 	err := new(error)
 	config.Config.Hosts, *err = hosts.NewHostsfile(config.Config.HostsFile, &hosts.Config{0, false})
-	if err != nil {
-		log.Info("Load hosts file failed")
+	if *err != nil {
+		log.Info("Load hosts file failed: ", err)
 	}
 
 	initEDNSClientSubnet()

@@ -58,7 +58,7 @@ func (c *Cache) EvictRandom() {
 		return
 	}
 	i := c.capacity - clen
-	for k, _ := range c.table {
+	for k := range c.table {
 		delete(c.table, k)
 		i--
 		if i == 0 {
