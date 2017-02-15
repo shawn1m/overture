@@ -29,14 +29,12 @@ func NewOutbound(q *dns.Msg, d *config.DNSUpstream, inboundIP string) *Outbound 
 
 	o := &Outbound{
 		QuestionMessage: q,
-
 		DNSUpstream: d,
 		MinimumTTL:  config.Config.MinimumTTL,
-
 		inboundIP: inboundIP,
 	}
 
-	o.EDNSClientSubnetIP = o.getEDNSClientSubnetIP()
+	o.EDNSClientSubnetIP = o.GetEDNSClientSubnetIP()
 
 	return o
 }
