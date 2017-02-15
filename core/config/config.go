@@ -1,3 +1,7 @@
+// Copyright (c) 2016 holyshawn. All rights reserved.
+// Use of this source code is governed by The MIT License (MIT) that can be
+// found in the LICENSE file.
+
 package config
 
 import (
@@ -11,7 +15,7 @@ import (
 	"github.com/janeczku/go-dnsmasq/hostsfile"
 )
 
-var Config *configType
+var Config *config
 
 type EDNSClientSubnetType struct {
 	Policy     string
@@ -27,7 +31,7 @@ type DNSUpstream struct {
 	EDNSClientSubnet EDNSClientSubnetType
 }
 
-type configType struct {
+type config struct {
 	BindAddress        string `json:"BindAddress"`
 	PrimaryDNS         []*DNSUpstream
 	AlternativeDNS     []*DNSUpstream
@@ -46,7 +50,13 @@ type configType struct {
 	CachePool             *cache.Cache
 }
 
-func parseJson(path string) *configType {
+func New(path string) *config {
+
+	return parseJson(path)
+
+}
+
+func parseJson(path string) *config {
 
 	f, err := os.Open(path)
 	if err != nil {
@@ -61,7 +71,7 @@ func parseJson(path string) *configType {
 		os.Exit(1)
 	}
 
-	j := new(configType)
+	j := new(config)
 	err = json.Unmarshal(b, j)
 	if err != nil {
 		log.Fatal("Json syntex error: ", err)
@@ -71,10 +81,4 @@ func parseJson(path string) *configType {
 	log.Debug(string(b))
 
 	return j
-}
-
-func NewConfig(path string) *configType {
-
-	return parseJson(path)
-
 }

@@ -1,3 +1,7 @@
+// Copyright (c) 2016 holyshawn. All rights reserved.
+// Use of this source code is governed by The MIT License (MIT) that can be
+// found in the LICENSE file.
+
 package inbound
 
 import (
@@ -40,24 +44,24 @@ func handleRequest(w dns.ResponseWriter, q *dns.Msg) {
 
 	log.Debug("Question: " + ol.QuestionMessage.Question[0].String())
 
-	if ol.ExchangeFromLocal(){
+	if ol.ExchangeFromLocal() {
 		if ol.ResponseMessage != nil {
 			w.WriteMsg(ol.ResponseMessage)
 			return
 		}
 	}
 
-	s := switcher.NewSwitcher(ol)
-
 	func() {
-		if s.ChooseDNS() {
+		s := switcher.NewSwitcher(ol)
+		if s.ExchangeForIPv6() || s.ExchangeForDomain() {
 			return
 		}
 
-		s.HandleResponseFromPrimaryDNS()
-	}()
+		ol.ExchangeFromRemote(false, true)
+		s.ExchangeForPrimaryDNSResponse()
 
-	if ol.ResponseMessage != nil {
-		w.WriteMsg(ol.ResponseMessage)
-	}
+		if ol.ResponseMessage != nil {
+			w.WriteMsg(ol.ResponseMessage)
+		}
+	}()
 }

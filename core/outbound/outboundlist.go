@@ -1,3 +1,7 @@
+// Copyright (c) 2016 holyshawn. All rights reserved.
+// Use of this source code is governed by The MIT License (MIT) that can be
+// found in the LICENSE file.
+
 package outbound
 
 import (
@@ -32,13 +36,13 @@ func NewOutboundList(q *dns.Msg, dl []*config.DNSUpstream, inboundIP string) *Ou
 	return ol
 }
 
-func (ol *OutboundListType) ExchangeFromRemote(IsCache bool) {
+func (ol *OutboundListType) ExchangeFromRemote(IsCache bool, isLog bool) {
 
 	ch := make(chan *dns.Msg, len(ol.OutboundList))
 
 	for _, o := range ol.OutboundList {
 		go func(o *Outbound, ch chan *dns.Msg) {
-			o.ExchangeFromRemote(IsCache)
+			o.ExchangeFromRemote(IsCache, isLog)
 			ch <- o.ResponseMessage
 		}(o, ch)
 	}
@@ -51,7 +55,7 @@ func (ol *OutboundListType) ExchangeFromRemote(IsCache bool) {
 	}
 }
 
-func (ol *OutboundListType) ExchangeFromLocal() bool{
+func (ol *OutboundListType) ExchangeFromLocal() bool {
 
 	for _, o := range ol.OutboundList {
 		if o.ExchangeFromLocal() {

@@ -1,3 +1,7 @@
+// Copyright (c) 2016 holyshawn. All rights reserved.
+// Use of this source code is governed by The MIT License (MIT) that can be
+// found in the LICENSE file.
+
 package outbound
 
 import (
@@ -6,7 +10,6 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/holyshawn/overture/core/cache"
-	"github.com/holyshawn/overture/core/common"
 	"github.com/holyshawn/overture/core/config"
 	"github.com/miekg/dns"
 )
@@ -38,24 +41,13 @@ func NewOutbound(q *dns.Msg, d *config.DNSUpstream, inboundIP string) *Outbound 
 	return o
 }
 
-func (o *Outbound) ExchangeFromRemote(IsCache bool) {
+func (o *Outbound) ExchangeFromRemote(IsCache bool, isLog bool) {
 
-	m := config.Config.CachePool.Hit(cache.Key(o.QuestionMessage.Question[0], o.EDNSClientSubnetIP), o.QuestionMessage.Id)
-	if m != nil {
-		log.Debug(o.DNSUpstream.Name + " Hit: " + cache.Key(o.QuestionMessage.Question[0], o.EDNSClientSubnetIP))
-		o.ResponseMessage = m
-		o.LogAnswer(false)
-		return
-	}
-	m = config.Config.CachePool.Hit(cache.Key(o.QuestionMessage.Question[0], ""), o.QuestionMessage.Id)
-	if m != nil {
-		o.ResponseMessage = m
-		log.Debug(o.DNSUpstream.Name + " Hit: " + cache.Key(o.QuestionMessage.Question[0], ""))
-		o.LogAnswer(false)
+	if o.exchangeFromCache(isLog) {
 		return
 	}
 
-	o.HandleEDNSClientSubnet()
+	setEDNSClientSubnet(o.QuestionMessage, o.EDNSClientSubnetIP)
 
 	c := new(dns.Client)
 	c.Net = o.DNSUpstream.Protocol
@@ -69,93 +61,127 @@ func (o *Outbound) ExchangeFromRemote(IsCache bool) {
 		}
 	}
 	if temp == nil {
-		log.Debug(o.DNSUpstream.Name + " Fail: Response message is nil, maybe timeout")
+		log.Debug(o.DNSUpstream.Name + " Fail: Response message is nil, maybe timeout, please check your query or dns configuration")
 		return
 	}
 
 	o.ResponseMessage = temp
 
-	o.HandleMinimumTTL()
+	if o.MinimumTTL > 0 {
+		setMinimumTTL(o.ResponseMessage, uint32(o.MinimumTTL))
+	}
 
 	if IsCache {
 		config.Config.CachePool.InsertMessage(cache.Key(o.QuestionMessage.Question[0], o.EDNSClientSubnetIP), o.ResponseMessage)
 	}
 
-	o.LogAnswer(false)
-}
-
-func (o *Outbound) LogAnswer(isLocal bool) {
-
-	for _, a := range o.ResponseMessage.Answer {
-		var name string
-		if isLocal{
-			name = "Local"
-		}else {
-			name = o.DNSUpstream.Name
-		}
-		log.Debug(name + " Answer: " + a.String())
+	if isLog {
+		o.LogAnswer(false)
 	}
 }
 
 func (o *Outbound) ExchangeFromLocal() bool {
 
 	raw_name := o.QuestionMessage.Question[0].Name
-	name := raw_name[:len(raw_name)-1]
 
-	if config.Config.Hosts != nil {
-		ipl, err := config.Config.Hosts.FindHosts(name)
-
-		if err == nil && len(ipl) > 0 {
-			for _, ip := range ipl {
-				a, _ := dns.NewRR(raw_name + " IN A " + ip.String())
-				o.ResponseMessage = new(dns.Msg)
-				o.ResponseMessage.Answer = append(o.ResponseMessage.Answer, a)
-			}
-			o.ResponseMessage.SetReply(o.QuestionMessage)
-			o.ResponseMessage.RecursionAvailable = true
-			return true
-		}
-	}
-
-	ip := net.ParseIP(name)
-	if ip.To4() != nil {
-		a, _ := dns.NewRR(raw_name + " IN A " + ip.String())
-		o.ResponseMessage = new(dns.Msg)
-		o.ResponseMessage.Answer = append(o.ResponseMessage.Answer, a)
-		o.ResponseMessage.SetReply(o.QuestionMessage)
-		o.ResponseMessage.RecursionAvailable = true
+	if o.exchangeFromHosts(raw_name) || o.exchangeFromIP(raw_name) {
 		return true
 	}
 
 	return false
 }
 
-func (o *Outbound) HandleEDNSClientSubnet() {
+func (o *Outbound) exchangeFromCache(isLog bool) bool {
 
-	setEDNSClientSubnet(o.QuestionMessage, o.EDNSClientSubnetIP)
-}
+	if config.Config.CacheSize == 0{
+		return false
+	}
 
-func (o *Outbound) getEDNSClientSubnetIP() string {
-
-	switch o.DNSUpstream.EDNSClientSubnet.Policy {
-	case "custom":
-		return o.DNSUpstream.EDNSClientSubnet.CustomIP
-	case "auto":
-		if !common.IsIPMatchList(net.ParseIP(o.inboundIP), config.Config.ReservedIPNetworkList, false) {
-			return o.inboundIP
-		} else {
-			return o.DNSUpstream.EDNSClientSubnet.ExternalIP
+	m := config.Config.CachePool.Hit(cache.Key(o.QuestionMessage.Question[0], o.EDNSClientSubnetIP), o.QuestionMessage.Id)
+	if m != nil {
+		log.Debug(o.DNSUpstream.Name + " Hit: " + cache.Key(o.QuestionMessage.Question[0], o.EDNSClientSubnetIP))
+		o.ResponseMessage = m
+		if isLog {
+			o.LogAnswer(false)
 		}
-	case "disable":
+		return true
 	}
-	return ""
+	m = config.Config.CachePool.Hit(cache.Key(o.QuestionMessage.Question[0], ""), o.QuestionMessage.Id)
+	if m != nil {
+		o.ResponseMessage = m
+		log.Debug(o.DNSUpstream.Name + " Hit: " + cache.Key(o.QuestionMessage.Question[0], ""))
+		if isLog {
+			o.LogAnswer(false)
+		}
+		return true
+	}
+
+	return false
 }
 
-func (o *Outbound) HandleMinimumTTL() {
+func (o *Outbound) exchangeFromHosts(raw_name string) bool {
 
-	if o.MinimumTTL > 0 {
-		setMinimumTTL(o.ResponseMessage, uint32(o.MinimumTTL))
+	if config.Config.Hosts == nil {
+		return false
 	}
+
+	name := raw_name[:len(raw_name)-1]
+	ipl, err := config.Config.Hosts.FindHosts(name)
+
+	if err == nil && len(ipl) > 0 {
+		for _, ip := range ipl {
+			if o.QuestionMessage.Question[0].Qtype == dns.TypeA {
+				a, _ := dns.NewRR(raw_name + " IN A " + ip.String())
+				o.CreateResponseMessageForLocal(a)
+				return true
+			}
+			if o.QuestionMessage.Question[0].Qtype == dns.TypeAAAA {
+				aaaa, _ := dns.NewRR(raw_name + " IN AAAA " + ip.String())
+				o.CreateResponseMessageForLocal(aaaa)
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func (o *Outbound) exchangeFromIP(raw_name string) bool {
+
+	name := raw_name[:len(raw_name)-1]
+	ip := net.ParseIP(name)
+	if ip.To4() != nil && o.QuestionMessage.Question[0].Qtype == dns.TypeA {
+		a, _ := dns.NewRR(raw_name + " IN A " + ip.String())
+		o.CreateResponseMessageForLocal(a)
+		return true
+	}
+	if ip.To16() != nil && o.QuestionMessage.Question[0].Qtype == dns.TypeAAAA {
+		aaaa, _ := dns.NewRR(raw_name + " IN AAAA " + ip.String())
+		o.CreateResponseMessageForLocal(aaaa)
+		return true
+	}
+
+	return false
+}
+
+func (o *Outbound) LogAnswer(isLocal bool) {
+
+	for _, a := range o.ResponseMessage.Answer {
+		var name string
+		if isLocal {
+			name = "Local"
+		} else {
+			name = o.DNSUpstream.Name
+		}
+		log.Debug(name + " Answer: " + a.String())
+	}
+}
+
+func (o *Outbound) CreateResponseMessageForLocal(r dns.RR) {
+	o.ResponseMessage = new(dns.Msg)
+	o.ResponseMessage.Answer = append(o.ResponseMessage.Answer, r)
+	o.ResponseMessage.SetReply(o.QuestionMessage)
+	o.ResponseMessage.RecursionAvailable = true
 }
 
 func setMinimumTTL(m *dns.Msg, ttl uint32) {
@@ -165,46 +191,4 @@ func setMinimumTTL(m *dns.Msg, ttl uint32) {
 			a.Header().Ttl = ttl
 		}
 	}
-}
-
-func setEDNSClientSubnet(m *dns.Msg, ip string) {
-
-	if ip == "" {
-		return
-	}
-
-	o := m.IsEdns0()
-	if o == nil {
-		o = new(dns.OPT)
-		m.Extra = append(m.Extra, o)
-	}
-	o.Hdr.Name = "."
-	o.Hdr.Rrtype = dns.TypeOPT
-
-	es := IsEDNSClientSubnet(o)
-	if es == nil {
-		es = new(dns.EDNS0_SUBNET)
-		o.Option = append(o.Option, es)
-	}
-	es.Code = dns.EDNS0SUBNET
-	es.Address = net.ParseIP(ip)
-	if es.Address.To4() != nil {
-		es.Family = 1         // 1 for IPv4 source address, 2 for IPv6
-		es.SourceNetmask = 32 // 32 for IPV4, 128 for IPv6
-	} else {
-		es.Family = 2          // 1 for IPv4 source address, 2 for IPv6
-		es.SourceNetmask = 128 // 32 for IPV4, 128 for IPv6
-	}
-	es.SourceScope = 0
-}
-
-func IsEDNSClientSubnet(o *dns.OPT) *dns.EDNS0_SUBNET {
-
-	for _, s := range o.Option {
-		switch e := s.(type) {
-		case *dns.EDNS0_SUBNET:
-			return e
-		}
-	}
-	return nil
 }
