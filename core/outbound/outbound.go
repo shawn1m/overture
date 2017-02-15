@@ -19,8 +19,7 @@ type Outbound struct {
 	MinimumTTL         int
 	EDNSClientSubnetIP string
 
-	inboundIP  string
-	externalIP string
+	inboundIP string
 }
 
 func NewOutbound(q *dns.Msg, d *config.DNSUpstream, inboundIP string) *Outbound {
@@ -31,8 +30,7 @@ func NewOutbound(q *dns.Msg, d *config.DNSUpstream, inboundIP string) *Outbound 
 		DNSUpstream: d,
 		MinimumTTL:  config.Config.MinimumTTL,
 
-		inboundIP:  inboundIP,
-		externalIP: config.Config.ExternalIP,
+		inboundIP: inboundIP,
 	}
 
 	o.EDNSClientSubnetIP = o.getEDNSClientSubnetIP()
@@ -42,23 +40,18 @@ func NewOutbound(q *dns.Msg, d *config.DNSUpstream, inboundIP string) *Outbound 
 
 func (o *Outbound) ExchangeFromRemote(IsCache bool) {
 
-	if o.ExchangeFromLocal() {
-		o.LogAnswer()
-		return
-	}
-
 	m := config.Config.CachePool.Hit(cache.Key(o.QuestionMessage.Question[0], o.EDNSClientSubnetIP), o.QuestionMessage.Id)
 	if m != nil {
 		log.Debug(o.DNSUpstream.Name + " Hit: " + cache.Key(o.QuestionMessage.Question[0], o.EDNSClientSubnetIP))
 		o.ResponseMessage = m
-		o.LogAnswer()
+		o.LogAnswer(false)
 		return
 	}
 	m = config.Config.CachePool.Hit(cache.Key(o.QuestionMessage.Question[0], ""), o.QuestionMessage.Id)
 	if m != nil {
 		o.ResponseMessage = m
 		log.Debug(o.DNSUpstream.Name + " Hit: " + cache.Key(o.QuestionMessage.Question[0], ""))
-		o.LogAnswer()
+		o.LogAnswer(false)
 		return
 	}
 
@@ -88,13 +81,19 @@ func (o *Outbound) ExchangeFromRemote(IsCache bool) {
 		config.Config.CachePool.InsertMessage(cache.Key(o.QuestionMessage.Question[0], o.EDNSClientSubnetIP), o.ResponseMessage)
 	}
 
-	o.LogAnswer()
+	o.LogAnswer(false)
 }
 
-func (o *Outbound) LogAnswer() {
+func (o *Outbound) LogAnswer(isLocal bool) {
 
 	for _, a := range o.ResponseMessage.Answer {
-		log.Debug(o.DNSUpstream.Name + " Answer: " + a.String())
+		var name string
+		if isLocal{
+			name = "Local"
+		}else {
+			name = o.DNSUpstream.Name
+		}
+		log.Debug(name + " Answer: " + a.String())
 	}
 }
 
@@ -121,6 +120,7 @@ func (o *Outbound) ExchangeFromLocal() bool {
 	ip := net.ParseIP(name)
 	if ip.To4() != nil {
 		a, _ := dns.NewRR(raw_name + " IN A " + ip.String())
+		o.ResponseMessage = new(dns.Msg)
 		o.ResponseMessage.Answer = append(o.ResponseMessage.Answer, a)
 		o.ResponseMessage.SetReply(o.QuestionMessage)
 		o.ResponseMessage.RecursionAvailable = true
@@ -144,7 +144,7 @@ func (o *Outbound) getEDNSClientSubnetIP() string {
 		if !common.IsIPMatchList(net.ParseIP(o.inboundIP), config.Config.ReservedIPNetworkList, false) {
 			return o.inboundIP
 		} else {
-			return o.externalIP
+			return o.DNSUpstream.EDNSClientSubnet.ExternalIP
 		}
 	case "disable":
 	}

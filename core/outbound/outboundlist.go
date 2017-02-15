@@ -15,26 +15,9 @@ type OutboundListType struct {
 	InboundIP   string
 }
 
-func (ol *OutboundListType) GetResponse(IsCache bool) {
+func NewOutboundList(q *dns.Msg, dl []*config.DNSUpstream, inboundIP string) *OutboundListType {
 
-	ch := make(chan *dns.Msg, len(ol.OutboundList))
-
-	go func() {
-		for _, o := range ol.OutboundList {
-			o.ExchangeFromRemote(IsCache)
-			ch <- o.ResponseMessage
-		}
-	}()
-
-	for i := 0; i < len(ol.OutboundList); i++ {
-		if m := <-ch; m != nil {
-			ol.ResponseMessage = m
-			return
-		}
-	}
-}
-
-func (ol *OutboundListType) SetOutboundList(q *dns.Msg, inboundIP string, dl []*config.DNSUpstream) {
+	ol := new(OutboundListType)
 
 	ol.QuestionMessage = q
 	ol.InboundIP = inboundIP
@@ -45,6 +28,39 @@ func (ol *OutboundListType) SetOutboundList(q *dns.Msg, inboundIP string, dl []*
 		o := NewOutbound(q, u, inboundIP)
 		ol.OutboundList = append(ol.OutboundList, o)
 	}
+
+	return ol
+}
+
+func (ol *OutboundListType) ExchangeFromRemote(IsCache bool) {
+
+	ch := make(chan *dns.Msg, len(ol.OutboundList))
+
+	for _, o := range ol.OutboundList {
+		go func(o *Outbound, ch chan *dns.Msg) {
+			o.ExchangeFromRemote(IsCache)
+			ch <- o.ResponseMessage
+		}(o, ch)
+	}
+
+	for i := 0; i < len(ol.OutboundList); i++ {
+		if m := <-ch; m != nil {
+			ol.ResponseMessage = m
+			return
+		}
+	}
+}
+
+func (ol *OutboundListType) ExchangeFromLocal() bool{
+
+	for _, o := range ol.OutboundList {
+		if o.ExchangeFromLocal() {
+			ol.ResponseMessage = o.ResponseMessage
+			o.LogAnswer(true)
+			return true
+		}
+	}
+	return false
 }
 
 func (ol *OutboundListType) UpdateDNSUpstream(dl []*config.DNSUpstream) {
@@ -67,13 +83,4 @@ func (ol *OutboundListType) EqualDNSUpstream(dl []*config.DNSUpstream) bool {
 	}
 
 	return true
-}
-
-func NewOutboundList(q *dns.Msg, dl []*config.DNSUpstream, inboundIP string) *OutboundListType {
-
-	ol := new(OutboundListType)
-
-	ol.SetOutboundList(q, inboundIP, dl)
-
-	return ol
 }

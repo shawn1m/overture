@@ -38,6 +38,15 @@ func handleRequest(w dns.ResponseWriter, q *dns.Msg) {
 	inboundIP, _, _ := net.SplitHostPort(w.RemoteAddr().String())
 	ol := outbound.NewOutboundList(q, config.Config.PrimaryDNS, inboundIP)
 
+	log.Debug("Question: " + ol.QuestionMessage.Question[0].String())
+
+	if ol.ExchangeFromLocal(){
+		if ol.ResponseMessage != nil {
+			w.WriteMsg(ol.ResponseMessage)
+			return
+		}
+	}
+
 	s := switcher.NewSwitcher(ol)
 
 	func() {
