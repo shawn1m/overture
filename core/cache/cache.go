@@ -4,10 +4,8 @@
 
 package cache
 
-// Cache that holds RRs and for DNSSEC an RRSIG.
+// Cache that holds RRs.
 
-// TODO(miek): there is a lot of copying going on to copy myself out of data
-// races. This should be optimized.
 
 import (
 	"crypto/sha1"
@@ -100,8 +98,7 @@ func (c *Cache) Search(s string) (*dns.Msg, time.Time, bool) {
 	return nil, time.Time{}, false
 }
 
-// Key creates a hash key from a question section. It creates a different key
-// for requests with DNSSEC.
+// Key creates a hash key from a question section.
 func Key(q dns.Question, ednsIP string) string {
 	h := sha1.New()
 	i := append([]byte(q.Name), packUint16(q.Qtype)...)

@@ -59,9 +59,9 @@ func handleRequest(w dns.ResponseWriter, q *dns.Msg) {
 
 		ol.ExchangeFromRemote(false, true)
 		s.ExchangeForPrimaryDNSResponse()
-
-		if ol.ResponseMessage != nil {
-			w.WriteMsg(ol.ResponseMessage)
-		}
 	}()
+
+	if ol.ResponseMessage != nil {
+		w.WriteMsg(ol.ResponseMessage)
+	}
 }
