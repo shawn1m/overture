@@ -93,8 +93,3 @@ func (s *Switcher) ExchangeForPrimaryDNSResponse() {
 
 	log.Debug("Finally use primary DNS")
 }
-
-func IsQuestionInIPv6(m *dns.Msg) bool {
-
-	return m.Question[0].Qtype == dns.TypeAAAA
-}

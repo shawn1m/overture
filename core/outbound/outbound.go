@@ -76,7 +76,7 @@ func (o *Outbound) ExchangeFromRemote(IsCache bool, isLog bool) {
 	}
 
 	if isLog {
-		o.LogAnswer(false)
+		o.logAnswer(false)
 	}
 }
 
@@ -102,7 +102,7 @@ func (o *Outbound) exchangeFromCache(isLog bool) bool {
 		log.Debug(o.DNSUpstream.Name + " Hit: " + cache.Key(o.QuestionMessage.Question[0], o.EDNSClientSubnetIP))
 		o.ResponseMessage = m
 		if isLog {
-			o.LogAnswer(false)
+			o.logAnswer(false)
 		}
 		return true
 	}
@@ -111,7 +111,7 @@ func (o *Outbound) exchangeFromCache(isLog bool) bool {
 		o.ResponseMessage = m
 		log.Debug(o.DNSUpstream.Name + " Hit: " + cache.Key(o.QuestionMessage.Question[0], ""))
 		if isLog {
-			o.LogAnswer(false)
+			o.logAnswer(false)
 		}
 		return true
 	}
@@ -132,12 +132,12 @@ func (o *Outbound) exchangeFromHosts(raw_name string) bool {
 		for _, ip := range ipl {
 			if o.QuestionMessage.Question[0].Qtype == dns.TypeA {
 				a, _ := dns.NewRR(raw_name + " IN A " + ip.String())
-				o.CreateResponseMessageForLocal(a)
+				o.createResponseMessageForLocal(a)
 				return true
 			}
 			if o.QuestionMessage.Question[0].Qtype == dns.TypeAAAA {
 				aaaa, _ := dns.NewRR(raw_name + " IN AAAA " + ip.String())
-				o.CreateResponseMessageForLocal(aaaa)
+				o.createResponseMessageForLocal(aaaa)
 				return true
 			}
 		}
@@ -152,19 +152,19 @@ func (o *Outbound) exchangeFromIP(raw_name string) bool {
 	ip := net.ParseIP(name)
 	if ip.To4() != nil && o.QuestionMessage.Question[0].Qtype == dns.TypeA {
 		a, _ := dns.NewRR(raw_name + " IN A " + ip.String())
-		o.CreateResponseMessageForLocal(a)
+		o.createResponseMessageForLocal(a)
 		return true
 	}
 	if ip.To16() != nil && o.QuestionMessage.Question[0].Qtype == dns.TypeAAAA {
 		aaaa, _ := dns.NewRR(raw_name + " IN AAAA " + ip.String())
-		o.CreateResponseMessageForLocal(aaaa)
+		o.createResponseMessageForLocal(aaaa)
 		return true
 	}
 
 	return false
 }
 
-func (o *Outbound) LogAnswer(isLocal bool) {
+func (o *Outbound) logAnswer(isLocal bool) {
 
 	for _, a := range o.ResponseMessage.Answer {
 		var name string
@@ -177,7 +177,7 @@ func (o *Outbound) LogAnswer(isLocal bool) {
 	}
 }
 
-func (o *Outbound) CreateResponseMessageForLocal(r dns.RR) {
+func (o *Outbound) createResponseMessageForLocal(r dns.RR) {
 	o.ResponseMessage = new(dns.Msg)
 	o.ResponseMessage.Answer = append(o.ResponseMessage.Answer, r)
 	o.ResponseMessage.SetReply(o.QuestionMessage)

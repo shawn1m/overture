@@ -60,7 +60,7 @@ func (ol *OutboundListType) ExchangeFromLocal() bool {
 	for _, o := range ol.OutboundList {
 		if o.ExchangeFromLocal() {
 			ol.ResponseMessage = o.ResponseMessage
-			o.LogAnswer(true)
+			o.logAnswer(true)
 			return true
 		}
 	}

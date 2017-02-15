@@ -92,8 +92,8 @@ Configuration file is "config.json" by default:
 Tips:
 
 + BindAddress: No IP means listen both IPv4 and IPv6, overture will listen both TCP and UDP ports.
-+ DNS:
-    + Name: Just for log
++ DNS: You Can use multiple dns upstream in this list.
+    + Name: Just for log.
     + Protocol: "tcp" or "udp".
     + EDNSClientSubnet: Improve DNS accuracy. [RFC7871](https://tools.ietf.org/html/rfc7871)
         + Policy: 
