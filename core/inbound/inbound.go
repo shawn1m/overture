@@ -40,28 +40,28 @@ func InitServer(addr string) {
 func handleRequest(w dns.ResponseWriter, q *dns.Msg) {
 
 	inboundIP, _, _ := net.SplitHostPort(w.RemoteAddr().String())
-	ol := outbound.NewOutboundList(q, config.Config.PrimaryDNS, inboundIP)
+	ob := outbound.NewOutboundBundle(q, config.Config.PrimaryDNS, inboundIP)
 
-	log.Debug("Question: " + ol.QuestionMessage.Question[0].String())
+	log.Debug("Question: " + ob.QuestionMessage.Question[0].String())
 
-	if ol.ExchangeFromLocal() {
-		if ol.ResponseMessage != nil {
-			w.WriteMsg(ol.ResponseMessage)
+	if ob.ExchangeFromLocal() {
+		if ob.ResponseMessage != nil {
+			w.WriteMsg(ob.ResponseMessage)
 			return
 		}
 	}
 
 	func() {
-		s := switcher.NewSwitcher(ol)
+		s := switcher.NewSwitcher(ob)
 		if s.ExchangeForIPv6() || s.ExchangeForDomain() {
 			return
 		}
 
-		ol.ExchangeFromRemote(false, true)
+		ob.ExchangeFromRemote(false, true)
 		s.ExchangeForPrimaryDNSResponse()
 	}()
 
-	if ol.ResponseMessage != nil {
-		w.WriteMsg(ol.ResponseMessage)
+	if ob.ResponseMessage != nil {
+		w.WriteMsg(ob.ResponseMessage)
 	}
 }

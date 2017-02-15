@@ -92,7 +92,7 @@ Configuration file is "config.json" by default:
 Tips:
 
 + BindAddress: No IP means listen both IPv4 and IPv6, overture will listen both TCP and UDP ports.
-+ DNS: You Can use multiple dns upstream in this list.
++ DNS: You can use multiple dns upstream in this list.
     + Name: Just for log.
     + Protocol: "tcp" or "udp".
     + EDNSClientSubnet: Improve DNS accuracy. [RFC7871](https://tools.ietf.org/html/rfc7871)
@@ -113,7 +113,6 @@ A wildcard * in the left-most label of hostnames is allowed, like 192.168.0.2 *.
 DNS with EDNS client subnet:
 
 + DNSPod 119.29.29.29:53
-+ OpenDNS 208.67.222.222:443 \[2620:0:ccc::2\]:443
 + GoogleDNS 8.8.8.8:53 \[2001:4860:4860::8888\]:53
 
 ## Acknowledgements

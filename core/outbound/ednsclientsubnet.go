@@ -8,16 +8,14 @@ import (
 	"github.com/miekg/dns"
 )
 
-func (o *Outbound) getEDNSClientSubnetIP() string {
+func (o *Outbound) GetEDNSClientSubnetIP() string {
 
-	switch o.DNSUpstream.EDNSClientSubnet.Policy {
-	case "custom":
-		return o.DNSUpstream.EDNSClientSubnet.CustomIP
+	switch o.DNSUpstream.EDNSClientSubnetPolicy {
 	case "auto":
 		if !common.IsIPMatchList(net.ParseIP(o.inboundIP), config.Config.ReservedIPNetworkList, false) {
 			return o.inboundIP
 		} else {
-			return o.DNSUpstream.EDNSClientSubnet.ExternalIP
+			return o.DNSUpstream.EDNSClientSubnetExternalIP
 		}
 	case "disable":
 	}

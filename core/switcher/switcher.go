@@ -16,16 +16,16 @@ import (
 )
 
 type Switcher struct {
-	ol                 *outbound.OutboundListType
+	ob                 *outbound.OutboundBundle
 	ipNetworkList      []*net.IPNet
 	domainList         []string
 	redirectIPv6Record bool
 }
 
-func NewSwitcher(outbound *outbound.OutboundListType) *Switcher {
+func NewSwitcher(outbound *outbound.OutboundBundle) *Switcher {
 
 	return &Switcher{
-		ol:                 outbound,
+		ob:                 outbound,
 		ipNetworkList:      config.Config.IPNetworkList,
 		domainList:         config.Config.DomainList,
 		redirectIPv6Record: config.Config.RedirectIPv6Record,
@@ -34,9 +34,9 @@ func NewSwitcher(outbound *outbound.OutboundListType) *Switcher {
 
 func (s *Switcher) ExchangeForIPv6() bool {
 
-	if (s.ol.QuestionMessage.Question[0].Qtype == dns.TypeAAAA) && s.redirectIPv6Record {
-		s.ol.UpdateDNSUpstream(config.Config.AlternativeDNS)
-		s.ol.ExchangeFromRemote(true, true)
+	if (s.ob.QuestionMessage.Question[0].Qtype == dns.TypeAAAA) && s.redirectIPv6Record {
+		s.ob.UpdateDNSUpstream(config.Config.AlternativeDNS)
+		s.ob.ExchangeFromRemote(true, true)
 		log.Debug("Finally use alternative DNS")
 		return true
 	}
@@ -46,14 +46,14 @@ func (s *Switcher) ExchangeForIPv6() bool {
 
 func (s *Switcher) ExchangeForDomain() bool {
 
-	qn := s.ol.QuestionMessage.Question[0].Name[:len(s.ol.QuestionMessage.Question[0].Name)-1]
+	qn := s.ob.QuestionMessage.Question[0].Name[:len(s.ob.QuestionMessage.Question[0].Name)-1]
 
 	for _, d := range s.domainList {
 
 		if qn == d || strings.HasSuffix(qn, "."+d) {
 			log.Debug("Matched: Custom domain " + qn + " " + d)
-			s.ol.UpdateDNSUpstream(config.Config.AlternativeDNS)
-			s.ol.ExchangeFromRemote(true, true)
+			s.ob.UpdateDNSUpstream(config.Config.AlternativeDNS)
+			s.ob.ExchangeFromRemote(true, true)
 			log.Debug("Finally use alternative DNS")
 			return true
 		}
@@ -66,14 +66,14 @@ func (s *Switcher) ExchangeForDomain() bool {
 
 func (s *Switcher) ExchangeForPrimaryDNSResponse() {
 
-	if s.ol.ResponseMessage == nil || len(s.ol.ResponseMessage.Answer) == 0 {
+	if s.ob.ResponseMessage == nil || len(s.ob.ResponseMessage.Answer) == 0 {
 		log.Debug("Primary DNS answer is empty, finally use alternative DNS")
-		s.ol.UpdateDNSUpstream(config.Config.AlternativeDNS)
-		s.ol.ExchangeFromRemote(true, true)
+		s.ob.UpdateDNSUpstream(config.Config.AlternativeDNS)
+		s.ob.ExchangeFromRemote(true, true)
 		return
 	}
 
-	for _, a := range s.ol.ResponseMessage.Answer {
+	for _, a := range s.ob.ResponseMessage.Answer {
 		if a.Header().Rrtype != dns.TypeA {
 			continue
 		}
@@ -82,13 +82,13 @@ func (s *Switcher) ExchangeForPrimaryDNSResponse() {
 			break
 		}
 		log.Debug("IP network match fail, finally use alternative DNS")
-		s.ol.UpdateDNSUpstream(config.Config.AlternativeDNS)
-		s.ol.ExchangeFromRemote(true, true)
+		s.ob.UpdateDNSUpstream(config.Config.AlternativeDNS)
+		s.ob.ExchangeFromRemote(true, true)
 		return
 	}
 
 	go func() {
-		s.ol.ExchangeFromRemote(true, false)
+		s.ob.ExchangeFromRemote(true, false)
 	}()
 
 	log.Debug("Finally use primary DNS")
