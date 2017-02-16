@@ -103,8 +103,8 @@ IPv6). Overture will handle both TCP and UDP requests.
     + EDNSClientSubnet: Used to improve DNS accuracy. Please check [RFC7871](https://tools.ietf.org/html/rfc7871) for 
     details.
         + Policy: 
-            + auto: If client IP is not in the reserved IP network, use client IP. Otherwise, use external IP.
-            + disable: Disable this feature.
+            + `auto`: If client IP is not in the reserved IP network, use client IP. Otherwise, use external IP.
+            + `disable`: Disable this feature.
         + ExternalIP: If this field is empty, EDNS client subnet will be disabled when used.
 + RedirectIPv6Record: Redirect IPv6 DNS queries to alternative DNS servers.
 + File: For Windows users, you can use relative path like `.\file.txt`, or absolute path like `C:\path\to\file.txt` in
