@@ -8,7 +8,7 @@
       "Timeout": 6,
       "EDNSClientSubnet": {
         "Policy": "disable",
-        "ExternalIP": "",
+        "ExternalIP": ""
       }
     }
   ],
@@ -20,7 +20,7 @@
       "Timeout": 6,
       "EDNSClientSubnet":{
         "Policy": "disable",
-        "ExternalIP": "",
+        "ExternalIP": ""
       }
     }
   ],
