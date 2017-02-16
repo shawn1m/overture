@@ -9,7 +9,6 @@
       "EDNSClientSubnet": {
         "Policy": "disable",
         "ExternalIP": "",
-        "CustomIP": ""
       }
     }
   ],
@@ -22,7 +21,6 @@
       "EDNSClientSubnet":{
         "Policy": "disable",
         "ExternalIP": "",
-        "CustomIP": ""
       }
     }
   ],

@@ -6,7 +6,6 @@ package cache
 
 // Cache that holds RRs.
 
-
 import (
 	"crypto/sha1"
 	"sync"

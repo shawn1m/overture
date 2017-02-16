@@ -37,15 +37,15 @@ func initConfig(configFile string) {
 
 	if config.Config.MinimumTTL > 0 {
 		log.Info("Minimum TTL is " + strconv.Itoa(config.Config.MinimumTTL))
-	}else {
+	} else {
 		log.Info("Minimum TTL is disabled")
 	}
 
 	config.Config.CachePool = cache.New(config.Config.CacheSize)
 
-	if config.Config.CacheSize > 0{
+	if config.Config.CacheSize > 0 {
 		log.Info("CacheSize is " + strconv.Itoa(config.Config.CacheSize))
-	}else {
+	} else {
 		log.Info("Cache is disabled")
 	}
 
@@ -53,12 +53,11 @@ func initConfig(configFile string) {
 	config.Config.Hosts, *err = hosts.NewHostsfile(config.Config.HostsFile, &hosts.Config{0, false})
 	if *err != nil {
 		log.Info("Load hosts file failed: ", err)
-	}else{
+	} else {
 		log.Info("Load hosts file successful")
 	}
 
 	config.Config.ReservedIPNetworkList = getReservedIPNetworkList()
-
 }
 
 func getDomainList(path string, isBase64 bool) []string {

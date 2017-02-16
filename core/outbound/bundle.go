@@ -10,13 +10,12 @@ import (
 )
 
 type OutboundBundle struct {
-
 	ResponseMessage *dns.Msg
 	QuestionMessage *dns.Msg
 
-	bundleList      []*Outbound
-	upstreamList    []*config.DNSUpstream
-	inboundIP       string
+	bundleList   []*outbound
+	upstreamList []*config.DNSUpstream
+	inboundIP    string
 }
 
 func NewOutboundBundle(q *dns.Msg, ul []*config.DNSUpstream, inboundIP string) *OutboundBundle {
@@ -29,20 +28,20 @@ func NewOutboundBundle(q *dns.Msg, ul []*config.DNSUpstream, inboundIP string) *
 
 	for _, u := range ul {
 
-		o := NewOutbound(q, u, inboundIP)
+		o := newOutbound(q, u, inboundIP)
 		ob.bundleList = append(ob.bundleList, o)
 	}
 
 	return ob
 }
 
-func (ob *OutboundBundle) ExchangeFromRemote(IsCache bool, isLog bool) {
+func (ob *OutboundBundle) ExchangeFromRemote(isCache bool, isLog bool) {
 
 	ch := make(chan *dns.Msg, len(ob.bundleList))
 
 	for _, o := range ob.bundleList {
-		go func(o *Outbound, ch chan *dns.Msg) {
-			o.ExchangeFromRemote(IsCache, isLog)
+		go func(o *outbound, ch chan *dns.Msg) {
+			o.exchangeFromRemote(isCache, isLog)
 			ch <- o.ResponseMessage
 		}(o, ch)
 	}
@@ -58,7 +57,7 @@ func (ob *OutboundBundle) ExchangeFromRemote(IsCache bool, isLog bool) {
 func (ob *OutboundBundle) ExchangeFromLocal() bool {
 
 	for _, o := range ob.bundleList {
-		if o.ExchangeFromLocal() {
+		if o.exchangeFromLocal() {
 			ob.ResponseMessage = o.ResponseMessage
 			o.logAnswer(true)
 			return true
@@ -73,7 +72,7 @@ func (ob *OutboundBundle) UpdateDNSUpstream(ul []*config.DNSUpstream) {
 
 	for i := range ul {
 		ob.bundleList[i].DNSUpstream = ul[i]
-		ob.bundleList[i].EDNSClientSubnetIP = ob.bundleList[i].GetEDNSClientSubnetIP()
+		ob.bundleList[i].EDNSClientSubnetIP = ob.bundleList[i].getEDNSClientSubnetIP()
 	}
 }
 
