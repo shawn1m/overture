@@ -107,8 +107,8 @@ IPv6). Overture will handle both TCP and UDP requests.
             + `disable`: Disable this feature.
         + ExternalIP: If this field is empty, EDNS client subnet will be disabled when used.
 + RedirectIPv6Record: Redirect IPv6 DNS queries to alternative DNS servers.
-+ File: For Windows users, you can use relative path like `.\file.txt`, or absolute path like `C:\path\to\file.txt` in
-  the config.
++ File: For Windows users, you can use relative path like `./file.txt`, or properly escaped absolute path like 
+  `C:\\path\\to\\file.txt` in the config.
 + DomainBase64Decode: If this file is base64 decoded, use `true`
 + MinimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
 
