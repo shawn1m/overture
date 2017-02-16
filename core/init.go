@@ -18,7 +18,7 @@ import (
 	"github.com/holyshawn/overture/core/cache"
 	"github.com/holyshawn/overture/core/config"
 	"github.com/holyshawn/overture/core/inbound"
-	"github.com/janeczku/go-dnsmasq/hostsfile"
+	"github.com/holyshawn/overture/core/hostsfile"
 )
 
 func Init(configFilePath string) {
