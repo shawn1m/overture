@@ -1,29 +1,34 @@
 # overture
 [![Build Status](https://travis-ci.org/holyshawn/overture.png)](https://travis-ci.org/holyshawn/overture)
 
-Overture is a dns upstream switcher written in golang in order to purify dns records.
+Overture is a DNS upstream switcher written in Go in order to purify DNS records.
 
-Overture means an orchestral piece at the beginning of a classical music composition, just like dns which is nearly the first step of surfing the internet.
+Overture means an orchestral piece at the beginning of a classical music composition, just like DNS which is nearly the 
+first step of surfing the Internet.
 
-Overture forces IPv6 and custom domain dns queries to use alternative dns. Normally, when overture is using primary dns, if response answer is empty or is not matched with custom ip network, then overture will use alternative dns instead.
+Overture forces IPv6 and custom domain DNS queries to use alternative DNS when applicable. Overture will first query the
+ domain with listed primary DNS servers in configuration, if the answer is empty or does not match with the custom IP
+ network, then overture will query the alternative DNS servers and use their answer instead.
 
-**Warn: If you are using the release version, just try to follow the README file from compatible version branch tag, this README file is always in development.**
+**Please note: If you are using the binary releases, please follow the instructions in the README file with 
+corresponding git version tag. The README in master branch are subject to change and does not always reflect the correct
+ instructions to your binary release version.**
 
 ## Features
 
 + Full IPv6 support
 + IPv6 record (AAAA) redirection, especially for **CERNET IPv6** users
-+ TCP dns upstream with custom port
++ DNS upstream via TCP with custom port
 + Custom IP network filter
 + Custom domain filter, base64 decode support
 + Minimum TTL modification support
 + EDNS client subnet support
-+ Hosts support
-+ Cache with edns client subnet
++ Static hosts support via `hosts` file
++ Cache with EDNS client subnet
 
 ## Usages
 
-Download from the [release](https://github.com/holyshawn/overture/releases), just run:
+Download binary release from the [release page](https://github.com/holyshawn/overture/releases), and run:
 
     ./overture # Start with the default config file -> ./config.json
 
@@ -35,16 +40,17 @@ Verbose mode:
 
     ./overture -v # This will show more information
     
-Extra Help:
+For other options, please see help:
 
     ./overture -h # This will show some parameters for help
 
 Tips:
 
-+ You may need sudo to start overture on port 53.
-+ You may find default IP network file and domain file from acknowledgements or just download below files. These files are also included in the release.
-+ [ip_network file ](https://github.com/17mon/china_ip_list/raw/master/china_ip_list.txt)
-+ [base64 domain file](https://github.com/gfwlist/gfwlist/raw/master/gfwlist.txt)
++ Root privilege is required if you are listening on port 53
++ You may find default IP network file and domain file from the acknowledgements section, or just download below files.
+  These files are also included in the binary release package.
+  + [ip_network file ](https://github.com/17mon/china_ip_list/raw/master/china_ip_list.txt)
+  + [base64 domain file](https://github.com/gfwlist/gfwlist/raw/master/gfwlist.txt)
 
 ###  Configuration Syntax
 
@@ -78,10 +84,10 @@ Configuration file is "config.json" by default:
     }
   ],
   "RedirectIPv6Record": true,
-  "IPNetworkFile": "/xx/xx.txt",
-  "DomainFile": "/xx/xx.txt",
+  "IPNetworkFile": "/path/to/ip_network_file",
+  "DomainFile": "/path/to/domain_file",
   "DomainBase64Decode": true,
-  "HostsFile": "./hosts",
+  "HostsFile": "/path/to/hosts_file",
   "MinimumTTL": 0,
   "CacheSize" : 0
 }
@@ -89,25 +95,28 @@ Configuration file is "config.json" by default:
 
 Tips:
 
-+ BindAddress: No IP means listen both IPv4 and IPv6, overture will listen both TCP and UDP ports.
-+ DNS: You can use multiple dns upstream in this array.
-    + Name: Just for log.
-    + Protocol: "tcp" or "udp".
-    + EDNSClientSubnet: Improve dns accuracy. [RFC7871](https://tools.ietf.org/html/rfc7871)
++ BindAddress: Specifying only port (e.g. `:53`) will have overture listen on all available addresses (both IPv4 and 
+IPv6). Overture will handle both TCP and UDP requests.
++ DNS: You can specify multiple DNS upstream servers here.
+    + Name: This field is only used for logging
+    + Protocol: `tcp` or `udp`
+    + EDNSClientSubnet: Used to improve DNS accuracy. Please check [RFC7871](https://tools.ietf.org/html/rfc7871) for 
+    details.
         + Policy: 
-            + auto: If client IP is not in the reserved ip network, use client IP. Otherwise, use external IP.
-            + disable: Disable this feature.
-        + ExternalIP: If this field is empty, edns client subnet will be disabled when use it.
-+ RedirectIPv6Record: Redirect IPv6 dns query to alternative dns.
-+ File: For windows user, if you want to use absolute path, please try like this: "C:\\\xx\\\xx.txt".
-+ DomainBase64Decode: If this file is base64 decoded, use "true".
-+ MinimumTTL: Set the minimum TTL value (second) in order to improve cache sufficiency, use 0 to disable.
+            + `auto`: If client IP is not in the reserved IP network, use client IP. Otherwise, use external IP.
+            + `disable`: Disable this feature.
+        + ExternalIP: If this field is empty, EDNS client subnet will be disabled when used.
++ RedirectIPv6Record: Redirect IPv6 DNS queries to alternative DNS servers.
++ File: For Windows users, you can use relative path like `./file.txt`, or properly escaped absolute path like 
+  `C:\\path\\to\\file.txt` in the config.
++ DomainBase64Decode: If this file is base64 decoded, use `true`
++ MinimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
 
 Hosts: 
 
-A wildcard * in the left-most label of hostnames is allowed, like 192.168.0.2 *.db.local.
++ Using wildcard `*` in the subdomain for wildcard matching is allowed, e.g. `192.168.0.2 *.db.local`.
 
-DNS with edns client subnet:
+DNS servers with EDNS client subnet support:
 
 + DNSPod 119.29.29.29:53
 + GoogleDNS 8.8.8.8:53 \[2001:4860:4860::8888\]:53
