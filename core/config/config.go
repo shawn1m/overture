@@ -12,7 +12,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/holyshawn/overture/core/cache"
-	"github.com/janeczku/go-dnsmasq/hostsfile"
+	"github.com/holyshawn/overture/core/hostsfile"
 )
 
 var Config *config
