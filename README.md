@@ -100,8 +100,8 @@ Tips:
         + ExternalIP: If this field is empty, edns client subnet will be disabled when use it.
 + RedirectIPv6Record: Redirect IPv6 DNS query to alternative dns.
 + File: For windows user, if you want to use absolute path, please try like this: "C:\\\xx\\\xx.txt".
-+ DomainBase64Decode: Could be empty field.
-+ MinimumTTL: Set the minimum TTL value (second) in order to improve cache, use 0 to disable.
++ DomainBase64Decode: If this file is base64 decoded, use "true".
++ MinimumTTL: Set the minimum TTL value (second) in order to improve cache sufficiency, use 0 to disable.
 
 Hosts: 
 
