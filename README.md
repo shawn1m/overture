@@ -5,7 +5,7 @@ Overture is a dns upstream switcher written in golang in order to purify dns rec
 
 Overture means an orchestral piece at the beginning of a classical music composition, just like dns which is nearly the first step of surfing the internet.
 
-Overture forces IPv6 and custom domain DNS queries to use alternative dns. Normally, when overture is using primary dns, if response answer is empty or is not matched with custom ip network, then overture will use alternative dns instead.
+Overture forces IPv6 and custom domain dns queries to use alternative dns. Normally, when overture is using primary dns, if response answer is empty or is not matched with custom ip network, then overture will use alternative dns instead.
 
 **Warn: If you are using the release version, just try to follow the README file from compatible version branch tag, this README file is always in development.**
 
@@ -19,7 +19,7 @@ Overture forces IPv6 and custom domain DNS queries to use alternative dns. Norma
 + Minimum TTL modification support
 + EDNS client subnet support
 + Hosts support
-+ Cache with EDNS client subnet
++ Cache with edns client subnet
 
 ## Usages
 
@@ -90,15 +90,15 @@ Configuration file is "config.json" by default:
 Tips:
 
 + BindAddress: No IP means listen both IPv4 and IPv6, overture will listen both TCP and UDP ports.
-+ DNS: You can use multiple dns upstream in this list.
++ DNS: You can use multiple dns upstream in this array.
     + Name: Just for log.
     + Protocol: "tcp" or "udp".
-    + EDNSClientSubnet: Improve DNS accuracy. [RFC7871](https://tools.ietf.org/html/rfc7871)
+    + EDNSClientSubnet: Improve dns accuracy. [RFC7871](https://tools.ietf.org/html/rfc7871)
         + Policy: 
             + auto: If client IP is not in the reserved ip network, use client IP. Otherwise, use external IP.
             + disable: Disable this feature.
         + ExternalIP: If this field is empty, edns client subnet will be disabled when use it.
-+ RedirectIPv6Record: Redirect IPv6 DNS query to alternative dns.
++ RedirectIPv6Record: Redirect IPv6 dns query to alternative dns.
 + File: For windows user, if you want to use absolute path, please try like this: "C:\\\xx\\\xx.txt".
 + DomainBase64Decode: If this file is base64 decoded, use "true".
 + MinimumTTL: Set the minimum TTL value (second) in order to improve cache sufficiency, use 0 to disable.
@@ -107,7 +107,7 @@ Hosts:
 
 A wildcard * in the left-most label of hostnames is allowed, like 192.168.0.2 *.db.local.
 
-DNS with EDNS client subnet:
+DNS with edns client subnet:
 
 + DNSPod 119.29.29.29:53
 + GoogleDNS 8.8.8.8:53 \[2001:4860:4860::8888\]:53
