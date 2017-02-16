@@ -120,7 +120,7 @@ DNS with EDNS client subnet:
 + @sirupsen: the author of the [logrus](https://github.com/Sirupsen/logrus)
 + @17mon: the author of the [china_ip_list](https://github.com/17mon/china_ip_list)
 + @gfwlist: the author of the [gfwlist](https://github.com/gfwlist/gfwlist)
-+ Pull requests: @V-E-O, @sh1r0
++ Contributors: @V-E-O, @sh1r0, @maddie
 
 ## License
 
