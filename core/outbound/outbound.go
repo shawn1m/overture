@@ -14,32 +14,32 @@ import (
 	"github.com/miekg/dns"
 )
 
-type Outbound struct {
-	ResponseMessage *dns.Msg
-	QuestionMessage *dns.Msg
+type outbound struct {
+	ResponseMessage    *dns.Msg
+	QuestionMessage    *dns.Msg
 
 	DNSUpstream        *config.DNSUpstream
-	MinimumTTL         int
 	EDNSClientSubnetIP string
 
-	inboundIP string
+	minimumTTL         int
+	inboundIP          string
 }
 
-func NewOutbound(q *dns.Msg, d *config.DNSUpstream, inboundIP string) *Outbound {
+func newOutbound(q *dns.Msg, u *config.DNSUpstream, inboundIP string) *outbound {
 
-	o := &Outbound{
+	o := &outbound{
 		QuestionMessage: q,
-		DNSUpstream: d,
-		MinimumTTL:  config.Config.MinimumTTL,
-		inboundIP: inboundIP,
+		DNSUpstream:     u,
+		minimumTTL:      config.Config.MinimumTTL,
+		inboundIP:       inboundIP,
 	}
 
-	o.EDNSClientSubnetIP = o.GetEDNSClientSubnetIP()
+	o.EDNSClientSubnetIP = o.getEDNSClientSubnetIP()
 
 	return o
 }
 
-func (o *Outbound) ExchangeFromRemote(IsCache bool, isLog bool) {
+func (o *outbound) exchangeFromRemote(IsCache bool, isLog bool) {
 
 	if o.exchangeFromCache(isLog) {
 		return
@@ -65,8 +65,8 @@ func (o *Outbound) ExchangeFromRemote(IsCache bool, isLog bool) {
 
 	o.ResponseMessage = temp
 
-	if o.MinimumTTL > 0 {
-		setMinimumTTL(o.ResponseMessage, uint32(o.MinimumTTL))
+	if o.minimumTTL > 0 {
+		setMinimumTTL(o.ResponseMessage, uint32(o.minimumTTL))
 	}
 
 	if IsCache {
@@ -78,7 +78,7 @@ func (o *Outbound) ExchangeFromRemote(IsCache bool, isLog bool) {
 	}
 }
 
-func (o *Outbound) ExchangeFromLocal() bool {
+func (o *outbound) exchangeFromLocal() bool {
 
 	raw_name := o.QuestionMessage.Question[0].Name
 
@@ -89,9 +89,9 @@ func (o *Outbound) ExchangeFromLocal() bool {
 	return false
 }
 
-func (o *Outbound) exchangeFromCache(isLog bool) bool {
+func (o *outbound) exchangeFromCache(isLog bool) bool {
 
-	if config.Config.CacheSize == 0{
+	if config.Config.CacheSize == 0 {
 		return false
 	}
 
@@ -117,7 +117,7 @@ func (o *Outbound) exchangeFromCache(isLog bool) bool {
 	return false
 }
 
-func (o *Outbound) exchangeFromHosts(raw_name string) bool {
+func (o *outbound) exchangeFromHosts(raw_name string) bool {
 
 	if config.Config.Hosts == nil {
 		return false
@@ -144,7 +144,7 @@ func (o *Outbound) exchangeFromHosts(raw_name string) bool {
 	return false
 }
 
-func (o *Outbound) exchangeFromIP(raw_name string) bool {
+func (o *outbound) exchangeFromIP(raw_name string) bool {
 
 	name := raw_name[:len(raw_name)-1]
 	ip := net.ParseIP(name)
@@ -162,7 +162,7 @@ func (o *Outbound) exchangeFromIP(raw_name string) bool {
 	return false
 }
 
-func (o *Outbound) logAnswer(isLocal bool) {
+func (o *outbound) logAnswer(isLocal bool) {
 
 	for _, a := range o.ResponseMessage.Answer {
 		var name string
@@ -175,7 +175,7 @@ func (o *Outbound) logAnswer(isLocal bool) {
 	}
 }
 
-func (o *Outbound) createResponseMessageForLocal(r dns.RR) {
+func (o *outbound) createResponseMessageForLocal(r dns.RR) {
 	o.ResponseMessage = new(dns.Msg)
 	o.ResponseMessage.Answer = append(o.ResponseMessage.Answer, r)
 	o.ResponseMessage.SetReply(o.QuestionMessage)

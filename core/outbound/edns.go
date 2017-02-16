@@ -8,14 +8,14 @@ import (
 	"github.com/miekg/dns"
 )
 
-func (o *Outbound) GetEDNSClientSubnetIP() string {
+func (o *outbound) getEDNSClientSubnetIP() string {
 
-	switch o.DNSUpstream.EDNSClientSubnetPolicy {
+	switch o.DNSUpstream.EDNSClientSubnet.Policy {
 	case "auto":
 		if !common.IsIPMatchList(net.ParseIP(o.inboundIP), config.Config.ReservedIPNetworkList, false) {
 			return o.inboundIP
 		} else {
-			return o.DNSUpstream.EDNSClientSubnetExternalIP
+			return o.DNSUpstream.EDNSClientSubnet.ExternalIP
 		}
 	case "disable":
 	}
@@ -36,7 +36,7 @@ func setEDNSClientSubnet(m *dns.Msg, ip string) {
 	o.Hdr.Name = "."
 	o.Hdr.Rrtype = dns.TypeOPT
 
-	es := IsEDNSClientSubnet(o)
+	es := isEDNSClientSubnet(o)
 	if es == nil {
 		es = new(dns.EDNS0_SUBNET)
 		o.Option = append(o.Option, es)
@@ -53,7 +53,7 @@ func setEDNSClientSubnet(m *dns.Msg, ip string) {
 	es.SourceScope = 0
 }
 
-func IsEDNSClientSubnet(o *dns.OPT) *dns.EDNS0_SUBNET {
+func isEDNSClientSubnet(o *dns.OPT) *dns.EDNS0_SUBNET {
 
 	for _, s := range o.Option {
 		switch e := s.(type) {

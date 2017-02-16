@@ -16,6 +16,7 @@ import (
 )
 
 func InitServer(addr string) {
+
 	handler := dns.NewServeMux()
 	handler.HandleFunc(".", handleRequest)
 

@@ -17,13 +17,17 @@ import (
 
 var Config *config
 
+type EDNSClientSubnetType struct {
+	Policy     string
+	ExternalIP string
+}
+
 type DNSUpstream struct {
 	Name             string
 	Address          string
 	Protocol         string
 	Timeout          int
-	EDNSClientSubnetPolicy string
-	EDNSClientSubnetExternalIP string
+	EDNSClientSubnet EDNSClientSubnetType
 }
 
 type config struct {

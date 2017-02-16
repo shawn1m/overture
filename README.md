@@ -61,8 +61,7 @@ Configuration file is "config.json" by default:
       "Timeout": 6,
       "EDNSClientSubnet": {
         "Policy": "disable",
-        "ExternalIP": "",
-        "CustomIP": ""
+        "ExternalIP": ""
       }
     }
   ],
@@ -74,8 +73,7 @@ Configuration file is "config.json" by default:
       "Timeout": 6,
       "EDNSClientSubnet":{
         "Policy": "disable",
-        "ExternalIP": "",
-        "CustomIP": ""
+        "ExternalIP": ""
       }
     }
   ],
@@ -98,11 +96,10 @@ Tips:
     + EDNSClientSubnet: Improve DNS accuracy. [RFC7871](https://tools.ietf.org/html/rfc7871)
         + Policy: 
             + auto: If client IP is not in the reserved ip network, use client IP. Otherwise, use external IP.
-            + custom: Always use custom ip.
             + disable: Disable this feature.
         + ExternalIP: If this field is empty, edns client subnet will be disabled when use it.
 + RedirectIPv6Record: Redirect IPv6 DNS query to alternative dns.
-+ Path: For windows user, if you want to use absolute path, please use like this: "C:\\\xx\\\xx.txt".
++ File: For windows user, if you want to use absolute path, please try like this: "C:\\\xx\\\xx.txt".
 + DomainBase64Decode: Could be empty field.
 + MinimumTTL: Set the minimum TTL value (second) in order to improve cache, use 0 to disable.
 
