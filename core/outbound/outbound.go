@@ -104,15 +104,6 @@ func (o *outbound) exchangeFromCache(isLog bool) bool {
 		}
 		return true
 	}
-	m = config.Config.CachePool.Hit(cache.Key(o.QuestionMessage.Question[0], ""), o.QuestionMessage.Id)
-	if m != nil {
-		o.ResponseMessage = m
-		log.Debug(o.DNSUpstream.Name + " Hit: " + cache.Key(o.QuestionMessage.Question[0], ""))
-		if isLog {
-			o.logAnswer(false)
-		}
-		return true
-	}
 
 	return false
 }

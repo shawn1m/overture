@@ -96,7 +96,7 @@ func getIPNetworkList(path string) []*net.IPNet {
 	ipnl := make([]*net.IPNet, 0)
 	f, err := os.Open(path)
 	if err != nil {
-		log.Error("Open IP network file failed:", err)
+		log.Error("Open IP network file failed: ", err)
 		return nil
 	}
 	defer f.Close()
