@@ -66,14 +66,20 @@ func (ob *OutboundBundle) ExchangeFromLocal() bool {
 	return false
 }
 
-func (ob *OutboundBundle) UpdateDNSUpstream(ul []*config.DNSUpstream) {
+func (ob *OutboundBundle) UpdateFromDNSUpstream(ul []*config.DNSUpstream) {
 
 	ob.upstreamList = ul
+	ob.ResponseMessage = nil
 
-	for i := range ul {
-		ob.bundleList[i].DNSUpstream = ul[i]
-		ob.bundleList[i].EDNSClientSubnetIP = ob.bundleList[i].getEDNSClientSubnetIP()
+	var ol []*outbound
+
+	for _, u := range ul {
+		o := newOutbound(ob.QuestionMessage, u, ob.inboundIP)
+		o.QuestionMessage = ob.QuestionMessage
+		ol = append(ol, o)
 	}
+
+	ob.bundleList = ol
 }
 
 func (ob *OutboundBundle) EqualDNSUpstream(ul []*config.DNSUpstream) bool {

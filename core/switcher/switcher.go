@@ -35,7 +35,7 @@ func NewSwitcher(outbound *outbound.OutboundBundle) *Switcher {
 func (s *Switcher) ExchangeForIPv6() bool {
 
 	if (s.ob.QuestionMessage.Question[0].Qtype == dns.TypeAAAA) && s.redirectIPv6Record {
-		s.ob.UpdateDNSUpstream(config.Config.AlternativeDNS)
+		s.ob.UpdateFromDNSUpstream(config.Config.AlternativeDNS)
 		s.ob.ExchangeFromRemote(true, true)
 		log.Debug("Finally use alternative DNS")
 		return true
@@ -52,7 +52,7 @@ func (s *Switcher) ExchangeForDomain() bool {
 
 		if qn == d || strings.HasSuffix(qn, "."+d) {
 			log.Debug("Matched: Custom domain " + qn + " " + d)
-			s.ob.UpdateDNSUpstream(config.Config.AlternativeDNS)
+			s.ob.UpdateFromDNSUpstream(config.Config.AlternativeDNS)
 			s.ob.ExchangeFromRemote(true, true)
 			log.Debug("Finally use alternative DNS")
 			return true
@@ -68,7 +68,7 @@ func (s *Switcher) ExchangeForPrimaryDNSResponse() {
 
 	if s.ob.ResponseMessage == nil || len(s.ob.ResponseMessage.Answer) == 0 {
 		log.Debug("Primary DNS answer is empty, finally use alternative DNS")
-		s.ob.UpdateDNSUpstream(config.Config.AlternativeDNS)
+		s.ob.UpdateFromDNSUpstream(config.Config.AlternativeDNS)
 		s.ob.ExchangeFromRemote(true, true)
 		return
 	}
@@ -82,7 +82,7 @@ func (s *Switcher) ExchangeForPrimaryDNSResponse() {
 			break
 		}
 		log.Debug("IP network match fail, finally use alternative DNS")
-		s.ob.UpdateDNSUpstream(config.Config.AlternativeDNS)
+		s.ob.UpdateFromDNSUpstream(config.Config.AlternativeDNS)
 		s.ob.ExchangeFromRemote(true, true)
 		return
 	}
