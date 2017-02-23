@@ -41,6 +41,8 @@ type config struct {
 	HostsFile          string
 	MinimumTTL         int
 	CacheSize          int
+	UseSOCKS5Proxy     bool
+	SOCKS5Proxy        string
 
 	DomainList            []string
 	IPNetworkList         []*net.IPNet
