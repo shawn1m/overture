@@ -12,13 +12,13 @@
       }
     }
   ],
-  "AlternativeDNS":[
+  "AlternativeDNS": [
     {
       "Name": "OpenDNS",
       "Address": "208.67.222.222:443",
       "Protocol": "tcp",
       "Timeout": 6,
-      "EDNSClientSubnet":{
+      "EDNSClientSubnet": {
         "Policy": "disable",
         "ExternalIP": ""
       }
@@ -30,5 +30,7 @@
   "DomainBase64Decode": true,
   "HostsFile": "./hosts",
   "MinimumTTL": 0,
-  "CacheSize" : 0
+  "CacheSize": 0,
+  "UseSOCKS5Proxy": false,
+  "SOCKS5Proxy": "127.0.0.1:1080"
 }

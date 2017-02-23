@@ -12,17 +12,18 @@ import (
 	"github.com/holyshawn/overture/core/cache"
 	"github.com/holyshawn/overture/core/config"
 	"github.com/miekg/dns"
+	"golang.org/x/net/proxy"
 )
 
 type outbound struct {
-	ResponseMessage    *dns.Msg
-	QuestionMessage    *dns.Msg
+	ResponseMessage *dns.Msg
+	QuestionMessage *dns.Msg
 
 	DNSUpstream        *config.DNSUpstream
 	EDNSClientSubnetIP string
 
-	minimumTTL         int
-	inboundIP          string
+	minimumTTL int
+	inboundIP  string
 }
 
 func newOutbound(q *dns.Msg, u *config.DNSUpstream, inboundIP string) *outbound {
@@ -47,19 +48,51 @@ func (o *outbound) exchangeFromRemote(IsCache bool, isLog bool) {
 
 	setEDNSClientSubnet(o.QuestionMessage, o.EDNSClientSubnetIP)
 
-	c := new(dns.Client)
-	c.Net = o.DNSUpstream.Protocol
-	c.Timeout = time.Duration(o.DNSUpstream.Timeout) * time.Second
+	var temp *dns.Msg
 
-	temp, _, err := c.Exchange(o.QuestionMessage, o.DNSUpstream.Address)
-	if err != nil {
-		if err == dns.ErrTruncated {
-			log.Warn("Maybe your primary dns server does not support edns client subnet")
-			return
+	directExchange := func() *dns.Msg {
+		c := new(dns.Client)
+		c.Net = o.DNSUpstream.Protocol
+		c.Timeout = time.Duration(o.DNSUpstream.Timeout) * time.Second
+
+		t, _, err := c.Exchange(o.QuestionMessage, o.DNSUpstream.Address)
+		if err != nil {
+			if err == dns.ErrTruncated {
+				log.Warn("Maybe your primary dns server does not support edns client subnet")
+				return nil
+			}
 		}
+		return t
 	}
+
+	proxyExchange := func(conn *dns.Conn) *dns.Msg {
+		conn.WriteMsg(o.QuestionMessage)
+		in, _ := conn.ReadMsg()
+		conn.Close()
+		return in
+	}
+
+	if o.DNSUpstream.Protocol == "tcp" && config.Config.UseSOCKS5Proxy {
+		dialer, err := proxy.SOCKS5("tcp", config.Config.SOCKS5Proxy, nil, proxy.Direct)
+		if err != nil {
+			log.Warn("Failed to connect to SOCKS5 proxy, falling back to direct connection.")
+			temp = directExchange()
+		} else {
+			pconn, err := dialer.Dial("tcp", o.DNSUpstream.Address)
+			if err != nil {
+				log.Warn("Failed to connect to SOCKS5 proxy, falling back to direct connection.")
+				temp = directExchange()
+			} else {
+				conn := &dns.Conn{Conn: pconn}
+				temp = proxyExchange(conn)
+			}
+		}
+	} else {
+		temp = directExchange()
+	}
+
 	if temp == nil {
-		log.Debug(o.DNSUpstream.Name + " Fail: Response message is nil, maybe timeout, please check your query or dns configuration")
+		log.Debug(o.DNSUpstream.Name + "Failed: Response message is nil, maybe timeout, please check your query, dns or proxy configuration")
 		return
 	}
 

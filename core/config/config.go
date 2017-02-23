@@ -12,7 +12,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/holyshawn/overture/core/cache"
-	"github.com/holyshawn/overture/core/hostsfile"
+	"github.com/holyshawn/overture/core/hosts"
 )
 
 var Config *config
@@ -41,6 +41,8 @@ type config struct {
 	HostsFile          string
 	MinimumTTL         int
 	CacheSize          int
+	UseSOCKS5Proxy     bool
+	SOCKS5Proxy        string
 
 	DomainList            []string
 	IPNetworkList         []*net.IPNet

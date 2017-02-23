@@ -26,9 +26,20 @@ corresponding git version tag. The README in master branch are subject to change
 + Static hosts support via `hosts` file
 + Cache with EDNS client subnet
 
+## Installation
+
+You can download binary releases from the [release page.](https://github.com/holyshawn/overture/releases)
+
+For ArchLinux users, package `overture` is available in AUR. If you use a AUR helper i.e. `yaourt`, you can simply run:
+
+```
+yaourt -S overture
+```
+
+
 ## Usages
 
-Download binary release from the [release page](https://github.com/holyshawn/overture/releases), and run:
+After installing overture:
 
     ./overture # Start with the default config file -> ./config.json
 
@@ -89,7 +100,9 @@ Configuration file is "config.json" by default:
   "DomainBase64Decode": true,
   "HostsFile": "/path/to/hosts_file",
   "MinimumTTL": 0,
-  "CacheSize" : 0
+  "CacheSize" : 0,
+  "UseSOCKS5Proxy": false,
+  "SOCKS5Proxy": "127.0.0.1:1080"
 }
 ```
 
@@ -111,6 +124,10 @@ IPv6). Overture will handle both TCP and UDP requests.
   `C:\\path\\to\\file.txt` in the config.
 + DomainBase64Decode: If this file is base64 decoded, use `true`
 + MinimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
++ CacheSize: Set the in-memory cache size for DNS queries
++ UseSOCKS5Proxy: If set to `true`, all DNS upstreams with TCP as protocol will go through the SOCKS5 proxy defined
+  in `SOCKS5Proxy` option
++ SOCKS5Proxy: SOCKS5 proxy server address. This will only take effect when `UseSOCKS5Proxy` is enabled.
 
 Hosts: 
 
