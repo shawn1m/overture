@@ -15,14 +15,14 @@ import (
 )
 
 type outbound struct {
-	ResponseMessage    *dns.Msg
-	QuestionMessage    *dns.Msg
+	ResponseMessage *dns.Msg
+	QuestionMessage *dns.Msg
 
 	DNSUpstream        *config.DNSUpstream
 	EDNSClientSubnetIP string
 
-	minimumTTL         int
-	inboundIP          string
+	minimumTTL int
+	inboundIP  string
 }
 
 func newOutbound(q *dns.Msg, u *config.DNSUpstream, inboundIP string) *outbound {

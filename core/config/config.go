@@ -12,7 +12,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/holyshawn/overture/core/cache"
-	"github.com/holyshawn/overture/core/hostsfile"
+	"github.com/holyshawn/overture/core/hosts"
 )
 
 var Config *config
