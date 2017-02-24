@@ -17,8 +17,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/holyshawn/overture/core/cache"
 	"github.com/holyshawn/overture/core/config"
-	"github.com/holyshawn/overture/core/inbound"
 	"github.com/holyshawn/overture/core/hostsfile"
+	"github.com/holyshawn/overture/core/inbound"
 )
 
 func Init(configFilePath string) {

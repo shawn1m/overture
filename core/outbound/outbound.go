@@ -12,17 +12,18 @@ import (
 	"github.com/holyshawn/overture/core/cache"
 	"github.com/holyshawn/overture/core/config"
 	"github.com/miekg/dns"
+	"golang.org/x/net/proxy"
 )
 
 type outbound struct {
-	ResponseMessage    *dns.Msg
-	QuestionMessage    *dns.Msg
+	ResponseMessage *dns.Msg
+	QuestionMessage *dns.Msg
 
 	DNSUpstream        *config.DNSUpstream
 	EDNSClientSubnetIP string
 
-	minimumTTL         int
-	inboundIP          string
+	minimumTTL int
+	inboundIP  string
 }
 
 func newOutbound(q *dns.Msg, u *config.DNSUpstream, inboundIP string) *outbound {
@@ -39,7 +40,7 @@ func newOutbound(q *dns.Msg, u *config.DNSUpstream, inboundIP string) *outbound 
 	return o
 }
 
-func (o *outbound) exchangeFromRemote(IsCache bool, isLog bool) {
+func (o *outbound) exchangeFromRemote(isCache bool, isLog bool) {
 
 	if o.exchangeFromCache(isLog) {
 		return
@@ -47,11 +48,37 @@ func (o *outbound) exchangeFromRemote(IsCache bool, isLog bool) {
 
 	setEDNSClientSubnet(o.QuestionMessage, o.EDNSClientSubnetIP)
 
-	c := new(dns.Client)
-	c.Net = o.DNSUpstream.Protocol
-	c.Timeout = time.Duration(o.DNSUpstream.Timeout) * time.Second
+	var c net.Conn
+	if o.DNSUpstream.Socks5Address != "" {
+		s, err := proxy.SOCKS5(o.DNSUpstream.Protocol, o.DNSUpstream.Socks5Address, nil, proxy.Direct)
+		if err != nil {
+			log.Warn("Get socks5 proxy dialer failed: ", err)
+			return
+		}
+		c, err = s.Dial(o.DNSUpstream.Protocol, o.DNSUpstream.Address)
+		if err != nil {
+			log.Warn("Dial DNS upstream with SOCKS5 proxy failed: ", err)
+			return
+		}
+	} else {
+		var err error
+		c, err = net.Dial(o.DNSUpstream.Protocol, o.DNSUpstream.Address)
+		if err != nil {
+			log.Warn("Dial DNS upstream failed: ", err)
+			return
+		}
+	}
 
-	temp, _, err := c.Exchange(o.QuestionMessage, o.DNSUpstream.Address)
+	dnsTimeout := time.Duration(o.DNSUpstream.Timeout) * time.Second / 3
+
+	c.SetDeadline(time.Now().Add(dnsTimeout))
+	c.SetReadDeadline(time.Now().Add(dnsTimeout))
+	c.SetWriteDeadline(time.Now().Add(dnsTimeout))
+	co := &dns.Conn{Conn: c} // c is your net.Conn
+	co.WriteMsg(o.QuestionMessage)
+	temp, err := co.ReadMsg()
+	co.Close()
+
 	if err != nil {
 		if err == dns.ErrTruncated {
 			log.Warn("Maybe your primary dns server does not support edns client subnet")
@@ -69,7 +96,7 @@ func (o *outbound) exchangeFromRemote(IsCache bool, isLog bool) {
 		setMinimumTTL(o.ResponseMessage, uint32(o.minimumTTL))
 	}
 
-	if IsCache {
+	if isCache {
 		config.Config.CachePool.InsertMessage(cache.Key(o.QuestionMessage.Question[0], o.EDNSClientSubnetIP), o.ResponseMessage)
 	}
 

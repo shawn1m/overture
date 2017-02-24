@@ -64,6 +64,7 @@ Configuration file is "config.json" by default:
       "Name": "DNSPod",
       "Address": "119.29.29.29:53",
       "Protocol": "udp",
+      "Socks5Address": "",
       "Timeout": 6,
       "EDNSClientSubnet": {
         "Policy": "disable",
@@ -76,6 +77,7 @@ Configuration file is "config.json" by default:
       "Name": "OpenDNS",
       "Address": "208.67.222.222:443",
       "Protocol": "tcp",
+      "Socks5Address": "",
       "Timeout": 6,
       "EDNSClientSubnet":{
         "Policy": "disable",
@@ -100,6 +102,7 @@ IPv6). Overture will handle both TCP and UDP requests.
 + DNS: You can specify multiple DNS upstream servers here.
     + Name: This field is only used for logging
     + Protocol: `tcp` or `udp`
+    + Socks5Address: Forward dns query to this socks5 proxy, `“”` to disable.
     + EDNSClientSubnet: Used to improve DNS accuracy. Please check [RFC7871](https://tools.ietf.org/html/rfc7871) for 
     details.
         + Policy: 

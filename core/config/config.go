@@ -26,6 +26,7 @@ type DNSUpstream struct {
 	Name             string
 	Address          string
 	Protocol         string
+	Socks5Address    string
 	Timeout          int
 	EDNSClientSubnet EDNSClientSubnetType
 }

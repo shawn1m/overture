@@ -5,6 +5,7 @@
       "Name": "DNSPod",
       "Address": "119.29.29.29:53",
       "Protocol": "udp",
+      "Socks5Address": "",
       "Timeout": 6,
       "EDNSClientSubnet": {
         "Policy": "disable",
@@ -17,6 +18,7 @@
       "Name": "OpenDNS",
       "Address": "208.67.222.222:443",
       "Protocol": "tcp",
+      "Socks5Address": "",
       "Timeout": 6,
       "EDNSClientSubnet":{
         "Policy": "disable",
