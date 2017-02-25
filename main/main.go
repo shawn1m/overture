@@ -1,4 +1,4 @@
-// Copyright (c) 2016 holyshawn. All rights reserved.
+// Copyright (c) 2016 shawn1m. All rights reserved.
 // Use of this source code is governed by The MIT License (MIT) that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@ import (
 	"runtime"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/holyshawn/overture/core"
+	"github.com/shawn1m/overture/core"
 )
 
 func main() {
@@ -31,7 +31,7 @@ func main() {
 		log.SetLevel(log.InfoLevel)
 	}
 
-	log.Info("If you need any help or want to check update, please visit the project repository: https://github.com/holyshawn/overture")
+	log.Info("If you need any help or want to check update, please visit the project repository: https://github.com/shawn1m/overture")
 
 	runtime.GOMAXPROCS(processorNumber)
 

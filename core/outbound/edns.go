@@ -3,8 +3,8 @@ package outbound
 import (
 	"net"
 
-	"github.com/holyshawn/overture/core/common"
-	"github.com/holyshawn/overture/core/config"
+	"github.com/shawn1m/overture/core/common"
+	"github.com/shawn1m/overture/core/config"
 	"github.com/miekg/dns"
 )
 

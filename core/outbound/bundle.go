@@ -1,11 +1,11 @@
-// Copyright (c) 2016 holyshawn. All rights reserved.
+// Copyright (c) 2016 shawn1m. All rights reserved.
 // Use of this source code is governed by The MIT License (MIT) that can be
 // found in the LICENSE file.
 
 package outbound
 
 import (
-	"github.com/holyshawn/overture/core/config"
+	"github.com/shawn1m/overture/core/config"
 	"github.com/miekg/dns"
 )
 

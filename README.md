@@ -1,5 +1,5 @@
 # overture
-[![Build Status](https://travis-ci.org/holyshawn/overture.png)](https://travis-ci.org/holyshawn/overture)
+[![Build Status](https://travis-ci.org/shawn1m/overture.png)](https://travis-ci.org/shawn1m/overture)
 
 Overture is a DNS upstream switcher written in Go in order to purify DNS records.
 
@@ -28,7 +28,7 @@ corresponding git version tag. The README in master branch are subject to change
 
 ## Usages
 
-Download binary release from the [release page](https://github.com/holyshawn/overture/releases), and run:
+Download binary release from the [release page](https://github.com/shawn1m/overture/releases), and run:
 
     ./overture # Start with the default config file -> ./config.json
 

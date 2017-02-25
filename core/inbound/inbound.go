@@ -1,4 +1,4 @@
-// Copyright (c) 2016 holyshawn. All rights reserved.
+// Copyright (c) 2016 shawn1m. All rights reserved.
 // Use of this source code is governed by The MIT License (MIT) that can be
 // found in the LICENSE file.
 
@@ -9,9 +9,9 @@ import (
 	"os"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/holyshawn/overture/core/config"
-	"github.com/holyshawn/overture/core/outbound"
-	"github.com/holyshawn/overture/core/switcher"
+	"github.com/shawn1m/overture/core/config"
+	"github.com/shawn1m/overture/core/outbound"
+	"github.com/shawn1m/overture/core/switcher"
 	"github.com/miekg/dns"
 )
 
