@@ -5,8 +5,8 @@
 package outbound
 
 import (
-	"github.com/shawn1m/overture/core/config"
 	"github.com/miekg/dns"
+	"github.com/shawn1m/overture/core/config"
 )
 
 type OutboundBundle struct {

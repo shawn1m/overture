@@ -3,9 +3,9 @@ package outbound
 import (
 	"net"
 
+	"github.com/miekg/dns"
 	"github.com/shawn1m/overture/core/common"
 	"github.com/shawn1m/overture/core/config"
-	"github.com/miekg/dns"
 )
 
 func (o *outbound) getEDNSClientSubnetIP() string {

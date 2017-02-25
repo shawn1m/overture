@@ -9,9 +9,9 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/miekg/dns"
 	"github.com/shawn1m/overture/core/cache"
 	"github.com/shawn1m/overture/core/config"
-	"github.com/miekg/dns"
 	"golang.org/x/net/proxy"
 )
 

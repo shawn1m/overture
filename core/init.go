@@ -17,7 +17,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/shawn1m/overture/core/cache"
 	"github.com/shawn1m/overture/core/config"
-	"github.com/shawn1m/overture/core/hostsfile"
+	"github.com/shawn1m/overture/core/hosts"
 	"github.com/shawn1m/overture/core/inbound"
 )
 
@@ -50,7 +50,7 @@ func initConfig(configFile string) {
 	}
 
 	err := new(error)
-	config.Config.Hosts, *err = hosts.NewHostsfile(config.Config.HostsFile, &hosts.Config{0, false})
+	config.Config.Hosts, *err = hosts.New(config.Config.HostsFile, &hosts.Config{0, false})
 	if *err != nil {
 		log.Info("Load hosts file failed: ", err)
 	} else {

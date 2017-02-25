@@ -9,10 +9,10 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/miekg/dns"
 	"github.com/shawn1m/overture/core/common"
 	"github.com/shawn1m/overture/core/config"
 	"github.com/shawn1m/overture/core/outbound"
-	"github.com/miekg/dns"
 )
 
 type Switcher struct {

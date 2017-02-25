@@ -12,7 +12,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/shawn1m/overture/core/cache"
-	"github.com/shawn1m/overture/core/hostsfile"
+	"github.com/shawn1m/overture/core/hosts"
 )
 
 var Config *config
@@ -45,7 +45,7 @@ type config struct {
 
 	DomainList            []string
 	IPNetworkList         []*net.IPNet
-	Hosts                 *hosts.Hostsfile
+	Hosts                 *hosts.Hosts
 	ReservedIPNetworkList []*net.IPNet
 	CachePool             *cache.Cache
 }

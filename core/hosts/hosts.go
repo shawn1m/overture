@@ -2,7 +2,7 @@
 // Use of this source code is governed by The MIT License (MIT) that can be
 // found in the LICENSE file.
 
-// Package hosts provides address lookups from local hostfile (usually /etc/hosts).
+// Package hosts provides address lookups from local hosts (usually /etc/hosts).
 package hosts
 
 import (
@@ -16,15 +16,15 @@ import (
 	"github.com/miekg/dns"
 )
 
-// Config stores options for hostsfile
+// Config stores options for hosts
 type Config struct {
 	// Positive value enables polling
 	Poll    int
 	Verbose bool
 }
 
-// Hostsfile represents a file containing hosts
-type Hostsfile struct {
+// Hosts represents a file containing hosts
+type Hosts struct {
 	config *Config
 	hosts  *hostlist
 	file   struct {
@@ -35,10 +35,10 @@ type Hostsfile struct {
 	hostMutex sync.RWMutex
 }
 
-// NewHostsfile returns a new Hostsfile object
-func NewHostsfile(path string, config *Config) (*Hostsfile, error) {
-	h := Hostsfile{config: config}
-	// when no hostfile is given we return an empty hostlist
+// New returns a new Hosts object
+func New(path string, config *Config) (*Hosts, error) {
+	h := Hosts{config: config}
+	// when no hosts file is given we return an empty hostlist
 	if path == "" {
 		h.hosts = new(hostlist)
 		return &h, nil
@@ -64,7 +64,7 @@ func NewHostsfile(path string, config *Config) (*Hostsfile, error) {
 	return &h, nil
 }
 
-func (h *Hostsfile) FindHosts(name string) (addrs []net.IP, err error) {
+func (h *Hosts) FindHosts(name string) (addrs []net.IP, err error) {
 	name = strings.TrimSuffix(name, ".")
 	h.hostMutex.RLock()
 	defer h.hostMutex.RUnlock()
@@ -72,7 +72,7 @@ func (h *Hostsfile) FindHosts(name string) (addrs []net.IP, err error) {
 	return
 }
 
-func (h *Hostsfile) FindReverse(name string) (host string, err error) {
+func (h *Hosts) FindReverse(name string) (host string, err error) {
 	h.hostMutex.RLock()
 	defer h.hostMutex.RUnlock()
 
@@ -85,7 +85,7 @@ func (h *Hostsfile) FindReverse(name string) (host string, err error) {
 	return
 }
 
-func (h *Hostsfile) loadHostEntries() error {
+func (h *Hosts) loadHostEntries() error {
 	data, err := ioutil.ReadFile(h.file.path)
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ func (h *Hostsfile) loadHostEntries() error {
 	return nil
 }
 
-func (h *Hostsfile) monitorHostEntries(poll int) {
+func (h *Hosts) monitorHostEntries(poll int) {
 	hf := h.file
 
 	if hf.path == "" {

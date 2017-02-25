@@ -9,10 +9,10 @@ import (
 	"os"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/miekg/dns"
 	"github.com/shawn1m/overture/core/config"
 	"github.com/shawn1m/overture/core/outbound"
 	"github.com/shawn1m/overture/core/switcher"
-	"github.com/miekg/dns"
 )
 
 func InitServer(addr string) {

@@ -26,9 +26,14 @@ corresponding git version tag. The README in master branch are subject to change
 + Static hosts support via `hosts` file
 + Cache with EDNS client subnet
 
-## Usages
+## Installation
 
-Download binary release from the [release page](https://github.com/shawn1m/overture/releases), and run:
++ You can download binary releases from the [release page.](https://github.com/shawn1m/overture/releases)
++ For ArchLinux users, package `overture` is available in AUR. If you use a AUR helper i.e. `yaourt`, you can simply run:
+
+        yaourt -S overture
+
+## Usages
 
     ./overture # Start with the default config file -> ./config.json
 
