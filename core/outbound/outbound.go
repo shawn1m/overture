@@ -49,8 +49,8 @@ func (o *outbound) exchangeFromRemote(isCache bool, isLog bool) {
 	setEDNSClientSubnet(o.QuestionMessage, o.EDNSClientSubnetIP)
 
 	var c net.Conn
-	if o.DNSUpstream.Socks5Address != "" {
-		s, err := proxy.SOCKS5(o.DNSUpstream.Protocol, o.DNSUpstream.Socks5Address, nil, proxy.Direct)
+	if o.DNSUpstream.SOCKS5Address != "" {
+		s, err := proxy.SOCKS5(o.DNSUpstream.Protocol, o.DNSUpstream.SOCKS5Address, nil, proxy.Direct)
 		if err != nil {
 			log.Warn("Get socks5 proxy dialer failed: ", err)
 			return
