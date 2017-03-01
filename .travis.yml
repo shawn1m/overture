@@ -1,12 +1,17 @@
 language: go
 go:
-  - 1.7.x
+  - 1.8.x
+python:
+  - "3.6"
 install:
   - go get github.com/Sirupsen/logrus
   - go get github.com/miekg/dns
 script:
   - "echo Just for test!"
-before_deploy: "sh ./build.sh"
+before_deploy:
+  - "go version"
+  - "python3 --version"
+  - "python3 ./build.py"
 deploy:
   provider: releases
   api_key:
@@ -14,8 +19,15 @@ deploy:
   file:
     - overture-darwin-amd64.zip
     - overture-linux-386.zip
-    - overture-windows-amd64.zip
+    - overture-linux-amd64.zip
+    - overture-linux-arm.zip
+    - overture-linux-arm64.zip
+    - overture-linux-mips.zip
+    - overture-linux-mipsle.zip
+    - overture-linux-mips64.zip
+    - overture-linux-mips64le.zip
     - overture-windows-386.zip
+    - overture-windows-amd64.zip
   skip_cleanup: true
   on:
     tags: true
