@@ -1,11 +1,14 @@
 language: go
 go:
   - 1.8.x
-python:
-  - "3.6"
 install:
+  - go get golang.org/x/net/proxy
   - go get github.com/Sirupsen/logrus
   - go get github.com/miekg/dns
+addons:
+  apt:
+    packages:
+      - python3
 script:
   - "echo Just for test!"
 before_deploy:
