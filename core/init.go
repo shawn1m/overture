@@ -120,7 +120,7 @@ func getIPNetworkList(path string) []*net.IPNet {
 func getReservedIPNetworkList() []*net.IPNet {
 
 	ipnl := make([]*net.IPNet, 0)
-	localCIDR := []string{"127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"}
+	localCIDR := []string{"127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "100.64.0.0/10"}
 	for _, c := range localCIDR {
 		_, ip_net, err := net.ParseCIDR(c)
 		if err != nil {
