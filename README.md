@@ -3,14 +3,14 @@
 
 Overture is a DNS upstream switcher written in Go in order to purify DNS records.
 
-Overture means an orchestral piece at the beginning of a classical music composition, just like DNS which is nearly the 
+Overture means an orchestral piece at the beginning of a classical music composition, just like DNS which is nearly the
 first step of surfing the Internet.
 
 Overture forces IPv6 and custom domain DNS queries to use alternative DNS when applicable. Overture will first query the
  domain with listed primary DNS servers in configuration, if the answer is empty or does not match with the custom IP
  network, then overture will query the alternative DNS servers and use their answer instead.
 
-**Please note: If you are using the binary releases, please follow the instructions in the README file with 
+**Please note: If you are using the binary releases, please follow the instructions in the README file with
 corresponding git version tag. The README in master branch are subject to change and does not always reflect the correct
  instructions to your binary release version.**
 
@@ -45,7 +45,7 @@ Or use your own config file:
 Verbose mode:
 
     ./overture -v # This will show more information
-    
+
 For other options, please see help:
 
     ./overture -h # This will show some parameters for help
@@ -103,25 +103,25 @@ Configuration file is "config.json" by default:
 
 Tips:
 
-+ BindAddress: Specifying only port (e.g. `:53`) will have overture listen on all available addresses (both IPv4 and 
++ BindAddress: Specifying only port (e.g. `:53`) will have overture listen on all available addresses (both IPv4 and
 IPv6). Overture will handle both TCP and UDP requests.
 + DNS: You can specify multiple DNS upstream servers here.
     + Name: This field is only used for logging
     + Protocol: `tcp` or `udp`
     + SOCKS5Address: Forward dns query to this socks5 proxy, `“”` to disable.
-    + EDNSClientSubnet: Used to improve DNS accuracy. Please check [RFC7871](https://tools.ietf.org/html/rfc7871) for 
+    + EDNSClientSubnet: Used to improve DNS accuracy. Please check [RFC7871](https://tools.ietf.org/html/rfc7871) for
     details.
-        + Policy: 
+        + Policy:
             + `auto`: If client IP is not in the reserved IP network, use client IP. Otherwise, use external IP.
             + `disable`: Disable this feature.
         + ExternalIP: If this field is empty, EDNS client subnet will be disabled when used.
 + RedirectIPv6Record: Redirect IPv6 DNS queries to alternative DNS servers.
-+ File: For Windows users, you can use relative path like `./file.txt`, or properly escaped absolute path like 
++ File: For Windows users, you can use relative path like `./file.txt`, or properly escaped absolute path like
   `C:\\path\\to\\file.txt` in the config.
 + DomainBase64Decode: If this file is base64 decoded, use `true`
 + MinimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
 
-Hosts: 
+Hosts:
 
 + Using wildcard `*` in the subdomain for wildcard matching is allowed, e.g. `192.168.0.2 *.db.local`.
 
@@ -138,7 +138,7 @@ DNS servers with EDNS client subnet support:
 + @sirupsen: the author of the [logrus](https://github.com/Sirupsen/logrus)
 + @17mon: the author of the [china_ip_list](https://github.com/17mon/china_ip_list)
 + @gfwlist: the author of the [gfwlist](https://github.com/gfwlist/gfwlist)
-+ Contributors: @V-E-O, @sh1r0, @maddie
++ Contributors: @V-E-O, @sh1r0, @maddie, @hexchain
 
 ## License
 
