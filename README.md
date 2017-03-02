@@ -1,5 +1,5 @@
 # overture
-[![Build Status](https://travis-ci.org/shawn1m/overture.png)](https://travis-ci.org/shawn1m/overture)
+[![Build Status](https://travis-ci.org/shawn1m/overture.svg)](https://travis-ci.org/shawn1m/overture)
 
 Overture is a DNS upstream switcher written in Go in order to purify DNS records.
 
