@@ -46,6 +46,16 @@ if __name__ == "__main__":
                                           gfwlist_dict["name"] + " hosts config.json", shell=True)
                 except subprocess.CalledProcessError:
                     print(GOOS + " " + GOARCH + " failed.")
+                noguiName = "noGUI-overture-" + GOOS + "-" + GOARCH + '.exe'
+                version = subprocess.check_output("git describe --tags", shell=True).decode()
+                try:
+                    subprocess.check_call("GOOS=" + GOOS + " GOARCH=" + GOARCH + " CGO_ENABLED=0" +
+                                          " go build -ldflags " + "\'-H windowsgui -X main.version=" + version + "\' -o " + noguiName + " main/main.go", shell=True)
+                    subprocess.check_call("zip " + noguiName + ".zip " +
+                                          noguiName + " " + china_ip_list_dict["name"] + " " +
+                                          gfwlist_dict["name"] + " hosts config.json", shell=True)
+                except subprocess.CalledProcessError:
+                    print(GOOS + " " + GOARCH + " failed.")
             else:
                 name = "overture-" + GOOS + "-" + GOARCH
                 version = subprocess.check_output("git describe --tags", shell=True).decode()
