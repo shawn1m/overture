@@ -133,13 +133,13 @@ DNS servers with EDNS client subnet support:
 
 ## Acknowledgements
 
-+ @clowwindy: the author of the [ChinaDNS](https://github.com/shadowsocks/ChinaDNS)
-+ @miekg: the author of the [dns](https://github.com/miekg/dns), and [skydns](https://github.com/skynetservices/skydns)
-+ @janeczku: the author of the [go-dnsmasq](https://github.com/janeczku/go-dnsmasq)
-+ @sirupsen: the author of the [logrus](https://github.com/Sirupsen/logrus)
-+ @17mon: the author of the [china_ip_list](https://github.com/17mon/china_ip_list)
-+ @gfwlist: the author of the [gfwlist](https://github.com/gfwlist/gfwlist)
-+ Contributors: @V-E-O, @sh1r0, @maddie, @hexchain
++ Dependencies:
+    + [dns](https://github.com/miekg/dns): BSD-3-Clause
+    + [logrus](https://github.com/Sirupsen/logrus): MIT
++ Code reference:
+    + [skydns](https://github.com/skynetservices/skydns): MIT
+    + [go-dnsmasq](https://github.com/janeczku/go-dnsmasq):  MIT
++ Contributors: @V-E-O, @sh1r0, @maddie, @hexchain, @everfly
 
 ## License
 
