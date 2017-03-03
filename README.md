@@ -52,7 +52,8 @@ For other options, please see help:
 
 Tips:
 
-+ Root privilege is required if you are listening on port 53
++ Root privilege is required if you are listening on port 53.
++ For Windows users, please run overture on command prompt instead of double click.
 + You may find default IP network file and domain file from the acknowledgements section, or just download below files.
   These files are also included in the binary release package.
   + [ip_network file ](https://github.com/17mon/china_ip_list/raw/master/china_ip_list.txt)
@@ -106,7 +107,7 @@ Tips:
 + BindAddress: Specifying only port (e.g. `:53`) will have overture listen on all available addresses (both IPv4 and
 IPv6). Overture will handle both TCP and UDP requests.
 + DNS: You can specify multiple DNS upstream servers here.
-    + Name: This field is only used for logging
+    + Name: This field is only used for logging.
     + Protocol: `tcp` or `udp`
     + SOCKS5Address: Forward dns query to this socks5 proxy, `“”` to disable.
     + EDNSClientSubnet: Used to improve DNS accuracy. Please check [RFC7871](https://tools.ietf.org/html/rfc7871) for
@@ -118,7 +119,7 @@ IPv6). Overture will handle both TCP and UDP requests.
 + RedirectIPv6Record: Redirect IPv6 DNS queries to alternative DNS servers.
 + File: For Windows users, you can use relative path like `./file.txt`, or properly escaped absolute path like
   `C:\\path\\to\\file.txt` in the config.
-+ DomainBase64Decode: If this file is base64 decoded, use `true`
++ DomainBase64Decode: If this file is base64 decoded, use `true`.
 + MinimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
 
 Hosts:
