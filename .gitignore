@@ -31,8 +31,12 @@ _testmain.go
 # external packages folder
 vendor/
 
-config.json
 .idea/
 .DS_Store
+
+config.json
 *.txt
+*_sample
+*_temp
+
 overture-*

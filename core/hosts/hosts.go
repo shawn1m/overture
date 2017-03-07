@@ -2,7 +2,7 @@
 // Use of this source code is governed by The MIT License (MIT) that can be
 // found in the LICENSE file.
 
-// Package hosts provides address lookups from local hosts (usually /etc/hosts).
+// Package hosts_sample provides address lookups from local hosts_sample (usually /etc/hosts_sample).
 package hosts
 
 import (
@@ -16,14 +16,14 @@ import (
 	"github.com/miekg/dns"
 )
 
-// Config stores options for hosts
+// Config stores options for hosts_sample
 type Config struct {
 	// Positive value enables polling
 	Poll    int
 	Verbose bool
 }
 
-// Hosts represents a file containing hosts
+// Hosts represents a file containing hosts_sample
 type Hosts struct {
 	config *Config
 	hosts  *hostlist
@@ -38,7 +38,7 @@ type Hosts struct {
 // New returns a new Hosts object
 func New(path string, config *Config) (*Hosts, error) {
 	h := Hosts{config: config}
-	// when no hosts file is given we return an empty hostlist
+	// when no hosts_sample file is given we return an empty hostlist
 	if path == "" {
 		h.hosts = new(hostlist)
 		return &h, nil

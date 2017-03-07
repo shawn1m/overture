@@ -13,19 +13,19 @@ corresponding git version tag. The README in master branch are subject to change
 ## Features
 
 + Full IPv6 support
-+ Multiple DNS upstream:
++ Multiple DNS upstream
     + Via UDP/TCP with custom port
     + Via SOCKS5 proxy
     + With EDNS client subnet [RFC7871](https://tools.ietf.org/html/rfc7871)
-+ Dispatcher:
++ Dispatcher
     + IPv6 record (AAAA) redirection
     + Custom IP network
-    + Custom domain with base64 decode support
+    + Custom domain
 + Minimum TTL modification
-+ Static hosts support via `hosts` file
++ Static hosts support via `hosts_sample` file
 + Cache with EDNS client subnet support
 
-#### Dispatch process
+### Dispatch process
 
 Overture forces IPv6 and custom domain DNS queries to use alternative DNS when applicable.
 
@@ -47,7 +47,7 @@ Start with the default config file -> ./config.json
 
 Or use your own config file:
 
-    ./overture -c /path/to/config_file
+    ./overture -c /path/to/config.json
 
 Verbose mode:
 
@@ -61,10 +61,6 @@ Tips:
 
 + Root privilege is required if you are listening on port 53.
 + For Windows users, you can run overture on command prompt instead of double click.
-+ You can download sample IP network file and domain file from below.
-  These files are also included in the binary release package.
-  + [ip_network_file ](https://github.com/17mon/china_ip_list/raw/master/china_ip_list.txt)
-  + [base64_domain_file](https://github.com/gfwlist/gfwlist/raw/master/gfwlist.txt)
 
 ###  Configuration Syntax
 
@@ -100,10 +96,9 @@ Configuration file is "config.json" by default:
     }
   ],
   "RedirectIPv6Record": true,
-  "IPNetworkFile": "/path/to/ip_network_file",
-  "DomainFile": "/path/to/domain_file",
-  "DomainBase64Decode": true,
-  "HostsFile": "/path/to/hosts_file",
+  "IPNetworkFile": "./ip_network_sample",
+  "DomainFile": "./domain_sample",
+  "HostsFile": "./hosts_sample",
   "MinimumTTL": 0,
   "CacheSize" : 0
 }
@@ -119,14 +114,13 @@ IPv6). Overture will handle both TCP and UDP requests.
     + SOCKS5Address: Forward dns query to this socks5 proxy, `“”` to disable.
     + EDNSClientSubnet: Used to improve DNS accuracy. Please check [RFC7871](https://tools.ietf.org/html/rfc7871) for
     details.
-        + Policy:
+        + Policy
             + `auto`: If client IP is not in the reserved IP network, use client IP. Otherwise, use external IP.
             + `disable`: Disable this feature.
         + ExternalIP: If this field is empty, EDNS client subnet will be disabled when used.
 + RedirectIPv6Record: Redirect IPv6 DNS queries to alternative DNS servers.
-+ File: For Windows users, you can use relative path like `./file.txt`, or properly escaped absolute path like
++ File: You can use absolute path like `/path/to/file`. For Windows users, please use properly escaped path like
   `C:\\path\\to\\file.txt` in the config.
-+ DomainBase64Decode: If this file is base64 decoded, use `true`.
 + MinimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
 
 #### Domain file example (suffix match)
@@ -139,8 +133,9 @@ IPv6). Overture will handle both TCP and UDP requests.
     1.0.1.0/24
     1.0.2.0/23
 
-#### Hosts file example
+#### Hosts file example (support wildcard)
 
+    127.0.0.1 localhost
     10.8.0.1 example.com
     192.168.0.2 *.db.local
 

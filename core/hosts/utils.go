@@ -182,7 +182,7 @@ func parseLine(line string) hostlist {
 	return hostnames
 }
 
-// hostsFileMetadata returns metadata about the hosts file.
+// hostsFileMetadata returns metadata about the hosts_sample file.
 func hostsFileMetadata(path string) (time.Time, int64, error) {
 	fi, err := os.Stat(path)
 	if err != nil {
