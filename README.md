@@ -1,14 +1,10 @@
 # overture
 [![Build Status](https://travis-ci.org/shawn1m/overture.svg)](https://travis-ci.org/shawn1m/overture)
 
-Overture is a DNS upstream switcher written in Go in order to purify DNS records.
+Overture is a DNS dispatcher written in Go.
 
 Overture means an orchestral piece at the beginning of a classical music composition, just like DNS which is nearly the
 first step of surfing the Internet.
-
-Overture forces IPv6 and custom domain DNS queries to use alternative DNS when applicable. Overture will first query the
- domain with listed primary DNS servers in configuration, if the answer is empty or does not match with the custom IP
- network, then overture will query the alternative DNS servers and use their answer instead.
 
 **Please note: If you are using the binary releases, please follow the instructions in the README file with
 corresponding git version tag. The README in master branch are subject to change and does not always reflect the correct
@@ -17,44 +13,55 @@ corresponding git version tag. The README in master branch are subject to change
 ## Features
 
 + Full IPv6 support
-+ IPv6 record (AAAA) redirection, especially for **CERNET IPv6** users
-+ DNS upstream via TCP with custom port
-+ DNS upstream via SOCKS5 proxy
-+ Custom IP network filter
-+ Custom domain filter, base64 decode support
-+ Minimum TTL modification support
-+ EDNS client subnet support
++ Multiple DNS upstream:
+    + Via UDP/TCP with custom port
+    + Via SOCKS5 proxy
+    + With EDNS client subnet [RFC7871](https://tools.ietf.org/html/rfc7871)
++ Dispatcher:
+    + IPv6 record (AAAA) redirection
+    + Custom IP network
+    + Custom domain with base64 decode support
++ Minimum TTL modification
 + Static hosts support via `hosts` file
-+ Cache with EDNS client subnet
++ Cache with EDNS client subnet support
+
+#### Dispatch process
+
+Overture forces IPv6 and custom domain DNS queries to use alternative DNS when applicable.
+
+As for custom IP network, overture will first query the domain with primary DNS, if the answer is empty or the IP
+is not matched then overture will query the alternative DNS servers and use their answer instead.
 
 ## Installation
 
-+ You can download binary releases from the [release page.](https://github.com/shawn1m/overture/releases)
++ You can download binary releases from the [release](https://github.com/shawn1m/overture/releases).
 + For ArchLinux users, package `overture` is available in AUR. If you use a AUR helper i.e. `yaourt`, you can simply run:
 
         yaourt -S overture
 
 ## Usages
 
-    ./overture # Start with the default config file -> ./config.json
+Start with the default config file -> ./config.json
+
+    ./overture
 
 Or use your own config file:
 
-    ./overture -c /xxx/xxx/x.json # Use your own config file
+    ./overture -c /path/to/config_file
 
 Verbose mode:
 
-    ./overture -v # This will show more information
+    ./overture -v
 
 For other options, please see help:
 
-    ./overture -h # This will show some parameters for help
+    ./overture -h
 
 Tips:
 
 + Root privilege is required if you are listening on port 53.
-+ For Windows users, please run overture on command prompt instead of double click.
-+ You may find default IP network file and domain file from the acknowledgements section, or just download below files.
++ For Windows users, you can run overture on command prompt instead of double click.
++ You can download sample IP network file and domain file from below.
   These files are also included in the binary release package.
   + [ip_network file ](https://github.com/17mon/china_ip_list/raw/master/china_ip_list.txt)
   + [base64 domain file](https://github.com/gfwlist/gfwlist/raw/master/gfwlist.txt)
@@ -122,11 +129,22 @@ IPv6). Overture will handle both TCP and UDP requests.
 + DomainBase64Decode: If this file is base64 decoded, use `true`.
 + MinimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
 
-Hosts:
+#### Domain file example (suffix match)
 
-+ Using wildcard `*` in the subdomain for wildcard matching is allowed, e.g. `192.168.0.2 *.db.local`.
+    abc.com
+    example.net
 
-DNS servers with EDNS client subnet support:
+#### IP network file example
+
+    1.0.1.0/24
+    1.0.2.0/23
+
+#### Hosts file example
+
+    10.8.0.1 example.com
+    192.168.0.2 *.db.local
+
+#### DNS servers with EDNS client subnet support
 
 + DNSPod 119.29.29.29:53
 + GoogleDNS 8.8.8.8:53 \[2001:4860:4860::8888\]:53
