@@ -12,7 +12,7 @@ import (
 	"github.com/miekg/dns"
 	"github.com/shawn1m/overture/core/config"
 	"github.com/shawn1m/overture/core/outbound"
-	"github.com/shawn1m/overture/core/switcher"
+	"github.com/shawn1m/overture/core/dispatcher"
 )
 
 func InitServer(addr string) {
@@ -53,13 +53,13 @@ func handleRequest(w dns.ResponseWriter, q *dns.Msg) {
 	}
 
 	func() {
-		s := switcher.NewSwitcher(ob)
-		if s.ExchangeForIPv6() || s.ExchangeForDomain() {
+		d := dispatcher.New(ob)
+		if d.ExchangeForIPv6() || d.ExchangeForDomain() {
 			return
 		}
 
 		ob.ExchangeFromRemote(false, true)
-		s.ExchangeForPrimaryDNSResponse()
+		d.ExchangeForPrimaryDNSResponse()
 	}()
 
 	if ob.ResponseMessage != nil {

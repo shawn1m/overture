@@ -63,8 +63,8 @@ Tips:
 + For Windows users, you can run overture on command prompt instead of double click.
 + You can download sample IP network file and domain file from below.
   These files are also included in the binary release package.
-  + [ip_network file ](https://github.com/17mon/china_ip_list/raw/master/china_ip_list.txt)
-  + [base64 domain file](https://github.com/gfwlist/gfwlist/raw/master/gfwlist.txt)
+  + [ip_network_file ](https://github.com/17mon/china_ip_list/raw/master/china_ip_list.txt)
+  + [base64_domain_file](https://github.com/gfwlist/gfwlist/raw/master/gfwlist.txt)
 
 ###  Configuration Syntax
 
