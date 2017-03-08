@@ -18,7 +18,7 @@ type OutboundBundle struct {
 	inboundIP    string
 }
 
-func NewOutboundBundle(q *dns.Msg, ul []*config.DNSUpstream, inboundIP string) *OutboundBundle {
+func NewBundle(q *dns.Msg, ul []*config.DNSUpstream, inboundIP string) *OutboundBundle {
 
 	ob := new(OutboundBundle)
 

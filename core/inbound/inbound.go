@@ -11,8 +11,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
 	"github.com/shawn1m/overture/core/config"
-	"github.com/shawn1m/overture/core/outbound"
 	"github.com/shawn1m/overture/core/dispatcher"
+	"github.com/shawn1m/overture/core/outbound"
 )
 
 func InitServer(addr string) {
@@ -41,11 +41,11 @@ func InitServer(addr string) {
 func handleRequest(w dns.ResponseWriter, q *dns.Msg) {
 
 	inboundIP, _, _ := net.SplitHostPort(w.RemoteAddr().String())
-	ob := outbound.NewOutboundBundle(q, config.Config.PrimaryDNS, inboundIP)
+	ob := outbound.NewBundle(q, config.Config.PrimaryDNS, inboundIP)
 
 	log.Debug("Question: " + ob.QuestionMessage.Question[0].String())
 
-	if ob.ExchangeFromLocal() {
+	if ok := ob.ExchangeFromLocal(); ok {
 		if ob.ResponseMessage != nil {
 			w.WriteMsg(ob.ResponseMessage)
 			return

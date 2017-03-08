@@ -1,7 +1,7 @@
 # overture
 [![Build Status](https://travis-ci.org/shawn1m/overture.svg)](https://travis-ci.org/shawn1m/overture)
 
-Overture is a DNS dispatcher written in Go.
+Overture is a DNS server/dispatcher written in Go.
 
 Overture means an orchestral piece at the beginning of a classical music composition, just like DNS which is nearly the
 first step of surfing the Internet.
@@ -143,6 +143,63 @@ IPv6). Overture will handle both TCP and UDP requests.
 
 + DNSPod 119.29.29.29:53
 + GoogleDNS 8.8.8.8:53 \[2001:4860:4860::8888\]:53
+
+**EDNS client subnet only works via udp for most DNS servers, you can test it with patched [dig](https://www.gsic.uva.es/~jnisigl/dig-edns-client-subnet.html)**
+
+```
+dig @119.29.29.29 www.qq.com +client=119.29.29.29
+```
+
+```
+; <<>> DiG 9.9.3 <<>> @119.29.29.29 www.qq.com +client=119.29.29.29
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 64995
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+; CLIENT-SUBNET: 119.29.29.29/32/24
+;; QUESTION SECTION:
+;www.qq.com.			IN	A
+
+;; ANSWER SECTION:
+www.qq.com.		300	IN	A	101.226.103.106
+
+;; Query time: 52 msec
+;; SERVER: 119.29.29.29#53(119.29.29.29)
+;; WHEN: Wed Mar 08 18:00:52 CST 2017
+;; MSG SIZE  rcvd: 67
+```
+
+```
+dig @119.29.29.29 www.qq.com +client=119.29.29.29 +tcp
+```
+
+```
+; <<>> DiG 9.9.3 <<>> @119.29.29.29 www.qq.com +client=119.29.29.29 +tcp
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 58331
+;; flags: qr rd ra; QUERY: 1, ANSWER: 3, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+;; QUESTION SECTION:
+;www.qq.com.			IN	A
+
+;; ANSWER SECTION:
+www.qq.com.		43	IN	A	59.37.96.63
+www.qq.com.		43	IN	A	14.17.32.211
+www.qq.com.		43	IN	A	14.17.42.40
+
+;; Query time: 81 msec
+;; SERVER: 119.29.29.29#53(119.29.29.29)
+;; WHEN: Wed Mar 08 18:01:32 CST 2017
+;; MSG SIZE  rcvd: 87
+```
 
 ## Acknowledgements
 

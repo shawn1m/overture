@@ -50,7 +50,7 @@ func (d *Dispatcher) ExchangeForDomain() bool {
 
 	for _, domain := range d.domainList {
 
-		if qn == domain || strings.HasSuffix(qn, "."+ domain) {
+		if qn == domain || strings.HasSuffix(qn, "."+domain) {
 			log.Debug("Matched: Custom domain " + qn + " " + domain)
 			d.ob.UpdateFromDNSUpstream(config.Config.AlternativeDNS)
 			d.ob.ExchangeFromRemote(true, true)

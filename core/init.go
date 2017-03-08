@@ -47,11 +47,11 @@ func initConfig(configFile string) {
 		log.Info("Cache is disabled")
 	}
 
-	err := new(error)
-	config.Config.Hosts, *err = hosts.New(config.Config.HostsFile, &hosts.Config{0, false})
-	if *err != nil {
+	h, err := hosts.New(config.Config.HostsFile, &hosts.Config{0, false})
+	if err != nil {
 		log.Info("Load hosts file failed: ", err)
 	} else {
+		config.Config.Hosts = h
 		log.Info("Load hosts file successful")
 	}
 

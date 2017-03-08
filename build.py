@@ -31,7 +31,7 @@ def download_file():
             print("Get " + d["url"] + " failed.")
 
 
-def go_build():
+def go_build_zip():
     for o, a in GO_OS_ARCH_LIST:
         zip_name = "overture-" + o + "-" + a
         binary_name = zip_name + (".exe" if o == "windows" else "")
@@ -58,6 +58,7 @@ def create_hosts_sample_file():
     with open("./hosts_sample", "w") as f:
         f.write("127.0.0.1 localhost")
 
+
 if __name__ == "__main__":
 
     download_file()
@@ -65,4 +66,4 @@ if __name__ == "__main__":
     create_hosts_sample_file()
     subprocess.check_call("cp config.sample.json config.json", shell=True)
 
-    go_build()
+    go_build_zip()

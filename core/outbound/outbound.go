@@ -62,8 +62,7 @@ func (o *outbound) exchangeFromRemote(isCache bool, isLog bool) {
 		}
 	} else {
 		var err error
-		c, err = net.Dial(o.DNSUpstream.Protocol, o.DNSUpstream.Address)
-		if err != nil {
+		if c, err = net.Dial(o.DNSUpstream.Protocol, o.DNSUpstream.Address); err != nil {
 			log.Warn("Dial DNS upstream failed: ", err)
 			return
 		}
