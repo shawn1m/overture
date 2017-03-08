@@ -34,28 +34,29 @@ is not matched then overture will query the alternative DNS servers and use thei
 
 ## Installation
 
-+ You can download binary releases from the [release](https://github.com/shawn1m/overture/releases).
-+ For ArchLinux users, package `overture` is available in AUR. If you use a AUR helper i.e. `yaourt`, you can simply run:
+You can download binary releases from the [release](https://github.com/shawn1m/overture/releases).
 
-        yaourt -S overture
+For ArchLinux users, package `overture` is available in AUR. If you use a AUR helper i.e. `yaourt`, you can simply run:
+
+    yaourt -S overture
 
 ## Usages
 
 Start with the default config file -> ./config.json
 
-    ./overture
+    $ ./overture
 
 Or use your own config file:
 
-    ./overture -c /path/to/config.json
+    $ ./overture -c /path/to/config.json
 
 Verbose mode:
 
-    ./overture -v
+    $ ./overture -v
 
 For other options, please see help:
 
-    ./overture -h
+    $ ./overture -h
 
 Tips:
 
@@ -117,16 +118,17 @@ IPv6). Overture will handle both TCP and UDP requests.
         + Policy
             + `auto`: If client IP is not in the reserved IP network, use client IP. Otherwise, use external IP.
             + `disable`: Disable this feature.
-        + ExternalIP: If this field is empty, EDNS client subnet will be disabled when used.
+        + ExternalIP: If this field is empty, EDNS client subnet will be disabled when the inbound IP is not an external IP.
 + RedirectIPv6Record: Redirect IPv6 DNS queries to alternative DNS servers.
-+ File: You can use absolute path like `/path/to/file`. For Windows users, please use properly escaped path like
-  `C:\\path\\to\\file.txt` in the config.
++ File: Absolute path like `/path/to/file` is allowed. For Windows users, please use properly escaped path like
+  `C:\\path\\to\\file.txt` in the configuration.
 + MinimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
 
-#### Domain file example (suffix match)
+#### Domain file example (find domains and suffix match)
 
     abc.com
     example.net
+    x.org  www.qq.com
 
 #### IP network file example
 
@@ -144,13 +146,15 @@ IPv6). Overture will handle both TCP and UDP requests.
 + DNSPod 119.29.29.29:53
 + GoogleDNS 8.8.8.8:53 \[2001:4860:4860::8888\]:53
 
-**EDNS client subnet only works via udp for most DNS servers, you can test it with patched [dig](https://www.gsic.uva.es/~jnisigl/dig-edns-client-subnet.html)**
+**For DNSPod, EDNS client subnet only works via udp, you can test it by [patched dig](https://www.gsic.uva.es/~jnisigl/dig-edns-client-subnet.html)**
+
+Check the ``; CLIENT-SUBNET: 119.29.29.29/32/24``, if it exists, it works.
+
+The accuracy depends on the server side, do not judge EDNS client subnet feature by it.
 
 ```
-dig @119.29.29.29 www.qq.com +client=119.29.29.29
-```
+$ dig @119.29.29.29 www.qq.com +client=119.29.29.29
 
-```
 ; <<>> DiG 9.9.3 <<>> @119.29.29.29 www.qq.com +client=119.29.29.29
 ; (1 server found)
 ;; global options: +cmd
@@ -174,10 +178,8 @@ www.qq.com.		300	IN	A	101.226.103.106
 ```
 
 ```
-dig @119.29.29.29 www.qq.com +client=119.29.29.29 +tcp
-```
+$ dig @119.29.29.29 www.qq.com +client=119.29.29.29 +tcp
 
-```
 ; <<>> DiG 9.9.3 <<>> @119.29.29.29 www.qq.com +client=119.29.29.29 +tcp
 ; (1 server found)
 ;; global options: +cmd
