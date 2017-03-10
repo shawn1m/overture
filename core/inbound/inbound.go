@@ -7,6 +7,7 @@ package inbound
 import (
 	"net"
 	"os"
+	"sync"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
@@ -17,28 +18,38 @@ import (
 
 func InitServer(addr string) {
 
-	handler := dns.NewServeMux()
-	handler.HandleFunc(".", handleRequest)
-
-	tcp_server := &dns.Server{Addr: addr, Net: "tcp", Handler: handler}
-	go func() {
-		err := tcp_server.ListenAndServe()
-		if err != nil {
-			log.Fatal("Listen failed: ", err)
-			os.Exit(1)
-		}
-	}()
-
-	udp_server := &dns.Server{Addr: addr, Net: "udp", Handler: handler}
-	log.Info("Start overture on " + addr)
-	err := udp_server.ListenAndServe()
-	if err != nil {
-		log.Fatal("Listen failed: ", err)
-		os.Exit(1)
-	}
+	s := &server{addr: addr}
+	s.Run()
 }
 
-func handleRequest(w dns.ResponseWriter, q *dns.Msg) {
+type server struct {
+	addr string
+}
+
+func (s *server) Run() {
+
+	mux := dns.NewServeMux()
+	mux.Handle(".", s)
+
+	group := new(sync.WaitGroup)
+	group.Add(2)
+
+	log.Info("Start overture on " + s.addr)
+
+	for _, p := range [2]string{"tcp", "udp"} {
+		go func(p string) {
+			err := dns.ListenAndServe(s.addr, p, mux)
+			if err != nil {
+				log.Fatal("Listen " + p + " failed: ", err)
+				os.Exit(1)
+			}
+		}(p)
+	}
+
+	group.Wait()
+}
+
+func (s *server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 
 	inboundIP, _, _ := net.SplitHostPort(w.RemoteAddr().String())
 	ob := outbound.NewBundle(q, config.Config.PrimaryDNS, inboundIP)
