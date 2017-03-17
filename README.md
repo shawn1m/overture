@@ -40,6 +40,8 @@ For ArchLinux users, package `overture` is available in AUR. If you use a AUR he
 
     yaourt -S overture
 
+For mips users, please assure the kernel FPU emulation is enabled, check [#26](https://github.com/shawn1m/overture/issues/26) [golang/go#18880](https://github.com/golang/go/issues/18880).
+
 ## Usages
 
 Start with the default config file -> ./config.json
@@ -99,6 +101,7 @@ Configuration file is "config.json" by default:
   "RedirectIPv6Record": true,
   "IPNetworkFile": "./ip_network_sample",
   "DomainFile": "./domain_sample",
+  "DomainBase64Decode": true,
   "HostsFile": "./hosts_sample",
   "MinimumTTL": 0,
   "CacheSize" : 0
