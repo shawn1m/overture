@@ -38,6 +38,7 @@ type config struct {
 	RedirectIPv6Record bool
 	IPNetworkFile      string
 	DomainFile         string
+	DomainBase64Decode bool
 	HostsFile          string
 	MinimumTTL         int
 	CacheSize          int

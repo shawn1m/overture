@@ -6,11 +6,13 @@ package core
 
 import (
 	"bufio"
+	"encoding/base64"
 	"io/ioutil"
 	"net"
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/shawn1m/overture/core/cache"
@@ -31,7 +33,7 @@ func initConfig(configFile string) {
 	config.Config = config.New(configFile)
 
 	config.Config.IPNetworkList = getIPNetworkList(config.Config.IPNetworkFile)
-	config.Config.DomainList = getDomainList(config.Config.DomainFile)
+	config.Config.DomainList = getDomainList(config.Config.DomainFile, config.Config.DomainBase64Decode)
 
 	if config.Config.MinimumTTL > 0 {
 		log.Info("Minimum TTL is " + strconv.Itoa(config.Config.MinimumTTL))
@@ -58,7 +60,7 @@ func initConfig(configFile string) {
 	config.Config.ReservedIPNetworkList = getReservedIPNetworkList()
 }
 
-func getDomainList(path string) []string {
+func getDomainList(path string, isBase64 bool) []string {
 
 	var dl []string
 	f, err := ioutil.ReadFile(path)
@@ -68,7 +70,18 @@ func getDomainList(path string) []string {
 	}
 
 	re := regexp.MustCompile(`([\w\-\_]+\.[\w\.\-\_]+)[\/\*]*`)
-	dl = re.FindAllString(string(f), -1)
+	if isBase64 {
+		fd, err := base64.StdEncoding.DecodeString(string(f))
+		if err != nil {
+			log.Error("Decode Custom domain failed: ", err)
+			return nil
+		}
+		fds := string(fd)
+		n := strings.Index(fds, "Whitelist Start")
+		dl = re.FindAllString(fds[:n], -1)
+	} else {
+		dl = re.FindAllString(string(f), -1)
+	}
 
 	if len(dl) > 0 {
 		log.Info("Load domain file successful")

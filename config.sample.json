@@ -29,6 +29,7 @@
   "RedirectIPv6Record": true,
   "IPNetworkFile": "./ip_network_sample",
   "DomainFile": "./domain_sample",
+  "DomainBase64Decode": true,
   "HostsFile": "./hosts_sample",
   "MinimumTTL": 0,
   "CacheSize" : 0

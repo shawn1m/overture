@@ -128,7 +128,7 @@ IPv6). Overture will handle both TCP and UDP requests.
 
     abc.com
     example.net
-    x.org  www.qq.com
+    xxxxx.org
 
 #### IP network file example
 

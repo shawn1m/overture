@@ -62,7 +62,7 @@ def create_hosts_sample_file():
 if __name__ == "__main__":
 
     download_file()
-    decode_domain_sample()
+    # decode_domain_sample()
     create_hosts_sample_file()
     subprocess.check_call("cp config.sample.json config.json", shell=True)
 

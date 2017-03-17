@@ -40,7 +40,7 @@ func (s *server) Run() {
 		go func(p string) {
 			err := dns.ListenAndServe(s.addr, p, mux)
 			if err != nil {
-				log.Fatal("Listen " + p + " failed: ", err)
+				log.Fatal("Listen "+p+" failed: ", err)
 				os.Exit(1)
 			}
 		}(p)
