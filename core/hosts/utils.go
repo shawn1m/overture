@@ -62,6 +62,9 @@ func newHostlistString(data string) *hostlist {
 	if isBar {
 		bar.Finish()
 	}
+	if len(hostlist) == 0 {
+		return nil
+	}
 	return &hostlist
 }
 

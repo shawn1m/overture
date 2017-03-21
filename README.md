@@ -40,7 +40,7 @@ For ArchLinux users, package `overture` is available in AUR. If you use a AUR he
 
     yaourt -S overture
 
-For mips users, please assure the kernel FPU emulation is enabled, check [#26](https://github.com/shawn1m/overture/issues/26) [golang/go#18880](https://github.com/golang/go/issues/18880).
+For mips users, please assure the kernel FPU emulation is enabled, check [#26](https://github.com/shawn1m/overture/issues/26) [golang/go#18880](https://github.com/golang/go/issues/18880) for details.
 
 ## Usages
 
@@ -105,7 +105,8 @@ Configuration file is "config.json" by default:
   "DomainBase64Decode": true,
   "HostsFile": "./hosts_sample",
   "MinimumTTL": 0,
-  "CacheSize" : 0
+  "CacheSize" : 0,
+  "RejectQtype": [255]
 }
 ```
 
@@ -128,6 +129,7 @@ IPv6). Overture will handle both TCP and UDP requests.
 + File: Absolute path like `/path/to/file` is allowed. For Windows users, please use properly escaped path like
   `C:\\path\\to\\file.txt` in the configuration.
 + MinimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
++ RejectQtype: Reject inbound query with specific DNS record types, check [List of DNS record types](https://en.wikipedia.org/wiki/List_of_DNS_record_types) for details.
 
 #### Domain file example (find domains and suffix match)
 

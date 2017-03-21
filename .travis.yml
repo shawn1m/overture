@@ -5,6 +5,7 @@ install:
   - go get golang.org/x/net/proxy
   - go get github.com/Sirupsen/logrus
   - go get github.com/miekg/dns
+  - go get gopkg.in/cheggaaa/pb.v1
 addons:
   apt:
     packages:

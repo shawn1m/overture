@@ -33,5 +33,6 @@
   "DomainBase64Decode": true,
   "HostsFile": "./hosts_sample",
   "MinimumTTL": 0,
-  "CacheSize" : 0
+  "CacheSize" : 0,
+  "RejectQtype": [255]
 }

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/miekg/dns"
 )
 
 func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool) bool {
@@ -28,4 +29,13 @@ func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool) bool {
 func TimeTrack(start time.Time, name string) {
 	elapsed := time.Since(start)
 	log.Debugf("%s took %s", name, elapsed)
+}
+
+func IsAnswerEmpty(m *dns.Msg) bool {
+
+	if len(m.Answer) == 0 {
+		return true
+	}
+
+	return false
 }

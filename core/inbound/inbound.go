@@ -56,6 +56,12 @@ func (s *server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 
 	log.Debug("Question: " + ob.QuestionMessage.Question[0].String())
 
+	for _, qt := range config.Config.RejectQtype{
+		if isQuestionType(q, qt){
+			return
+		}
+	}
+
 	if ok := ob.ExchangeFromLocal(); ok {
 		if ob.ResponseMessage != nil {
 			w.WriteMsg(ob.ResponseMessage)
@@ -63,10 +69,10 @@ func (s *server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 		}
 	}
 
-	func () {
-		if config.Config.OnlyPrimaryDNS{
+	func() {
+		if config.Config.OnlyPrimaryDNS {
 			ob.ExchangeFromRemote(true, true)
-		}else {
+		} else {
 			d := dispatcher.New(ob)
 			if d.ExchangeForIPv6() || d.ExchangeForDomain() {
 				return
@@ -81,3 +87,5 @@ func (s *server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 		w.WriteMsg(ob.ResponseMessage)
 	}
 }
+
+func isQuestionType(q *dns.Msg, qt uint16) bool {return q.Question[0].Qtype == qt}

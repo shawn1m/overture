@@ -43,6 +43,7 @@ type config struct {
 	HostsFile          string
 	MinimumTTL         int
 	CacheSize          int
+	RejectQtype       []uint16
 
 	DomainList            []string
 	IPNetworkList         []*net.IPNet
