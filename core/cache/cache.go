@@ -7,12 +7,12 @@ package cache
 // Cache that holds RRs.
 
 import (
-	"crypto/sha1"
 	"sync"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
+	"strconv"
 )
 
 // Elem hold an answer and additional section that returned from the cache.
@@ -98,11 +98,6 @@ func (c *Cache) Search(s string) (*dns.Msg, time.Time, bool) {
 }
 
 // Key creates a hash key from a question section.
-func Key(q dns.Question, ednsIP string) string {
-	h := sha1.New()
-	i := append([]byte(q.Name), packUint16(q.Qtype)...)
-	i = append(i, []byte(ednsIP)...)
-	return string(h.Sum(i))
-}
+func Key(q dns.Question, ednsIP string) string {return q.Name + " " + strconv.Itoa(int(q.Qtype)) + " " + ednsIP}
 
 func packUint16(i uint16) []byte { return []byte{byte(i >> 8), byte(i)} }
