@@ -12,7 +12,6 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
 )
 
@@ -48,8 +47,6 @@ func New(path string, config *Config) (*Hosts, error) {
 	if err := h.loadHostEntries(); err != nil {
 		return nil, err
 	}
-
-	log.Debugf("Found host:ip pairs in %s:", h.file.path)
 
 	return &h, nil
 }

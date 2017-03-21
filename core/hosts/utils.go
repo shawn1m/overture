@@ -13,6 +13,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/shawn1m/overture/core/common"
+	"gopkg.in/cheggaaa/pb.v1"
 )
 
 type hostlist []*hostname
@@ -25,15 +26,29 @@ type hostname struct {
 }
 
 // newHostlist creates a hostlist by parsing a file
-func newHostlist(data []byte) *hostlist {return newHostlistString(string(data))}
+func newHostlist(data []byte) *hostlist { return newHostlistString(string(data)) }
 
 func newHostlistString(data string) *hostlist {
-	defer common.TimeTrack(time.Now(), "Newhosts")
+	isBar := false
+	var bar *pb.ProgressBar
+	defer common.TimeTrack(time.Now(), "Load hosts")
 	hostlist := hostlist{}
+	temp := strings.Split(data, "\n")
+	if len(temp) >= 10000 {
+		isBar = true
+	}
 	wg := new(sync.WaitGroup)
-	for _, v := range strings.Split(data, "\n") {
+	if isBar {
+		log.Info("Prepare to load hosts ...")
+		bar = pb.StartNew(len(temp))
+		bar.SetRefreshRate(100 * time.Microsecond)
+	}
+	for _, v := range temp {
 		wg.Add(1)
-		go func(v string){
+		go func(v string) {
+			if isBar {
+				defer bar.Increment()
+			}
 			defer wg.Done()
 			for _, hostname := range parseLine(v) {
 				err := hostlist.add(hostname)
@@ -44,6 +59,9 @@ func newHostlistString(data string) *hostlist {
 		}(v)
 	}
 	wg.Wait()
+	if isBar {
+		bar.Finish()
+	}
 	return &hostlist
 }
 

@@ -37,8 +37,8 @@ def go_build_zip():
         binary_name = zip_name + (".exe" if o == "windows" else "")
         version = subprocess.check_output("git describe --tags", shell=True).decode()
         try:
-            subprocess.check_call("GOOS=" + o + " GOARCH=" + a + " CGO_ENABLED=0" + " go build -ldflags " +
-                                  "\"-X main.version=" + version + "\" -o " + binary_name + " main/main.go", shell=True)
+            subprocess.check_call("GOOS=" + o + " GOARCH=" + a + " CGO_ENABLED=0" + " go build -ldflags \"-s -w " +
+                                  "-X main.version=" + version + "\" -o " + binary_name + " main/main.go", shell=True)
             subprocess.check_call("zip " + zip_name + ".zip " + binary_name + " " + IP_NETWORK_SAMPLE_DICT["name"] + " " +
                                   DOMAIN_SAMPLE_DICT["name"] + " hosts_sample config.json", shell=True)
         except subprocess.CalledProcessError:

@@ -211,6 +211,7 @@ www.qq.com.		43	IN	A	14.17.42.40
 + Dependencies:
     + [dns](https://github.com/miekg/dns): BSD-3-Clause
     + [logrus](https://github.com/Sirupsen/logrus): MIT
+    + [pb](https://github.com/cheggaaa/pb): BSD-3-Clause
 + Code reference:
     + [skydns](https://github.com/skynetservices/skydns): MIT
     + [go-dnsmasq](https://github.com/janeczku/go-dnsmasq):  MIT
