@@ -63,14 +63,18 @@ func (s *server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 		}
 	}
 
-	func() {
-		d := dispatcher.New(ob)
-		if d.ExchangeForIPv6() || d.ExchangeForDomain() {
-			return
-		}
+	func () {
+		if config.Config.OnlyPrimaryDNS{
+			ob.ExchangeFromRemote(true, true)
+		}else {
+			d := dispatcher.New(ob)
+			if d.ExchangeForIPv6() || d.ExchangeForDomain() {
+				return
+			}
 
-		ob.ExchangeFromRemote(false, true)
-		d.ExchangeForPrimaryDNSResponse()
+			ob.ExchangeFromRemote(false, true)
+			d.ExchangeForPrimaryDNSResponse()
+		}
 	}()
 
 	if ob.ResponseMessage != nil {

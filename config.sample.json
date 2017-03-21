@@ -26,6 +26,7 @@
       }
     }
   ],
+  "OnlyPrimaryDNS": false,
   "RedirectIPv6Record": true,
   "IPNetworkFile": "./ip_network_sample",
   "DomainFile": "./domain_sample",

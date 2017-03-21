@@ -22,7 +22,7 @@ corresponding git version tag. The README in master branch are subject to change
     + Custom IP network
     + Custom domain
 + Minimum TTL modification
-+ Static hosts support via `hosts_sample` file
++ Static hosts file support
 + Cache with EDNS client subnet support
 
 ### Dispatch process
@@ -98,6 +98,7 @@ Configuration file is "config.json" by default:
       }
     }
   ],
+  "OnlyPrimaryDNS": false,
   "RedirectIPv6Record": true,
   "IPNetworkFile": "./ip_network_sample",
   "DomainFile": "./domain_sample",
@@ -122,6 +123,7 @@ IPv6). Overture will handle both TCP and UDP requests.
             + `auto`: If client IP is not in the reserved IP network, use client IP. Otherwise, use external IP.
             + `disable`: Disable this feature.
         + ExternalIP: If this field is empty, EDNS client subnet will be disabled when the inbound IP is not an external IP.
++ OnlyPrimaryDNS: Disable dispatcher feature, use primary DNS only.
 + RedirectIPv6Record: Redirect IPv6 DNS queries to alternative DNS servers.
 + File: Absolute path like `/path/to/file` is allowed. For Windows users, please use properly escaped path like
   `C:\\path\\to\\file.txt` in the configuration.

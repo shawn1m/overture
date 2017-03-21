@@ -35,6 +35,7 @@ type config struct {
 	BindAddress        string `json:"BindAddress"`
 	PrimaryDNS         []*DNSUpstream
 	AlternativeDNS     []*DNSUpstream
+	OnlyPrimaryDNS     bool
 	RedirectIPv6Record bool
 	IPNetworkFile      string
 	DomainFile         string

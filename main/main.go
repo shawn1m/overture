@@ -34,7 +34,7 @@ func main() {
 	}
 
 	log.Info("Overture " + version)
-	log.Info("If you need any help or want to check update, please visit the project repository: https://github.com/shawn1m/overture")
+	log.Info("If you need any help, please visit the project repository: https://github.com/shawn1m/overture")
 
 	runtime.GOMAXPROCS(processorNumber)
 
