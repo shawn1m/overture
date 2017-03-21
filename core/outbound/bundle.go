@@ -7,6 +7,7 @@ package outbound
 import (
 	"github.com/miekg/dns"
 	"github.com/shawn1m/overture/core/config"
+	"github.com/shawn1m/overture/core/common"
 )
 
 type OutboundBundle struct {
@@ -46,12 +47,19 @@ func (ob *OutboundBundle) ExchangeFromRemote(isCache bool, isLog bool) {
 		}(o, ch)
 	}
 
+	var em *dns.Msg
+
 	for i := 0; i < len(ob.bundleList); i++ {
 		if m := <-ch; m != nil {
+			if common.IsAnswerEmpty(m){
+				em = m
+				break
+			}
 			ob.ResponseMessage = m
 			return
 		}
 	}
+	ob.ResponseMessage = em
 }
 
 func (ob *OutboundBundle) ExchangeFromLocal() bool {
