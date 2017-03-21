@@ -99,5 +99,3 @@ func (c *Cache) Search(s string) (*dns.Msg, time.Time, bool) {
 
 // Key creates a hash key from a question section.
 func Key(q dns.Question, ednsIP string) string {return q.Name + " " + strconv.Itoa(int(q.Qtype)) + " " + ednsIP}
-
-func packUint16(i uint16) []byte { return []byte{byte(i >> 8), byte(i)} }

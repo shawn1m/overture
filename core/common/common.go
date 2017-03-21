@@ -6,6 +6,7 @@ package common
 
 import (
 	"net"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -22,4 +23,9 @@ func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool) bool {
 	}
 
 	return false
+}
+
+func TimeTrack(start time.Time, name string) {
+	elapsed := time.Since(start)
+	log.Debugf("%s took %s", name, elapsed)
 }

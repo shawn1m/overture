@@ -7,11 +7,12 @@ package hosts
 import (
 	"fmt"
 	"net"
-	"os"
 	"strings"
+	"sync"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/shawn1m/overture/core/common"
 )
 
 type hostlist []*hostname
@@ -24,20 +25,25 @@ type hostname struct {
 }
 
 // newHostlist creates a hostlist by parsing a file
-func newHostlist(data []byte) *hostlist {
-	return newHostlistString(string(data))
-}
+func newHostlist(data []byte) *hostlist {return newHostlistString(string(data))}
 
 func newHostlistString(data string) *hostlist {
+	defer common.TimeTrack(time.Now(), "Newhosts")
 	hostlist := hostlist{}
+	wg := new(sync.WaitGroup)
 	for _, v := range strings.Split(data, "\n") {
-		for _, hostname := range parseLine(v) {
-			err := hostlist.add(hostname)
-			if err != nil {
-				log.Warnf("Bad formatted hostsfile line: %s", err)
+		wg.Add(1)
+		go func(v string){
+			defer wg.Done()
+			for _, hostname := range parseLine(v) {
+				err := hostlist.add(hostname)
+				if err != nil {
+					log.Warnf("Bad formatted hostsfile line: %s", err)
+				}
 			}
-		}
+		}(v)
 	}
+	wg.Wait()
 	return &hostlist
 }
 
@@ -180,14 +186,4 @@ func parseLine(line string) hostlist {
 	}
 
 	return hostnames
-}
-
-// hostsFileMetadata returns metadata about the hosts_sample file.
-func hostsFileMetadata(path string) (time.Time, int64, error) {
-	fi, err := os.Stat(path)
-	if err != nil {
-		return time.Time{}, 0, err
-	}
-
-	return fi.ModTime(), fi.Size(), nil
 }

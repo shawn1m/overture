@@ -49,17 +49,7 @@ func New(path string, config *Config) (*Hosts, error) {
 		return nil, err
 	}
 
-	if h.config.Poll > 0 {
-		go h.monitorHostEntries(h.config.Poll)
-	}
-
 	log.Debugf("Found host:ip pairs in %s:", h.file.path)
-	for _, hostname := range *h.hosts {
-		log.Debugf("%s -> %s *=%t",
-			hostname.domain,
-			hostname.ip.String(),
-			hostname.wildcard)
-	}
 
 	return &h, nil
 }
@@ -91,45 +81,7 @@ func (h *Hosts) loadHostEntries() error {
 		return err
 	}
 
-	h.hostMutex.Lock()
 	h.hosts = newHostlist(data)
-	h.hostMutex.Unlock()
 
 	return nil
-}
-
-func (h *Hosts) monitorHostEntries(poll int) {
-	hf := h.file
-
-	if hf.path == "" {
-		return
-	}
-
-	t := time.Duration(poll) * time.Second
-
-	for _ = range time.Tick(t) {
-		//log.Printf("go-dnsmasq: checking %q for updates…", hf.path)
-
-		mtime, size, err := hostsFileMetadata(hf.path)
-		if err != nil {
-			log.Warnf("Error stating hostsfile: %s", err)
-			continue
-		}
-
-		if hf.mtime.Equal(mtime) && hf.size == size {
-			continue // no updates
-		}
-
-		if err := h.loadHostEntries(); err != nil {
-			log.Warnf("Error parsing hostsfile: %s", err)
-		}
-
-		log.Debug("Reloaded updated hostsfile")
-
-		h.hostMutex.Lock()
-		h.file.mtime = mtime
-		h.file.size = size
-		hf = h.file
-		h.hostMutex.Unlock()
-	}
 }

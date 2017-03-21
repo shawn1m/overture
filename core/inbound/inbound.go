@@ -31,8 +31,8 @@ func (s *server) Run() {
 	mux := dns.NewServeMux()
 	mux.Handle(".", s)
 
-	group := new(sync.WaitGroup)
-	group.Add(2)
+	wg := new(sync.WaitGroup)
+	wg.Add(2)
 
 	log.Info("Start overture on " + s.addr)
 
@@ -46,7 +46,7 @@ func (s *server) Run() {
 		}(p)
 	}
 
-	group.Wait()
+	wg.Wait()
 }
 
 func (s *server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
