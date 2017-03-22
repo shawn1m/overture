@@ -13,7 +13,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/shawn1m/overture/core/common"
-	"gopkg.in/cheggaaa/pb.v1"
+	pb "gopkg.in/cheggaaa/pb.v1"
 )
 
 type hostlist []*hostname
@@ -83,32 +83,36 @@ func (h *hostname) Equal(hostnamev *hostname) bool {
 
 // return first match
 func (h *hostlist) FindHost(name string) (addr net.IP) {
-	var ips []net.IP
-	ips = h.FindHosts(name)
-	if len(ips) > 0 {
-		addr = ips[0]
+	if h != nil {
+		var ips []net.IP
+		ips = h.FindHosts(name)
+		if len(ips) > 0 {
+			addr = ips[0]
+		}
 	}
 	return
 }
 
 // return exact matches, if existing -> else, return wildcard
 func (h *hostlist) FindHosts(name string) (addrs []net.IP) {
-	for _, hostname := range *h {
-		if hostname.wildcard == false && hostname.domain == name {
-			addrs = append(addrs, hostname.ip)
-		}
-	}
-
-	if len(addrs) == 0 {
-		var domain_match string
+	if h != nil {
 		for _, hostname := range *h {
-			if hostname.wildcard == true && len(hostname.domain) < len(name) {
-				domain_match = strings.Join([]string{".", hostname.domain}, "")
-				if name[len(name)-len(domain_match):] == domain_match {
-					var left string
-					left = name[0 : len(name)-len(domain_match)]
-					if !strings.Contains(left, ".") {
-						addrs = append(addrs, hostname.ip)
+			if hostname.wildcard == false && hostname.domain == name {
+				addrs = append(addrs, hostname.ip)
+			}
+		}
+
+		if len(addrs) == 0 {
+			var domain_match string
+			for _, hostname := range *h {
+				if hostname.wildcard == true && len(hostname.domain) < len(name) {
+					domain_match = strings.Join([]string{".", hostname.domain}, "")
+					if name[len(name)-len(domain_match):] == domain_match {
+						var left string
+						left = name[0 : len(name)-len(domain_match)]
+						if !strings.Contains(left, ".") {
+							addrs = append(addrs, hostname.ip)
+						}
 					}
 				}
 			}
