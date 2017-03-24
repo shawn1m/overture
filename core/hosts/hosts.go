@@ -2,7 +2,7 @@
 // Use of this source code is governed by The MIT License (MIT) that can be
 // found in the LICENSE file.
 
-// Package hosts_sample provides address lookups from local hosts_sample (usually /etc/hosts_sample).
+// Package hosts provides address lookups from hosts file.
 package hosts
 
 import (
@@ -10,75 +10,58 @@ import (
 	"net"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/miekg/dns"
 )
 
-// Config stores options for hosts_sample
-type Config struct {
-	// Positive value enables polling
-	Poll    int
-	Verbose bool
-}
-
 // Hosts represents a file containing hosts_sample
 type Hosts struct {
-	config *Config
-	hosts  *hostlist
-	file   struct {
-		size  int64
-		path  string
-		mtime time.Time
-	}
-	hostMutex sync.RWMutex
+	sync.RWMutex
+	hl       *hostnameList
+	filePath string
 }
 
-// New returns a new Hosts object
-func New(path string, config *Config) (*Hosts, error) {
-	h := Hosts{config: config}
-	// when no hosts_sample file is given we return an empty hostlist
+func New(path string) (*Hosts, error) {
+
 	if path == "" {
-		h.hosts = new(hostlist)
-		return &h, nil
+		return nil, nil
 	}
 
-	h.file.path = path
+	h := &Hosts{filePath: path}
 	if err := h.loadHostEntries(); err != nil {
 		return nil, err
 	}
 
-	return &h, nil
+	return h, nil
 }
 
-func (h *Hosts) FindHosts(name string) (addrs []net.IP, err error) {
+func (h *Hosts) Find(name string) []net.IP {
 	name = strings.TrimSuffix(name, ".")
-	h.hostMutex.RLock()
-	defer h.hostMutex.RUnlock()
-	addrs = h.hosts.FindHosts(name)
-	return
+	h.RLock()
+	defer h.RUnlock()
+	return h.hl.FindHosts(name)
 }
 
-func (h *Hosts) FindReverse(name string) (host string, err error) {
-	h.hostMutex.RLock()
-	defer h.hostMutex.RUnlock()
+func (h *Hosts) FindReverse(ip string) string {
+	h.RLock()
+	defer h.RUnlock()
 
-	for _, hostname := range *h.hosts {
-		if r, _ := dns.ReverseAddr(hostname.ip.String()); name == r {
-			host = dns.Fqdn(hostname.domain)
-			break
+	for _, hostname := range *h.hl {
+		if r, _ := dns.ReverseAddr(hostname.ip.String()); ip == r {
+			return dns.Fqdn(hostname.domain)
 		}
 	}
-	return
+
+	return ""
 }
 
 func (h *Hosts) loadHostEntries() error {
-	data, err := ioutil.ReadFile(h.file.path)
+	data, err := ioutil.ReadFile(h.filePath)
 	if err != nil {
 		return err
 	}
 
-	h.hosts = newHostlist(data)
+	h.hl = newHostnameList(data)
 
 	return nil
 }

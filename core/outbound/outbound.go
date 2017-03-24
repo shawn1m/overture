@@ -141,9 +141,9 @@ func (o *outbound) exchangeFromHosts(raw_name string) bool {
 	}
 
 	name := raw_name[:len(raw_name)-1]
-	ipl, err := config.Config.Hosts.FindHosts(name)
+	ipl := config.Config.Hosts.Find(name)
 
-	if err == nil && len(ipl) > 0 {
+	if len(ipl) > 0 {
 		for _, ip := range ipl {
 			if o.QuestionMessage.Question[0].Qtype == dns.TypeA {
 				a, _ := dns.NewRR(raw_name + " IN A " + ip.String())

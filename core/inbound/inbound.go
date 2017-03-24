@@ -56,8 +56,8 @@ func (s *server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 
 	log.Debug("Question: " + ob.QuestionMessage.Question[0].String())
 
-	for _, qt := range config.Config.RejectQtype{
-		if isQuestionType(q, qt){
+	for _, qt := range config.Config.RejectQtype {
+		if isQuestionType(q, qt) {
 			return
 		}
 	}
@@ -88,4 +88,4 @@ func (s *server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 	}
 }
 
-func isQuestionType(q *dns.Msg, qt uint16) bool {return q.Question[0].Qtype == qt}
+func isQuestionType(q *dns.Msg, qt uint16) bool { return q.Question[0].Qtype == qt }

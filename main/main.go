@@ -2,6 +2,7 @@
 // Use of this source code is governed by The MIT License (MIT) that can be
 // found in the LICENSE file.
 
+// Package main is the entry point
 package main
 
 import (
@@ -12,6 +13,8 @@ import (
 	"github.com/shawn1m/overture/core"
 )
 
+// For auto version building
+//  go build -ldflags "-X main.version=version"
 var version string
 
 func main() {

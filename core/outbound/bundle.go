@@ -6,8 +6,8 @@ package outbound
 
 import (
 	"github.com/miekg/dns"
-	"github.com/shawn1m/overture/core/config"
 	"github.com/shawn1m/overture/core/common"
+	"github.com/shawn1m/overture/core/config"
 )
 
 type OutboundBundle struct {
@@ -51,7 +51,7 @@ func (ob *OutboundBundle) ExchangeFromRemote(isCache bool, isLog bool) {
 
 	for i := 0; i < len(ob.bundleList); i++ {
 		if m := <-ch; m != nil {
-			if common.IsAnswerEmpty(m){
+			if common.IsAnswerEmpty(m) {
 				em = m
 				break
 			}

@@ -2,6 +2,7 @@
 // Use of this source code is governed by The MIT License (MIT) that can be
 // found in the LICENSE file.
 
+// Package core implements the most essential function
 package core
 
 import (
@@ -34,6 +35,7 @@ func initConfig(configFile string) {
 
 	config.Config.IPNetworkList = getIPNetworkList(config.Config.IPNetworkFile)
 	config.Config.DomainList = getDomainList(config.Config.DomainFile, config.Config.DomainBase64Decode)
+	config.Config.ReservedIPNetworkList = getReservedIPNetworkList()
 
 	if config.Config.MinimumTTL > 0 {
 		log.Info("Minimum TTL is " + strconv.Itoa(config.Config.MinimumTTL))
@@ -42,22 +44,19 @@ func initConfig(configFile string) {
 	}
 
 	config.Config.CachePool = cache.New(config.Config.CacheSize)
-
 	if config.Config.CacheSize > 0 {
 		log.Info("CacheSize is " + strconv.Itoa(config.Config.CacheSize))
 	} else {
 		log.Info("Cache is disabled")
 	}
 
-	h, err := hosts.New(config.Config.HostsFile, &hosts.Config{0, false})
+	h, err := hosts.New(config.Config.HostsFile)
 	if err != nil {
 		log.Info("Load hosts file failed: ", err)
 	} else {
 		config.Config.Hosts = h
 		log.Info("Load hosts file successful")
 	}
-
-	config.Config.ReservedIPNetworkList = getReservedIPNetworkList()
 }
 
 func getDomainList(path string, isBase64 bool) []string {
