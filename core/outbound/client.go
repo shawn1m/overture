@@ -1,3 +1,4 @@
+// Package outbound implements multiple dns client and dispatcher for outbound connection.
 package outbound
 
 import (
@@ -21,13 +22,13 @@ type Client struct {
 	InboundIP             string
 	ReservedIPNetworkList []*net.IPNet
 
-	Hosts     *hosts.Hosts
-	CachePool *cache.Cache
+	Hosts *hosts.Hosts
+	Cache *cache.Cache
 }
 
-func NewClient(q *dns.Msg, u *DNSUpstream, ip string, h *hosts.Hosts, cp *cache.Cache) *Client {
+func NewClient(q *dns.Msg, u *DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *Client {
 
-	c := &Client{QuestionMessage: q, DNSUpstream: u, InboundIP: ip, Hosts: h, CachePool: cp}
+	c := &Client{QuestionMessage: q, DNSUpstream: u, InboundIP: ip, Hosts: h, Cache: cache}
 	c.getEDNSClientSubnetIP()
 	c.ReservedIPNetworkList = getReservedIPNetworkList()
 	return c
@@ -81,13 +82,17 @@ func (c *Client) ExchangeFromRemote(isCache bool, isLog bool) {
 	conn.SetWriteDeadline(time.Now().Add(dnsTimeout))
 
 	dc := &dns.Conn{Conn: conn}
-	dc.WriteMsg(c.QuestionMessage)
+	defer dc.Close()
+	err := dc.WriteMsg(c.QuestionMessage)
+	if err != nil {
+		log.Warn(c.DNSUpstream.Name + " Fail: Send question message failed")
+		return
+	}
 	temp, err := dc.ReadMsg()
-	dc.Close()
 
 	if err != nil {
 		if err == dns.ErrTruncated {
-			log.Warn("Maybe your primary dns server does not support edns client subnet")
+			log.Warn("Maybe " + c.DNSUpstream.Name + " Fail: does not support edns client subnet and it need to be replaced")
 			return
 		}
 	}
@@ -99,7 +104,7 @@ func (c *Client) ExchangeFromRemote(isCache bool, isLog bool) {
 	c.ResponseMessage = temp
 
 	if isCache {
-		c.CachePool.InsertMessage(cache.Key(c.QuestionMessage.Question[0], c.EDNSClientSubnetIP), c.ResponseMessage)
+		c.Cache.InsertMessage(cache.Key(c.QuestionMessage.Question[0], c.EDNSClientSubnetIP), c.ResponseMessage)
 	}
 
 	if isLog {
@@ -109,17 +114,27 @@ func (c *Client) ExchangeFromRemote(isCache bool, isLog bool) {
 
 func (c *Client) ExchangeFromCache(isLog bool) bool {
 
-	if c.CachePool == nil {
+	if c.Cache == nil {
 		return false
 	}
 
-	m := c.CachePool.Hit(cache.Key(c.QuestionMessage.Question[0], c.EDNSClientSubnetIP), c.QuestionMessage.Id)
+	m := c.Cache.Hit(cache.Key(c.QuestionMessage.Question[0], c.EDNSClientSubnetIP), c.QuestionMessage.Id)
 	if m != nil {
 		log.Debug(c.DNSUpstream.Name + " Hit: " + cache.Key(c.QuestionMessage.Question[0], c.EDNSClientSubnetIP))
 		c.ResponseMessage = m
 		if isLog {
 			c.logAnswer(false)
 		}
+		return true
+	}
+
+	return false
+}
+
+func (c *Client) ExchangeFromLocal() bool {
+	raw_name := c.QuestionMessage.Question[0].Name
+
+	if c.ExchangeFromHosts(raw_name) || c.ExchangeFromIP(raw_name) {
 		return true
 	}
 
@@ -189,16 +204,6 @@ func (c *Client) logAnswer(isLocal bool) {
 		}
 		log.Debug(name + " Answer: " + a.String())
 	}
-}
-
-func (c *Client) ExchangeFromLocal() bool {
-	raw_name := c.QuestionMessage.Question[0].Name
-
-	if c.ExchangeFromHosts(raw_name) || c.ExchangeFromIP(raw_name) {
-		return true
-	}
-
-	return false
 }
 
 func getReservedIPNetworkList() []*net.IPNet {

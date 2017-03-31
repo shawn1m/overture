@@ -5,12 +5,12 @@
 package core
 
 import (
+	"bufio"
+	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
 	"net"
 	"os"
-	"bufio"
-	"encoding/base64"
 	"regexp"
 	"strconv"
 	"strings"
@@ -35,20 +35,19 @@ type Config struct {
 	CacheSize          int
 	RejectQtype        []uint16
 
-	DomainList            []string
-	IPNetworkList         []*net.IPNet
-	Hosts                 *hosts.Hosts
-	ReservedIPNetworkList []*net.IPNet
-	CachePool             *cache.Cache
+	DomainList    []string
+	IPNetworkList []*net.IPNet
+	Hosts         *hosts.Hosts
+	Cache         *cache.Cache
 }
 
+// New config with json file and do some other initiate works
 func NewConfig(configFile string) *Config {
 
-	config := ParseJson(configFile)
+	config := parseJson(configFile)
 
-	config.IPNetworkList = getIPNetworkList(config.IPNetworkFile)
-	config.DomainList = getDomainList(config.DomainFile, config.DomainBase64Decode)
-	config.ReservedIPNetworkList = getReservedIPNetworkList()
+	config.getIPNetworkList()
+	config.getDomainList()
 
 	if config.MinimumTTL > 0 {
 		log.Info("Minimum TTL is " + strconv.Itoa(config.MinimumTTL))
@@ -56,7 +55,7 @@ func NewConfig(configFile string) *Config {
 		log.Info("Minimum TTL is disabled")
 	}
 
-	config.CachePool = cache.New(config.CacheSize)
+	config.Cache = cache.New(config.CacheSize)
 	if config.CacheSize > 0 {
 		log.Info("CacheSize is " + strconv.Itoa(config.CacheSize))
 	} else {
@@ -74,78 +73,7 @@ func NewConfig(configFile string) *Config {
 	return config
 }
 
-func getDomainList(path string, isBase64 bool) []string {
-
-	var dl []string
-	f, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.Error("Open Custom domain file failed: ", err)
-		return nil
-	}
-
-	re := regexp.MustCompile(`([\w\-\_]+\.[\w\.\-\_]+)[\/\*]*`)
-	if isBase64 {
-		fd, err := base64.StdEncoding.DecodeString(string(f))
-		if err != nil {
-			log.Error("Decode Custom domain failed: ", err)
-			return nil
-		}
-		fds := string(fd)
-		n := strings.Index(fds, "Whitelist Start")
-		dl = re.FindAllString(fds[:n], -1)
-	} else {
-		dl = re.FindAllString(string(f), -1)
-	}
-
-	if len(dl) > 0 {
-		log.Info("Load domain file successful")
-	} else {
-		log.Warn("There is no element in domain file")
-	}
-	return dl
-}
-
-func getIPNetworkList(path string) []*net.IPNet {
-
-	ipnl := make([]*net.IPNet, 0)
-	f, err := os.Open(path)
-	if err != nil {
-		log.Error("Open IP network file failed: ", err)
-		return nil
-	}
-	defer f.Close()
-	s := bufio.NewScanner(f)
-	for s.Scan() {
-		_, ip_net, err := net.ParseCIDR(s.Text())
-		if err != nil {
-			break
-		}
-		ipnl = append(ipnl, ip_net)
-	}
-	if len(ipnl) > 0 {
-		log.Info("Load IP network file successful")
-	} else {
-		log.Warn("There is no element in IP network file")
-	}
-
-	return ipnl
-}
-
-func getReservedIPNetworkList() []*net.IPNet {
-
-	ipnl := make([]*net.IPNet, 0)
-	localCIDR := []string{"127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "100.64.0.0/10"}
-	for _, c := range localCIDR {
-		_, ip_net, err := net.ParseCIDR(c)
-		if err != nil {
-			break
-		}
-		ipnl = append(ipnl, ip_net)
-	}
-	return ipnl
-}
-
-func ParseJson(path string) *Config {
+func parseJson(path string) *Config {
 
 	f, err := os.Open(path)
 	if err != nil {
@@ -170,4 +98,61 @@ func ParseJson(path string) *Config {
 	log.Debug(string(b))
 
 	return j
+}
+
+func (c *Config) getDomainList() {
+
+	var dl []string
+	f, err := ioutil.ReadFile(c.DomainFile)
+	if err != nil {
+		log.Error("Open Custom domain file failed: ", err)
+		return
+	}
+
+	re := regexp.MustCompile(`([\w\-\_]+\.[\w\.\-\_]+)[\/\*]*`)
+	if c.DomainBase64Decode {
+		fd, err := base64.StdEncoding.DecodeString(string(f))
+		if err != nil {
+			log.Error("Decode Custom domain failed: ", err)
+			return
+		}
+		fds := string(fd)
+		n := strings.Index(fds, "Whitelist Start")
+		dl = re.FindAllString(fds[:n], -1)
+	} else {
+		dl = re.FindAllString(string(f), -1)
+	}
+
+	if len(dl) > 0 {
+		log.Info("Load domain file successful")
+	} else {
+		log.Warn("There is no element in domain file")
+	}
+	c.DomainList = dl
+}
+
+func (c *Config) getIPNetworkList() {
+
+	ipnl := make([]*net.IPNet, 0)
+	f, err := os.Open(c.IPNetworkFile)
+	if err != nil {
+		log.Error("Open IP network file failed: ", err)
+		return
+	}
+	defer f.Close()
+	s := bufio.NewScanner(f)
+	for s.Scan() {
+		_, ip_net, err := net.ParseCIDR(s.Text())
+		if err != nil {
+			break
+		}
+		ipnl = append(ipnl, ip_net)
+	}
+	if len(ipnl) > 0 {
+		log.Info("Load IP network file successful")
+	} else {
+		log.Warn("There is no element in IP network file")
+	}
+
+	c.IPNetworkList = ipnl
 }

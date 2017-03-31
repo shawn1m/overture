@@ -2,6 +2,7 @@
 // Use of this source code is governed by The MIT License (MIT) that can be
 // found in the LICENSE file.
 
+// Package common provides common functions.
 package common
 
 import (

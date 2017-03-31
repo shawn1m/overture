@@ -1,27 +1,28 @@
+// Package inbound implements dns server for inbound connection.
 package inbound
 
 import (
+	"net"
+	"os"
+	"sync"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
 	"github.com/shawn1m/overture/core/cache"
 	"github.com/shawn1m/overture/core/hosts"
 	"github.com/shawn1m/overture/core/outbound"
-	"net"
-	"os"
-	"sync"
 )
 
 type Server struct {
-	BindAddress string `json:"BindAddress"`
+	BindAddress string
 
-	Dispatcher     *outbound.Dispatcher
-	OnlyPrimaryDNS bool
+	Dispatcher *outbound.Dispatcher
 
 	MinimumTTL  int
 	RejectQtype []uint16
 
-	Hosts     *hosts.Hosts
-	CachePool *cache.Cache
+	Hosts *hosts.Hosts
+	Cache *cache.Cache
 }
 
 func (s *Server) Run() {
@@ -50,7 +51,7 @@ func (s *Server) Run() {
 func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 
 	inboundIP, _, _ := net.SplitHostPort(w.RemoteAddr().String())
-	cb := outbound.NewClientBundle(q, s.Dispatcher.PrimaryDNS, inboundIP, s.Hosts, s.CachePool)
+	cb := outbound.NewClientBundle(q, s.Dispatcher.PrimaryDNS, inboundIP, s.Hosts, s.Cache)
 	s.Dispatcher.ClientBundle = cb
 
 	log.Debug("Question: " + cb.QuestionMessage.Question[0].String())
@@ -61,31 +62,12 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 		}
 	}
 
-	if ok := cb.ExchangeFromLocal(); ok {
-		if cb.ResponseMessage != nil {
-			w.WriteMsg(cb.ResponseMessage)
-			return
-		}
-	}
-
-	func() {
-		if s.OnlyPrimaryDNS {
-			cb.ExchangeFromRemote(true, true)
-		} else {
-			if ok := s.Dispatcher.ExchangeForIPv6() || s.Dispatcher.ExchangeForDomain(); ok {
-				return
-			}
-
-			cb.ExchangeFromRemote(false, true)
-			s.Dispatcher.ExchangeForPrimaryDNSResponse()
-		}
-	}()
-
-	if s.MinimumTTL > 0 {
-		setMinimumTTL(cb.ResponseMessage, uint32(s.MinimumTTL))
-	}
+	s.Dispatcher.Exchange()
 
 	if cb.ResponseMessage != nil {
+		if s.MinimumTTL > 0 {
+			setMinimumTTL(cb.ResponseMessage, uint32(s.MinimumTTL))
+		}
 		w.WriteMsg(cb.ResponseMessage)
 	}
 }

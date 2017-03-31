@@ -20,17 +20,17 @@ type ClientBundle struct {
 	DNSUpstreamList []*DNSUpstream
 	InboundIP       string
 
-	Hosts     *hosts.Hosts
-	CachePool *cache.Cache
+	Hosts *hosts.Hosts
+	Cache *cache.Cache
 }
 
-func NewClientBundle(q *dns.Msg, ul []*DNSUpstream, ip string, h *hosts.Hosts, cp *cache.Cache) *ClientBundle {
+func NewClientBundle(q *dns.Msg, ul []*DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *ClientBundle {
 
-	cb := &ClientBundle{QuestionMessage: q, DNSUpstreamList: ul, InboundIP: ip, Hosts: h, CachePool: cp}
+	cb := &ClientBundle{QuestionMessage: q, DNSUpstreamList: ul, InboundIP: ip, Hosts: h, Cache: cache}
 
 	for _, u := range ul {
 
-		c := NewClient(cb.QuestionMessage, u, cb.InboundIP, cb.Hosts, cb.CachePool)
+		c := NewClient(cb.QuestionMessage, u, cb.InboundIP, cb.Hosts, cb.Cache)
 		cb.ClientList = append(cb.ClientList, c)
 	}
 
@@ -75,19 +75,6 @@ func (cb *ClientBundle) ExchangeFromLocal() bool {
 	return false
 }
 
-func (cb *ClientBundle) EqualDNSUpstream(ul []*DNSUpstream) bool {
-
-	for _, u := range ul {
-		for _, c := range cb.ClientList {
-			if c.DNSUpstream != u {
-				return false
-			}
-		}
-	}
-
-	return true
-}
-
 func (cb *ClientBundle) UpdateFromDNSUpstream(ul []*DNSUpstream) {
 
 	cb.DNSUpstreamList = ul
@@ -96,7 +83,7 @@ func (cb *ClientBundle) UpdateFromDNSUpstream(ul []*DNSUpstream) {
 	var cl []*Client
 
 	for _, u := range ul {
-		c := NewClient(cb.QuestionMessage, u, cb.InboundIP, cb.Hosts, cb.CachePool)
+		c := NewClient(cb.QuestionMessage, u, cb.InboundIP, cb.Hosts, cb.Cache)
 		cl = append(cl, c)
 	}
 

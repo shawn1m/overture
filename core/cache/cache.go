@@ -2,6 +2,7 @@
 // Use of this source code is governed by The MIT License (MIT) that can be
 // found in the LICENSE file.
 
+// Package cache implements dns cache feature with edns-client-subnet support.
 package cache
 
 // Cache that holds RRs.
@@ -33,6 +34,9 @@ type Cache struct {
 
 // New returns a new cache with the capacity and the ttl specified.
 func New(capacity int) *Cache {
+	if capacity <= 0 {
+		return nil
+	}
 	c := new(Cache)
 	c.table = make(map[string]*elem)
 	c.capacity = capacity
@@ -101,7 +105,6 @@ func (c *Cache) Search(s string) (*dns.Msg, time.Time, bool) {
 func Key(q dns.Question, ednsIP string) string {
 	return q.Name + " " + strconv.Itoa(int(q.Qtype)) + " " + ednsIP
 }
-
 
 // Hit returns a dns message from the cache. If the message's TTL is expired nil
 // is returned and the message is removed from the cache.

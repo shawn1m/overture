@@ -2,7 +2,7 @@
 // Use of this source code is governed by The MIT License (MIT) that can be
 // found in the LICENSE file.
 
-// Package main is the entry point
+// Package main is the entry point of whole program.
 package main
 
 import (

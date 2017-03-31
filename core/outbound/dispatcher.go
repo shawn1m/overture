@@ -1,21 +1,42 @@
 package outbound
 
 import (
+	"net"
+	"strings"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
 	"github.com/shawn1m/overture/core/common"
-	"net"
-	"strings"
 )
 
 type Dispatcher struct {
 	PrimaryDNS     []*DNSUpstream
 	AlternativeDNS []*DNSUpstream
+	OnlyPrimaryDNS bool
 
 	ClientBundle       *ClientBundle
 	IPNetworkList      []*net.IPNet
 	DomainList         []string
 	RedirectIPv6Record bool
+}
+
+func (d *Dispatcher) Exchange() {
+
+	if ok := d.ClientBundle.ExchangeFromLocal(); ok {
+		return
+	}
+
+	if d.OnlyPrimaryDNS {
+		d.ClientBundle.ExchangeFromRemote(true, true)
+		return
+	}
+
+	if ok := d.ExchangeForIPv6() || d.ExchangeForDomain(); ok {
+		return
+	}
+
+	d.ClientBundle.ExchangeFromRemote(false, true)
+	d.ExchangeForPrimaryDNSResponse()
 }
 
 func (d *Dispatcher) ExchangeForIPv6() bool {

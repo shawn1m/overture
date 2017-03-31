@@ -13,14 +13,14 @@
       }
     }
   ],
-  "AlternativeDNS":[
+  "AlternativeDNS": [
     {
       "Name": "OpenDNS",
       "Address": "208.67.222.222:443",
       "Protocol": "tcp",
       "SOCKS5Address": "",
       "Timeout": 6,
-      "EDNSClientSubnet":{
+      "EDNSClientSubnet": {
         "Policy": "disable",
         "ExternalIP": ""
       }
