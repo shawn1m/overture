@@ -1,12 +1,11 @@
 # overture
 [![Build Status](https://travis-ci.org/shawn1m/overture.svg)](https://travis-ci.org/shawn1m/overture)
+[![GoDoc](https://godoc.org/github.com/shawn1m/overture?status.svg)](https://godoc.org/github.com/shawn1m/overture)
 
 Overture is a DNS server/dispatcher written in Go.
 
 Overture means an orchestral piece at the beginning of a classical music composition, just like DNS which is nearly the
 first step of surfing the Internet.
-
-GoDoc: https://godoc.org/github.com/shawn1m/overture
 
 **Please note: If you are using the binary releases, please follow the instructions in the README file with
 corresponding git version tag. The README in master branch are subject to change and does not always reflect the correct
