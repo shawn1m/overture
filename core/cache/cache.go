@@ -101,3 +101,23 @@ func (c *Cache) Search(s string) (*dns.Msg, time.Time, bool) {
 func Key(q dns.Question, ednsIP string) string {
 	return q.Name + " " + strconv.Itoa(int(q.Qtype)) + " " + ednsIP
 }
+
+
+// Hit returns a dns message from the cache. If the message's TTL is expired nil
+// is returned and the message is removed from the cache.
+func (c *Cache) Hit(key string, msgid uint16) *dns.Msg {
+	m, exp, hit := c.Search(key)
+	if hit {
+		// Cache hit! \o/
+		if time.Since(exp) < 0 {
+			m.Id = msgid
+			m.Compress = true
+			// Even if something ended up with the TC bit *in* the cache, set it to off
+			m.Truncated = false
+			return m
+		}
+		// Expired! /o\
+		c.Remove(key)
+	}
+	return nil
+}

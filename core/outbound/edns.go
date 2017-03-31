@@ -4,22 +4,11 @@ import (
 	"net"
 
 	"github.com/miekg/dns"
-	"github.com/shawn1m/overture/core/common"
-	"github.com/shawn1m/overture/core/config"
 )
 
-func (o *outbound) getEDNSClientSubnetIP() string {
-
-	switch o.DNSUpstream.EDNSClientSubnet.Policy {
-	case "auto":
-		if !common.IsIPMatchList(net.ParseIP(o.inboundIP), config.Config.ReservedIPNetworkList, false) {
-			return o.inboundIP
-		} else {
-			return o.DNSUpstream.EDNSClientSubnet.ExternalIP
-		}
-	case "disable":
-	}
-	return ""
+type EDNSClientSubnetType struct {
+	Policy     string
+	ExternalIP string
 }
 
 func setEDNSClientSubnet(m *dns.Msg, ip string) {

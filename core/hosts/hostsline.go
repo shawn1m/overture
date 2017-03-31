@@ -16,16 +16,16 @@ import (
 	pb "gopkg.in/cheggaaa/pb.v1"
 )
 
-type hostname struct {
+type hostsLine struct {
 	domain   string
 	ip       net.IP
 	ipv6     bool
 	wildcard bool
 }
 
-type hostnameList []*hostname
+type hostsLineList []*hostsLine
 
-func (h *hostname) Equal(he *hostname) bool {
+func (h *hostsLine) Equal(he *hostsLine) bool {
 	if h.wildcard != he.wildcard || h.ipv6 != he.ipv6 {
 		return false
 	}
@@ -38,11 +38,10 @@ func (h *hostname) Equal(he *hostname) bool {
 	return true
 }
 
-// newHostlist creates a hostlist by parsing a file
-func newHostnameList(data []byte) *hostnameList {
+func newHostsLineList(data []byte) *hostsLineList {
 
 	ds := string(data)
-	hl := new(hostnameList)
+	hl := new(hostsLineList)
 
 	isBar := false
 	var bar *pb.ProgressBar
@@ -82,8 +81,7 @@ func newHostnameList(data []byte) *hostnameList {
 	return hl
 }
 
-// return first match
-func (hl *hostnameList) FindHost(name string) (addr net.IP) {
+func (hl *hostsLineList) FindHost(name string) (addr net.IP) {
 
 	var ips []net.IP
 	ips = hl.FindHosts(name)
@@ -93,8 +91,7 @@ func (hl *hostnameList) FindHost(name string) (addr net.IP) {
 	return
 }
 
-// return exact matches, if existing -> else, return wildcard
-func (hl *hostnameList) FindHosts(name string) (addrs []net.IP) {
+func (hl *hostsLineList) FindHosts(name string) (addrs []net.IP) {
 	for _, hostname := range *hl {
 		if hostname.wildcard == false && hostname.domain == name {
 			addrs = append(addrs, hostname.ip)
@@ -119,7 +116,7 @@ func (hl *hostnameList) FindHosts(name string) (addrs []net.IP) {
 	return
 }
 
-func (hl *hostnameList) add(h *hostname) error {
+func (hl *hostsLineList) add(h *hostsLine) error {
 	for _, found := range *hl {
 		if found.Equal(h) {
 			return fmt.Errorf("Duplicate hostname entry for %#v", h)
@@ -129,7 +126,7 @@ func (hl *hostnameList) add(h *hostname) error {
 	return nil
 }
 
-func parseLine(line string) *hostname {
+func parseLine(line string) *hostsLine {
 
 	if len(line) == 0 {
 		return nil
@@ -179,5 +176,5 @@ func parseLine(line string) *hostname {
 		h = h[2:]
 		isWildcard = true
 	}
-	return &hostname{h, ip, isIPv6, isWildcard}
+	return &hostsLine{h, ip, isIPv6, isWildcard}
 }

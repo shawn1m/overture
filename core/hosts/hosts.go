@@ -17,7 +17,7 @@ import (
 // Hosts represents a file containing hosts_sample
 type Hosts struct {
 	sync.RWMutex
-	hl       *hostnameList
+	hl       *hostsLineList
 	filePath string
 }
 
@@ -61,7 +61,7 @@ func (h *Hosts) loadHostEntries() error {
 		return err
 	}
 
-	h.hl = newHostnameList(data)
+	h.hl = newHostsLineList(data)
 
 	return nil
 }
