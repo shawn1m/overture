@@ -11,7 +11,7 @@ import (
 )
 
 // Initiate the server with config file
-func Init(configFilePath string) {
+func InitServer(configFilePath string) {
 
 	config := NewConfig(configFilePath)
 

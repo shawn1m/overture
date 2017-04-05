@@ -41,5 +41,5 @@ func main() {
 
 	runtime.GOMAXPROCS(processorNumber)
 
-	core.Init(configPath)
+	core.InitServer(configPath)
 }
