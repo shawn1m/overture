@@ -137,10 +137,11 @@ IPv6). Overture will handle both TCP and UDP requests.
     example.com
     xxx.xx
 
-#### IP network file example (IPv4 only)
+#### IP network file example
 
     1.0.1.0/24
     10.8.0.0/16
+    ::1/128
 
 #### Hosts file example (Support prefix wildcard only, *.xxx.xx includes xxx.xx)
 

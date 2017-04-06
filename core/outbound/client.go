@@ -197,6 +197,7 @@ func (c *Client) ExchangeFromIP(raw_name string) bool {
 }
 
 func (c *Client) setLocalResponseMessage(rrl []dns.RR) {
+
 	shuffleRRList := func(rrl []dns.RR) {
 		rand.Seed(time.Now().UnixNano())
 		for i := range rrl {

@@ -81,13 +81,20 @@ func (d *Dispatcher) ExchangeForPrimaryDNSResponse() {
 	}
 
 	for _, a := range d.ClientBundle.ResponseMessage.Answer {
-		if a.Header().Rrtype != dns.TypeA {
+		if a.Header().Rrtype == dns.TypeA {
+			log.Debug("Try to match response ip address with IP network")
+			if common.IsIPMatchList(net.ParseIP(a.(*dns.A).A.String()), d.IPNetworkList, true) {
+				break
+			}
+		} else if a.Header().Rrtype == dns.TypeAAAA {
+			log.Debug("Try to match response ip address with IP network")
+			if common.IsIPMatchList(net.ParseIP(a.(*dns.AAAA).AAAA.String()), d.IPNetworkList, true) {
+				break
+			}
+		} else {
 			continue
 		}
-		log.Debug("Try to match response ip address with IP network")
-		if common.IsIPMatchList(net.ParseIP(a.(*dns.A).A.String()), d.IPNetworkList, true) {
-			break
-		}
+
 		log.Debug("IP network match fail, finally use alternative DNS")
 		d.ClientBundle.UpdateFromDNSUpstream(d.AlternativeDNS)
 		d.ClientBundle.ExchangeFromRemote(true, true)
