@@ -10,8 +10,6 @@ import (
 	"net"
 	"strings"
 	"sync"
-
-	"github.com/miekg/dns"
 )
 
 // Hosts represents a file containing hosts_sample
@@ -35,24 +33,11 @@ func New(path string) (*Hosts, error) {
 	return h, nil
 }
 
-func (h *Hosts) Find(name string) []net.IP {
+func (h *Hosts) Find(name string) (ipv4List []net.IP, ipv6List []net.IP) {
 	name = strings.TrimSuffix(name, ".")
 	h.RLock()
 	defer h.RUnlock()
 	return h.hl.FindHosts(name)
-}
-
-func (h *Hosts) FindReverse(ip string) string {
-	h.RLock()
-	defer h.RUnlock()
-
-	for _, hostname := range *h.hl {
-		if r, _ := dns.ReverseAddr(hostname.ip.String()); ip == r {
-			return dns.Fqdn(hostname.domain)
-		}
-	}
-
-	return ""
 }
 
 func (h *Hosts) loadHostEntries() error {

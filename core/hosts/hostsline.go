@@ -81,35 +81,14 @@ func newHostsLineList(data []byte) *hostsLineList {
 	return hl
 }
 
-func (hl *hostsLineList) FindHost(name string) (addr net.IP) {
+func (hl *hostsLineList) FindHosts(name string) (ipv4List []net.IP, ipv6List []net.IP) {
 
-	var ips []net.IP
-	ips = hl.FindHosts(name)
-	if len(ips) > 0 {
-		addr = ips[0]
-	}
-	return
-}
-
-func (hl *hostsLineList) FindHosts(name string) (addrs []net.IP) {
-	for _, hostname := range *hl {
-		if hostname.wildcard == false && hostname.domain == name {
-			addrs = append(addrs, hostname.ip)
-		}
-	}
-
-	if len(addrs) == 0 {
-		var domain_match string
-		for _, hostname := range *hl {
-			if hostname.wildcard == true && len(hostname.domain) < len(name) {
-				domain_match = strings.Join([]string{".", hostname.domain}, "")
-				if name[len(name)-len(domain_match):] == domain_match {
-					var left string
-					left = name[0 : len(name)-len(domain_match)]
-					if !strings.Contains(left, ".") {
-						addrs = append(addrs, hostname.ip)
-					}
-				}
+	for _, h := range *hl {
+		if (h.wildcard == false && h.domain == name) || (h.wildcard == true && strings.HasSuffix(name, h.domain)) {
+			if h.ip.To4() != nil {
+				ipv4List = append(ipv4List, h.ip)
+			} else {
+				ipv6List = append(ipv6List, h.ip)
 			}
 		}
 	}

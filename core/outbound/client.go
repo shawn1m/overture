@@ -2,6 +2,7 @@
 package outbound
 
 import (
+	"math/rand"
 	"net"
 	"time"
 
@@ -148,20 +149,29 @@ func (c *Client) ExchangeFromHosts(raw_name string) bool {
 	}
 
 	name := raw_name[:len(raw_name)-1]
-	ipl := c.Hosts.Find(name)
+	ipv4List, ipv6List := c.Hosts.Find(name)
 
-	if len(ipl) > 0 {
-		for _, ip := range ipl {
-			if c.QuestionMessage.Question[0].Qtype == dns.TypeA {
-				a, _ := dns.NewRR(raw_name + " IN A " + ip.String())
-				c.createResponseMessage(a)
-				return true
-			}
-			if c.QuestionMessage.Question[0].Qtype == dns.TypeAAAA {
-				aaaa, _ := dns.NewRR(raw_name + " IN AAAA " + ip.String())
-				c.createResponseMessage(aaaa)
-				return true
-			}
+	if c.QuestionMessage.Question[0].Qtype == dns.TypeA && len(ipv4List) > 0 {
+		var rrl []dns.RR
+		for _, ip := range ipv4List {
+			a, _ := dns.NewRR(raw_name + " IN A " + ip.String())
+			rrl = append(rrl, a)
+		}
+		c.setLocalResponseMessage(rrl)
+		if c.ResponseMessage != nil {
+			return true
+		}
+	}
+
+	if c.QuestionMessage.Question[0].Qtype == dns.TypeAAAA && len(ipv6List) > 0 {
+		var rrl []dns.RR
+		for _, ip := range ipv6List {
+			aaaa, _ := dns.NewRR(raw_name + " IN AAAA " + ip.String())
+			rrl = append(rrl, aaaa)
+		}
+		c.setLocalResponseMessage(rrl)
+		if c.ResponseMessage != nil {
+			return true
 		}
 	}
 
@@ -174,21 +184,31 @@ func (c *Client) ExchangeFromIP(raw_name string) bool {
 	ip := net.ParseIP(name)
 	if ip.To4() != nil && c.QuestionMessage.Question[0].Qtype == dns.TypeA {
 		a, _ := dns.NewRR(raw_name + " IN A " + ip.String())
-		c.createResponseMessage(a)
+		c.setLocalResponseMessage([]dns.RR{a})
 		return true
 	}
 	if ip.To16() != nil && c.QuestionMessage.Question[0].Qtype == dns.TypeAAAA {
 		aaaa, _ := dns.NewRR(raw_name + " IN AAAA " + ip.String())
-		c.createResponseMessage(aaaa)
+		c.setLocalResponseMessage([]dns.RR{aaaa})
 		return true
 	}
 
 	return false
 }
 
-func (c *Client) createResponseMessage(r dns.RR) {
+func (c *Client) setLocalResponseMessage(rrl []dns.RR) {
+	shuffleRRList := func(rrl []dns.RR) {
+		rand.Seed(time.Now().UnixNano())
+		for i := range rrl {
+			j := rand.Intn(i + 1)
+			rrl[i], rrl[j] = rrl[j], rrl[i]
+		}
+	}
 	c.ResponseMessage = new(dns.Msg)
-	c.ResponseMessage.Answer = append(c.ResponseMessage.Answer, r)
+	for _, rr := range rrl {
+		c.ResponseMessage.Answer = append(c.ResponseMessage.Answer, rr)
+	}
+	shuffleRRList(c.ResponseMessage.Answer)
 	c.ResponseMessage.SetReply(c.QuestionMessage)
 	c.ResponseMessage.RecursionAvailable = true
 }

@@ -132,22 +132,22 @@ IPv6). Overture will handle both TCP and UDP requests.
 + MinimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
 + RejectQtype: Reject inbound query with specific DNS record types, check [List of DNS record types](https://en.wikipedia.org/wiki/List_of_DNS_record_types) for details.
 
-#### Domain file example (find domains and suffix match)
+#### Domain file example (Find domains and suffix match)
 
-    abc.com
-    example.net
-    xxxxx.org
+    example.com
+    xxx.xx
 
-#### IP network file example
+#### IP network file example (IPv4 only)
 
     1.0.1.0/24
-    1.0.2.0/23
+    10.8.0.0/16
 
-#### Hosts file example (support wildcard)
+#### Hosts file example (Support prefix wildcard only, *.xxx.xx includes xxx.xx)
 
     127.0.0.1 localhost
+    ::1 localhost
     10.8.0.1 example.com
-    192.168.0.2 *.db.local
+    192.168.0.2 *.xxx.xx
 
 #### DNS servers with EDNS client subnet support
 
