@@ -104,7 +104,7 @@ func (c *Client) ExchangeFromRemote(isCache bool, isLog bool) {
 
 	c.ResponseMessage = temp
 
-	if isCache {
+	if isCache && c.Cache != nil {
 		c.Cache.InsertMessage(cache.Key(c.QuestionMessage.Question[0], c.EDNSClientSubnetIP), c.ResponseMessage)
 	}
 
@@ -161,9 +161,7 @@ func (c *Client) ExchangeFromHosts(raw_name string) bool {
 		if c.ResponseMessage != nil {
 			return true
 		}
-	}
-
-	if c.QuestionMessage.Question[0].Qtype == dns.TypeAAAA && len(ipv6List) > 0 {
+	} else if c.QuestionMessage.Question[0].Qtype == dns.TypeAAAA && len(ipv6List) > 0 {
 		var rrl []dns.RR
 		for _, ip := range ipv6List {
 			aaaa, _ := dns.NewRR(raw_name + " IN AAAA " + ip.String())
@@ -182,14 +180,16 @@ func (c *Client) ExchangeFromIP(raw_name string) bool {
 
 	name := raw_name[:len(raw_name)-1]
 	ip := net.ParseIP(name)
-	if ip.To4() != nil && c.QuestionMessage.Question[0].Qtype == dns.TypeA {
-		a, _ := dns.NewRR(raw_name + " IN A " + ip.String())
-		c.setLocalResponseMessage([]dns.RR{a})
-		return true
+	if ip == nil {
+		return false
 	}
-	if ip.To16() != nil && c.QuestionMessage.Question[0].Qtype == dns.TypeAAAA {
+	if ip.To4() == nil && ip.To16() != nil && c.QuestionMessage.Question[0].Qtype == dns.TypeAAAA {
 		aaaa, _ := dns.NewRR(raw_name + " IN AAAA " + ip.String())
 		c.setLocalResponseMessage([]dns.RR{aaaa})
+		return true
+	} else if ip.To4() != nil && c.QuestionMessage.Question[0].Qtype == dns.TypeA {
+		a, _ := dns.NewRR(raw_name + " IN A " + ip.String())
+		c.setLocalResponseMessage([]dns.RR{a})
 		return true
 	}
 
