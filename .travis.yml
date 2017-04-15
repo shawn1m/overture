@@ -1,11 +1,6 @@
 language: go
 go:
   - 1.8.x
-install:
-  - go get golang.org/x/net/proxy
-  - go get github.com/Sirupsen/logrus
-  - go get github.com/miekg/dns
-  - go get gopkg.in/cheggaaa/pb.v1
 addons:
   apt:
     packages:
@@ -14,7 +9,6 @@ script:
   - "echo Just for test!"
 before_deploy:
   - "go version"
-  - "python3 --version"
   - "python3 ./build.py"
 deploy:
   provider: releases
