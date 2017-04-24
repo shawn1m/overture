@@ -130,6 +130,7 @@ IPv6). Overture will handle both TCP and UDP requests.
 + File: Absolute path like `/path/to/file` is allowed. For Windows users, please use properly escaped path like
   `C:\\path\\to\\file.txt` in the configuration.
 + MinimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
++ CacheSize: The number of query record to cache, use `0` to disable.
 + RejectQtype: Reject inbound query with specific DNS record types, check [List of DNS record types](https://en.wikipedia.org/wiki/List_of_DNS_record_types) for details.
 
 #### Domain file example (Find domains and suffix match)
@@ -217,7 +218,6 @@ www.qq.com.		43	IN	A	14.17.42.40
 + Dependencies:
     + [dns](https://github.com/miekg/dns): BSD-3-Clause
     + [logrus](https://github.com/Sirupsen/logrus): MIT
-    + [pb](https://github.com/cheggaaa/pb): BSD-3-Clause
 + Code reference:
     + [skydns](https://github.com/skynetservices/skydns): MIT
     + [go-dnsmasq](https://github.com/janeczku/go-dnsmasq):  MIT

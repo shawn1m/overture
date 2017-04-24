@@ -5,15 +5,12 @@
 package hosts
 
 import (
-	"fmt"
 	"net"
 	"strings"
-	"sync"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/shawn1m/overture/core/common"
-	pb "gopkg.in/cheggaaa/pb.v1"
 )
 
 type hostsLine struct {
@@ -43,27 +40,11 @@ func newHostsLineList(data []byte) *hostsLineList {
 	ds := string(data)
 	hl := new(hostsLineList)
 
-	isBar := false
-	var bar *pb.ProgressBar
 	defer common.TimeTrack(time.Now(), "Load hosts")
 	lineList := strings.Split(ds, "\n")
-	if len(lineList) >= 10000 {
-		isBar = true
-	}
-	if isBar {
-		log.Info("Prepare to load hosts ...")
-		bar = pb.StartNew(len(lineList))
-		bar.SetRefreshRate(100 * time.Microsecond)
-	}
 
-	wg := new(sync.WaitGroup)
 	for _, l := range lineList {
-		wg.Add(1)
-		go func(l string) {
-			if isBar {
-				defer bar.Increment()
-			}
-			defer wg.Done()
+		func(l string) {
 			if h := parseLine(l); h != nil {
 				err := hl.add(h)
 				if err != nil {
@@ -71,11 +52,6 @@ func newHostsLineList(data []byte) *hostsLineList {
 				}
 			}
 		}(l)
-	}
-	wg.Wait()
-
-	if isBar {
-		bar.Finish()
 	}
 
 	return hl
@@ -96,11 +72,12 @@ func (hl *hostsLineList) FindHosts(name string) (ipv4List []net.IP, ipv6List []n
 }
 
 func (hl *hostsLineList) add(h *hostsLine) error {
-	for _, found := range *hl {
-		if found.Equal(h) {
-			return fmt.Errorf("Duplicate hostname entry for %#v", h)
-		}
-	}
+	// Use too much CPU time when hosts file is big
+	//for _, found := range *hl {
+	//	if found.Equal(h) {
+	//		return fmt.Errorf("Duplicate hostname entry for %#v", h)
+	//	}
+	//}
 	*hl = append(*hl, h)
 	return nil
 }
@@ -129,10 +106,13 @@ func parseLine(line string) *hostsLine {
 
 	// Break line into words
 	words := strings.Split(line, " ")
+
+	if len(words) < 2 {
+		return nil
+	}
 	for i, word := range words {
 		words[i] = strings.TrimSpace(word)
 	}
-
 	// Separate the first bit (the ip) from the other bits (the domains)
 	a, h := words[0], words[1]
 

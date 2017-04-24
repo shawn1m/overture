@@ -9,12 +9,10 @@ import (
 	"io/ioutil"
 	"net"
 	"strings"
-	"sync"
 )
 
 // Hosts represents a file containing hosts_sample
 type Hosts struct {
-	sync.RWMutex
 	hl       *hostsLineList
 	filePath string
 }
@@ -35,8 +33,6 @@ func New(path string) (*Hosts, error) {
 
 func (h *Hosts) Find(name string) (ipv4List []net.IP, ipv6List []net.IP) {
 	name = strings.TrimSuffix(name, ".")
-	h.RLock()
-	defer h.RUnlock()
 	return h.hl.FindHosts(name)
 }
 
