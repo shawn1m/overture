@@ -8,6 +8,8 @@ package main
 import (
 	"flag"
 	"runtime"
+	"os"
+	"io"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/shawn1m/overture/core"
@@ -21,11 +23,13 @@ func main() {
 
 	var (
 		configPath      string
+		logPath         string
 		isLogVerbose    bool
 		processorNumber int
 	)
 
 	flag.StringVar(&configPath, "c", "./config.json", "config file path")
+	flag.StringVar(&logPath, "l", "./overture.log", "log file path")
 	flag.BoolVar(&isLogVerbose, "v", false, "verbose mode")
 	flag.IntVar(&processorNumber, "p", runtime.NumCPU(), "number of processor to use")
 	flag.Parse()
@@ -34,6 +38,13 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	} else {
 		log.SetLevel(log.InfoLevel)
+	}
+
+	logf, err := os.OpenFile(logPath, os.O_APPEND | os.O_WRONLY | os.O_CREATE, 0640)
+	if err != nil {
+		println("Logfile error: Please check your log file path")
+	}else{
+		log.SetOutput(io.MultiWriter(logf, os.Stdout))
 	}
 
 	log.Info("Overture " + version)

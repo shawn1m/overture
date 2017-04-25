@@ -95,8 +95,6 @@ func parseJson(path string) *Config {
 		os.Exit(1)
 	}
 
-	log.Debug(string(b))
-
 	return j
 }
 

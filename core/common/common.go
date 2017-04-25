@@ -8,6 +8,7 @@ package common
 import (
 	"net"
 	"time"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
@@ -28,6 +29,7 @@ func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool) bool {
 }
 
 func TimeTrack(start time.Time, name string) {
+
 	elapsed := time.Since(start)
 	log.Debugf("%s took %s", name, elapsed)
 }
@@ -39,4 +41,9 @@ func IsAnswerEmpty(m *dns.Msg) bool {
 	}
 
 	return false
+}
+
+func HasSubDomain(s string, sub string) bool{
+
+	return strings.HasSuffix(sub, "." + s) || s == sub
 }

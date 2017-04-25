@@ -60,7 +60,8 @@ func newHostsLineList(data []byte) *hostsLineList {
 func (hl *hostsLineList) FindHosts(name string) (ipv4List []net.IP, ipv6List []net.IP) {
 
 	for _, h := range *hl {
-		if (h.wildcard == false && h.domain == name) || (h.wildcard == true && strings.HasSuffix(name, h.domain)) {
+		if (h.wildcard == false && h.domain == name) ||
+			(h.wildcard == true && common.HasSubDomain(h.domain, name)) {
 			if h.ip.To4() != nil {
 				ipv4List = append(ipv4List, h.ip)
 			} else {

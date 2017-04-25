@@ -40,3 +40,4 @@ config.json
 *_temp
 
 overture-*
+*.log

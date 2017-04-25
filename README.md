@@ -57,6 +57,10 @@ Verbose mode:
 
     $ ./overture -v
 
+Log to file:
+
+    $ ./overture -l /path/to/overture.log
+
 For other options, please see help:
 
     $ ./overture -h
