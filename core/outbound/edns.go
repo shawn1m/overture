@@ -20,26 +20,26 @@ func setEDNSClientSubnet(m *dns.Msg, ip string) {
 	o := m.IsEdns0()
 	if o == nil {
 		o = new(dns.OPT)
+		o.Hdr.Name = "."
+		o.Hdr.Rrtype = dns.TypeOPT
 		m.Extra = append(m.Extra, o)
 	}
-	o.Hdr.Name = "."
-	o.Hdr.Rrtype = dns.TypeOPT
 
 	es := isEDNSClientSubnet(o)
 	if es == nil {
 		es = new(dns.EDNS0_SUBNET)
+		es.Code = dns.EDNS0SUBNET
+		es.Address = net.ParseIP(ip)
+		if es.Address.To4() != nil {
+			es.Family = 1         // 1 for IPv4 source address, 2 for IPv6
+			es.SourceNetmask = 32 // 32 for IPV4, 128 for IPv6
+		} else {
+			es.Family = 2          // 1 for IPv4 source address, 2 for IPv6
+			es.SourceNetmask = 128 // 32 for IPV4, 128 for IPv6
+		}
+		es.SourceScope = 0
 		o.Option = append(o.Option, es)
 	}
-	es.Code = dns.EDNS0SUBNET
-	es.Address = net.ParseIP(ip)
-	if es.Address.To4() != nil {
-		es.Family = 1         // 1 for IPv4 source address, 2 for IPv6
-		es.SourceNetmask = 32 // 32 for IPV4, 128 for IPv6
-	} else {
-		es.Family = 2          // 1 for IPv4 source address, 2 for IPv6
-		es.SourceNetmask = 128 // 32 for IPV4, 128 for IPv6
-	}
-	es.SourceScope = 0
 }
 
 func isEDNSClientSubnet(o *dns.OPT) *dns.EDNS0_SUBNET {

@@ -93,7 +93,7 @@ func (c *Client) ExchangeFromRemote(isCache bool, isLog bool) {
 
 	if err != nil {
 		if err == dns.ErrTruncated {
-			log.Warn("Maybe " + c.DNSUpstream.Name + " Fail: does not support edns client subnet and it need to be replaced")
+			log.Warn(c.DNSUpstream.Name + " Fail: Maybe this server does not support EDNS Client Subnet")
 			return
 		}
 	}
