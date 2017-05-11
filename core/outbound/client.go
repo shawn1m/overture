@@ -21,17 +21,17 @@ type Client struct {
 	DNSUpstream           *DNSUpstream
 	EDNSClientSubnetIP    string
 	InboundIP             string
-	ReservedIPNetworkList []*net.IPNet
 
 	Hosts *hosts.Hosts
 	Cache *cache.Cache
 }
 
+var ReservedIPNetworkList = getReservedIPNetworkList()
+
 func NewClient(q *dns.Msg, u *DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *Client {
 
 	c := &Client{QuestionMessage: q, DNSUpstream: u, InboundIP: ip, Hosts: h, Cache: cache}
-	c.getEDNSClientSubnetIP()
-	c.ReservedIPNetworkList = getReservedIPNetworkList()
+        c.getEDNSClientSubnetIP()
 	return c
 }
 
@@ -39,7 +39,7 @@ func (c *Client) getEDNSClientSubnetIP() {
 
 	switch c.DNSUpstream.EDNSClientSubnet.Policy {
 	case "auto":
-		if !common.IsIPMatchList(net.ParseIP(c.InboundIP), c.ReservedIPNetworkList, false) {
+		if !common.IsIPMatchList(net.ParseIP(c.InboundIP), ReservedIPNetworkList, false) {
 			c.EDNSClientSubnetIP = c.InboundIP
 		} else {
 			c.EDNSClientSubnetIP = c.DNSUpstream.EDNSClientSubnet.ExternalIP
