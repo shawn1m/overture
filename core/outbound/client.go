@@ -18,22 +18,19 @@ type Client struct {
 	ResponseMessage *dns.Msg
 	QuestionMessage *dns.Msg
 
-	DNSUpstream           *DNSUpstream
-	EDNSClientSubnetIP    string
-	InboundIP             string
+	DNSUpstream        *DNSUpstream
+	EDNSClientSubnetIP string
+	InboundIP          string
 
 	Hosts *hosts.Hosts
 	Cache *cache.Cache
 }
 
-var ReservedIPNetworkList = getReservedIPNetworkList()
-
 func NewClient(q *dns.Msg, u *DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *Client {
 
 	c := &Client{QuestionMessage: q, DNSUpstream: u, InboundIP: ip, Hosts: h, Cache: cache}
-	if ReservedIPNetworkList == nil{
-		c.getEDNSClientSubnetIP()
-	}
+
+	c.getEDNSClientSubnetIP()
 	return c
 }
 
@@ -41,7 +38,7 @@ func (c *Client) getEDNSClientSubnetIP() {
 
 	switch c.DNSUpstream.EDNSClientSubnet.Policy {
 	case "auto":
-		if !common.IsIPMatchList(net.ParseIP(c.InboundIP), ReservedIPNetworkList, false) {
+		if !common.IsIPMatchList(net.ParseIP(c.InboundIP), common.ReservedIPNetworkList, false) {
 			c.EDNSClientSubnetIP = c.InboundIP
 		} else {
 			c.EDNSClientSubnetIP = c.DNSUpstream.EDNSClientSubnet.ExternalIP
@@ -223,18 +220,4 @@ func (c *Client) logAnswer(indicator string) {
 		}
 		log.Debug(name + " Answer: " + a.String())
 	}
-}
-
-func getReservedIPNetworkList() []*net.IPNet {
-
-	ipnl := make([]*net.IPNet, 0)
-	localCIDR := []string{"127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "100.64.0.0/10"}
-	for _, c := range localCIDR {
-		_, ip_net, err := net.ParseCIDR(c)
-		if err != nil {
-			break
-		}
-		ipnl = append(ipnl, ip_net)
-	}
-	return ipnl
 }

@@ -53,7 +53,7 @@ func isEDNSClientSubnet(o *dns.OPT) *dns.EDNS0_SUBNET {
 	return nil
 }
 
-func getEDNSClientSubnetIP(m *dns.Msg) string{
+func getEDNSClientSubnetIP(m *dns.Msg) string {
 
 	o := m.IsEdns0()
 	if o != nil {

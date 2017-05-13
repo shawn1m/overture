@@ -51,7 +51,7 @@ func (cb *ClientBundle) ExchangeFromRemote(isCache bool, isLog bool) {
 	var em *dns.Msg
 
 	for i := 0; i < len(cb.ClientList); i++ {
-		if m := <- ch; m != nil {
+		if m := <-ch; m != nil {
 			if common.IsAnswerEmpty(m) {
 				em = m
 				break

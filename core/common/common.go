@@ -7,12 +7,14 @@ package common
 
 import (
 	"net"
-	"time"
 	"strings"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
 )
+
+var ReservedIPNetworkList = getReservedIPNetworkList()
 
 func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool) bool {
 
@@ -43,7 +45,21 @@ func IsAnswerEmpty(m *dns.Msg) bool {
 	return false
 }
 
-func HasSubDomain(s string, sub string) bool{
+func HasSubDomain(s string, sub string) bool {
 
-	return strings.HasSuffix(sub, "." + s) || s == sub
+	return strings.HasSuffix(sub, "."+s) || s == sub
+}
+
+func getReservedIPNetworkList() []*net.IPNet {
+
+	ipnl := make([]*net.IPNet, 0)
+	localCIDR := []string{"127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "100.64.0.0/10"}
+	for _, c := range localCIDR {
+		_, ip_net, err := net.ParseCIDR(c)
+		if err != nil {
+			break
+		}
+		ipnl = append(ipnl, ip_net)
+	}
+	return ipnl
 }

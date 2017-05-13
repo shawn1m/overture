@@ -7,9 +7,9 @@ package main
 
 import (
 	"flag"
-	"runtime"
-	"os"
 	"io"
+	"os"
+	"runtime"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/shawn1m/overture/core"
@@ -40,10 +40,10 @@ func main() {
 		log.SetLevel(log.InfoLevel)
 	}
 
-	logf, err := os.OpenFile(logPath, os.O_APPEND | os.O_WRONLY | os.O_CREATE, 0640)
+	logf, err := os.OpenFile(logPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
 	if err != nil {
 		println("Logfile error: Please check your log file path")
-	}else{
+	} else {
 		log.SetOutput(io.MultiWriter(logf, os.Stdout))
 	}
 
