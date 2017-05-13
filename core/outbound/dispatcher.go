@@ -28,15 +28,18 @@ func (d *Dispatcher) Exchange() {
 
 	if d.OnlyPrimaryDNS {
 		d.ClientBundle.ExchangeFromRemote(true, true)
+		d.ClientBundle.CacheResults()
 		return
 	}
 
 	if ok := d.ExchangeForIPv6() || d.ExchangeForDomain(); ok {
+		d.ClientBundle.CacheResults()
 		return
 	}
 
 	d.ClientBundle.ExchangeFromRemote(false, true)
 	d.ExchangeForPrimaryDNSResponse()
+	d.ClientBundle.CacheResults()
 }
 
 func (d *Dispatcher) ExchangeForIPv6() bool {
@@ -100,10 +103,6 @@ func (d *Dispatcher) ExchangeForPrimaryDNSResponse() {
 		d.ClientBundle.ExchangeFromRemote(true, true)
 		return
 	}
-
-	go func() {
-		d.ClientBundle.ExchangeFromRemote(true, false)
-	}()
 
 	log.Debug("Finally use primary DNS")
 }

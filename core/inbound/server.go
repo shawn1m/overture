@@ -5,8 +5,6 @@ import (
 	"net"
 	"os"
 	"sync"
-        "sync/atomic"
-        "unsafe"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
@@ -66,13 +64,11 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 
 	s.Dispatcher.Exchange()
 
-	var responseMessage *dns.Msg
-	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&responseMessage)), unsafe.Pointer(cb.ResponseMessage))
-	if responseMessage != nil {
+	if cb.ResponseMessage != nil {
 		if s.MinimumTTL > 0 {
-			setMinimumTTL(responseMessage, uint32(s.MinimumTTL))
+			setMinimumTTL(cb.ResponseMessage, uint32(s.MinimumTTL))
 		}
-		w.WriteMsg(responseMessage)
+		w.WriteMsg(cb.ResponseMessage)
 	}
 }
 

@@ -43,7 +43,7 @@ func (cb *ClientBundle) ExchangeFromRemote(isCache bool, isLog bool) {
 
 	for _, o := range cb.ClientList {
 		go func(c *Client, ch chan *dns.Msg) {
-			c.ExchangeFromRemote(isCache, isLog)
+			c.ExchangeFromRemote(isLog)
 			ch <- c.ResponseMessage
 		}(o, ch)
 	}
@@ -51,7 +51,7 @@ func (cb *ClientBundle) ExchangeFromRemote(isCache bool, isLog bool) {
 	var em *dns.Msg
 
 	for i := 0; i < len(cb.ClientList); i++ {
-		if m := <-ch; m != nil {
+		if m := <- ch; m != nil {
 			if common.IsAnswerEmpty(m) {
 				em = m
 				break
@@ -61,6 +61,7 @@ func (cb *ClientBundle) ExchangeFromRemote(isCache bool, isLog bool) {
 		}
 	}
 	cb.ResponseMessage = em
+
 }
 
 func (cb *ClientBundle) ExchangeFromLocal() bool {
@@ -68,7 +69,7 @@ func (cb *ClientBundle) ExchangeFromLocal() bool {
 	for _, c := range cb.ClientList {
 		if c.ExchangeFromLocal() {
 			cb.ResponseMessage = c.ResponseMessage
-			c.logAnswer(true)
+			c.logAnswer("Local")
 			return true
 		}
 	}
@@ -88,4 +89,11 @@ func (cb *ClientBundle) UpdateFromDNSUpstream(ul []*DNSUpstream) {
 	}
 
 	cb.ClientList = cl
+}
+
+func (cb *ClientBundle) CacheResults() {
+
+	if cb.Cache != nil {
+		cb.Cache.InsertMessage(cache.Key(cb.QuestionMessage.Question[0], getEDNSClientSubnetIP(cb.QuestionMessage)), cb.ResponseMessage)
+	}
 }
