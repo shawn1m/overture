@@ -71,7 +71,7 @@ func (c *Cache) EvictRandom() {
 // InsertMessage inserts a message in the Cache. We will cache it for ttl seconds, which
 // should be a small (60...300) integer.
 func (c *Cache) InsertMessage(s string, m *dns.Msg) {
-	if c.capacity <= 0 || len(m.Answer) == 0 {
+	if c.capacity <= 0 || m == nil || len(m.Answer) == 0 {
 		return
 	}
 
