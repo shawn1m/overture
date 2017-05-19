@@ -11,6 +11,7 @@ import (
 	"github.com/shawn1m/overture/core/cache"
 	"github.com/shawn1m/overture/core/hosts"
 	"github.com/shawn1m/overture/core/outbound"
+	"github.com/ulule/deepcopier"
 )
 
 type Server struct {
@@ -51,10 +52,12 @@ func (s *Server) Run() {
 func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 
 	inboundIP, _, _ := net.SplitHostPort(w.RemoteAddr().String())
-	cb := outbound.NewClientBundle(q, s.Dispatcher.PrimaryDNS, inboundIP, s.Hosts, s.Cache)
-	s.Dispatcher.ClientBundle = cb
+	qt := &dns.Msg{}
+	deepcopier.Copy(q).To(qt)
+	s.Dispatcher.PrimaryClientBundle = outbound.NewClientBundle(q, s.Dispatcher.PrimaryDNS, inboundIP, s.Hosts, s.Cache)
+	s.Dispatcher.AlternativeClientBundle = outbound.NewClientBundle(qt, s.Dispatcher.AlternativeDNS, inboundIP, s.Hosts, s.Cache)
 
-	log.Debug("Question: " + cb.QuestionMessage.Question[0].String())
+	log.Debug("Question: " + q.Question[0].String())
 
 	for _, qt := range s.RejectQtype {
 		if isQuestionType(q, qt) {
@@ -63,6 +66,8 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 	}
 
 	s.Dispatcher.Exchange()
+
+	cb := s.Dispatcher.ActiveClientBundle
 
 	if cb.ResponseMessage != nil {
 		if s.MinimumTTL > 0 {

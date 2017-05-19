@@ -47,7 +47,7 @@ func (c *Client) getEDNSClientSubnetIP() {
 	}
 }
 
-func (c *Client) ExchangeFromRemote(isLog bool) {
+func (c *Client) ExchangeFromRemote(isCache bool, isLog bool) {
 
 	setEDNSClientSubnet(c.QuestionMessage, c.EDNSClientSubnetIP)
 	c.EDNSClientSubnetIP = getEDNSClientSubnetIP(c.QuestionMessage)
@@ -102,6 +102,10 @@ func (c *Client) ExchangeFromRemote(isLog bool) {
 
 	if isLog {
 		c.logAnswer("")
+	}
+
+	if isCache {
+		c.CacheResult()
 	}
 }
 
@@ -219,5 +223,12 @@ func (c *Client) logAnswer(indicator string) {
 			name = c.DNSUpstream.Name
 		}
 		log.Debug(name + " Answer: " + a.String())
+	}
+}
+
+func (c *Client) CacheResult() {
+
+	if c.Cache != nil {
+		c.Cache.InsertMessage(cache.Key(c.QuestionMessage.Question[0], getEDNSClientSubnetIP(c.QuestionMessage)), c.ResponseMessage)
 	}
 }
