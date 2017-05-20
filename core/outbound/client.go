@@ -26,9 +26,9 @@ type Client struct {
 	Cache *cache.Cache
 }
 
-func NewClient(q dns.Msg, u *DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *Client {
+func NewClient(q *dns.Msg, u *DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *Client {
 
-	c := &Client{QuestionMessage: q, DNSUpstream: u, InboundIP: ip, Hosts: h, Cache: cache}
+	c := &Client{QuestionMessage: *q, DNSUpstream: u, InboundIP: ip, Hosts: h, Cache: cache}
 
 	c.getEDNSClientSubnetIP()
 	return c

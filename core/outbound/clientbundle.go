@@ -24,13 +24,13 @@ type ClientBundle struct {
 	Cache *cache.Cache
 }
 
-func NewClientBundle(q dns.Msg, ul []*DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *ClientBundle {
+func NewClientBundle(q *dns.Msg, ul []*DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *ClientBundle {
 
-	cb := &ClientBundle{QuestionMessage: q, DNSUpstreamList: ul, InboundIP: ip, Hosts: h, Cache: cache}
+	cb := &ClientBundle{QuestionMessage: *q, DNSUpstreamList: ul, InboundIP: ip, Hosts: h, Cache: cache}
 
 	for _, u := range ul {
 
-		c := NewClient(cb.QuestionMessage, u, cb.InboundIP, cb.Hosts, cb.Cache)
+		c := NewClient(&cb.QuestionMessage, u, cb.InboundIP, cb.Hosts, cb.Cache)
 		cb.ClientList = append(cb.ClientList, c)
 	}
 

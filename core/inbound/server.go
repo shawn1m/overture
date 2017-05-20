@@ -51,8 +51,8 @@ func (s *Server) Run() {
 func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 
 	inboundIP, _, _ := net.SplitHostPort(w.RemoteAddr().String())
-	s.Dispatcher.PrimaryClientBundle = outbound.NewClientBundle(*q, s.Dispatcher.PrimaryDNS, inboundIP, s.Hosts, s.Cache)
-	s.Dispatcher.AlternativeClientBundle = outbound.NewClientBundle(*q, s.Dispatcher.AlternativeDNS, inboundIP, s.Hosts, s.Cache)
+	s.Dispatcher.PrimaryClientBundle = outbound.NewClientBundle(q, s.Dispatcher.PrimaryDNS, inboundIP, s.Hosts, s.Cache)
+	s.Dispatcher.AlternativeClientBundle = outbound.NewClientBundle(q, s.Dispatcher.AlternativeDNS, inboundIP, s.Hosts, s.Cache)
 
 	log.Debug("Question: " + q.Question[0].String())
 
