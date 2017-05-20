@@ -11,7 +11,6 @@ import (
 	"github.com/shawn1m/overture/core/cache"
 	"github.com/shawn1m/overture/core/hosts"
 	"github.com/shawn1m/overture/core/outbound"
-	"github.com/ulule/deepcopier"
 )
 
 type Server struct {
@@ -52,10 +51,8 @@ func (s *Server) Run() {
 func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 
 	inboundIP, _, _ := net.SplitHostPort(w.RemoteAddr().String())
-	qt := &dns.Msg{}
-	deepcopier.Copy(q).To(qt)
-	s.Dispatcher.PrimaryClientBundle = outbound.NewClientBundle(q, s.Dispatcher.PrimaryDNS, inboundIP, s.Hosts, s.Cache)
-	s.Dispatcher.AlternativeClientBundle = outbound.NewClientBundle(qt, s.Dispatcher.AlternativeDNS, inboundIP, s.Hosts, s.Cache)
+	s.Dispatcher.PrimaryClientBundle = outbound.NewClientBundle(*q, s.Dispatcher.PrimaryDNS, inboundIP, s.Hosts, s.Cache)
+	s.Dispatcher.AlternativeClientBundle = outbound.NewClientBundle(*q, s.Dispatcher.AlternativeDNS, inboundIP, s.Hosts, s.Cache)
 
 	log.Debug("Question: " + q.Question[0].String())
 

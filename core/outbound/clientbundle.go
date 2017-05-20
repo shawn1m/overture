@@ -13,7 +13,7 @@ import (
 
 type ClientBundle struct {
 	ResponseMessage *dns.Msg
-	QuestionMessage *dns.Msg
+	QuestionMessage dns.Msg
 
 	ClientList []*Client
 
@@ -24,7 +24,7 @@ type ClientBundle struct {
 	Cache *cache.Cache
 }
 
-func NewClientBundle(q *dns.Msg, ul []*DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *ClientBundle {
+func NewClientBundle(q dns.Msg, ul []*DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *ClientBundle {
 
 	cb := &ClientBundle{QuestionMessage: q, DNSUpstreamList: ul, InboundIP: ip, Hosts: h, Cache: cache}
 
@@ -39,24 +39,25 @@ func NewClientBundle(q *dns.Msg, ul []*DNSUpstream, ip string, h *hosts.Hosts, c
 
 func (cb *ClientBundle) ExchangeFromRemote(isCache bool, isLog bool) {
 
-	ch := make(chan *dns.Msg, len(cb.ClientList))
+	ch := make(chan *Client, len(cb.ClientList))
 
 	for _, o := range cb.ClientList {
-		go func(c *Client, ch chan *dns.Msg) {
+		go func(c *Client, ch chan *Client) {
 			c.ExchangeFromRemote(false, isLog)
-			ch <- c.ResponseMessage
+			ch <- c
 		}(o, ch)
 	}
 
-	var em *dns.Msg
+	var ec *Client
 
 	for i := 0; i < len(cb.ClientList); i++ {
-		if m := <-ch; m != nil {
-			if common.IsAnswerEmpty(m) {
-				em = m
+		if c := <-ch; c.ResponseMessage != nil {
+			if common.IsAnswerEmpty(c.ResponseMessage) {
+				ec = c
 				break
 			}
-			cb.ResponseMessage = m
+			cb.ResponseMessage = c.ResponseMessage
+			cb.QuestionMessage = c.QuestionMessage
 
 			if isCache {
 				cb.CacheResult()
@@ -65,10 +66,13 @@ func (cb *ClientBundle) ExchangeFromRemote(isCache bool, isLog bool) {
 			return
 		}
 	}
-	cb.ResponseMessage = em
+	if ec != nil {
+		cb.ResponseMessage = ec.ResponseMessage
+		cb.QuestionMessage = ec.QuestionMessage
 
-	if isCache {
-		cb.CacheResult()
+		if isCache {
+			cb.CacheResult()
+		}
 	}
 }
 
@@ -87,6 +91,6 @@ func (cb *ClientBundle) ExchangeFromLocal() bool {
 func (cb *ClientBundle) CacheResult() {
 
 	if cb.Cache != nil {
-		cb.Cache.InsertMessage(cache.Key(cb.QuestionMessage.Question[0], getEDNSClientSubnetIP(cb.QuestionMessage)), cb.ResponseMessage)
+		cb.Cache.InsertMessage(cache.Key(cb.QuestionMessage.Question[0], getEDNSClientSubnetIP(&cb.QuestionMessage)), cb.ResponseMessage)
 	}
 }

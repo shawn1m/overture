@@ -16,7 +16,7 @@ import (
 
 type Client struct {
 	ResponseMessage *dns.Msg
-	QuestionMessage *dns.Msg
+	QuestionMessage dns.Msg
 
 	DNSUpstream        *DNSUpstream
 	EDNSClientSubnetIP string
@@ -26,7 +26,7 @@ type Client struct {
 	Cache *cache.Cache
 }
 
-func NewClient(q *dns.Msg, u *DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *Client {
+func NewClient(q dns.Msg, u *DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *Client {
 
 	c := &Client{QuestionMessage: q, DNSUpstream: u, InboundIP: ip, Hosts: h, Cache: cache}
 
@@ -49,8 +49,8 @@ func (c *Client) getEDNSClientSubnetIP() {
 
 func (c *Client) ExchangeFromRemote(isCache bool, isLog bool) {
 
-	setEDNSClientSubnet(c.QuestionMessage, c.EDNSClientSubnetIP)
-	c.EDNSClientSubnetIP = getEDNSClientSubnetIP(c.QuestionMessage)
+	setEDNSClientSubnet(&c.QuestionMessage, c.EDNSClientSubnetIP)
+	c.EDNSClientSubnetIP = getEDNSClientSubnetIP(&c.QuestionMessage)
 
 	var conn net.Conn
 	if c.DNSUpstream.SOCKS5Address != "" {
@@ -80,7 +80,7 @@ func (c *Client) ExchangeFromRemote(isCache bool, isLog bool) {
 
 	dc := &dns.Conn{Conn: conn}
 	defer dc.Close()
-	err := dc.WriteMsg(c.QuestionMessage)
+	err := dc.WriteMsg(&c.QuestionMessage)
 	if err != nil {
 		log.Warn(c.DNSUpstream.Name + " Fail: Send question message failed")
 		return
@@ -209,7 +209,7 @@ func (c *Client) setLocalResponseMessage(rrl []dns.RR) {
 		c.ResponseMessage.Answer = append(c.ResponseMessage.Answer, rr)
 	}
 	shuffleRRList(c.ResponseMessage.Answer)
-	c.ResponseMessage.SetReply(c.QuestionMessage)
+	c.ResponseMessage.SetReply(&c.QuestionMessage)
 	c.ResponseMessage.RecursionAvailable = true
 }
 
@@ -229,6 +229,6 @@ func (c *Client) logAnswer(indicator string) {
 func (c *Client) CacheResult() {
 
 	if c.Cache != nil {
-		c.Cache.InsertMessage(cache.Key(c.QuestionMessage.Question[0], getEDNSClientSubnetIP(c.QuestionMessage)), c.ResponseMessage)
+		c.Cache.InsertMessage(cache.Key(c.QuestionMessage.Question[0], getEDNSClientSubnetIP(&c.QuestionMessage)), c.ResponseMessage)
 	}
 }

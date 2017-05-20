@@ -122,7 +122,7 @@ IPv6). Overture will handle both TCP and UDP requests.
 + DNS: You can specify multiple DNS upstream servers here.
     + Name: This field is only used for logging.
     + Protocol: `tcp` or `udp`
-    + SOCKS5Address: Forward dns query to this socks5 proxy, `“”` to disable.
+    + SOCKS5Address: Forward dns query to this SOCKS5 proxy, `“”` to disable.
     + EDNSClientSubnet: Used to improve DNS accuracy. Please check [RFC7871](https://tools.ietf.org/html/rfc7871) for
     details.
         + Policy
