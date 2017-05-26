@@ -39,13 +39,7 @@ func (d *Dispatcher) Exchange() {
 		return
 	}
 
-	var pwg sync.WaitGroup
 	var awg sync.WaitGroup
-	pwg.Add(1)
-	go func() {
-		d.PrimaryClientBundle.ExchangeFromRemote(false, true)
-		pwg.Done()
-	}()
 	awg.Add(1)
 	go func() {
 		d.AlternativeClientBundle.ExchangeFromRemote(false, true)
@@ -57,6 +51,13 @@ func (d *Dispatcher) Exchange() {
 		d.ActiveClientBundle.CacheResult()
 		return
 	}
+
+	var pwg sync.WaitGroup
+	pwg.Add(1)
+	go func() {
+		d.PrimaryClientBundle.ExchangeFromRemote(false, true)
+		pwg.Done()
+	}()
 
 	pwg.Wait()
 	d.ExchangeForPrimaryDNSResponse()
