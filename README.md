@@ -159,7 +159,6 @@ IPv6). Overture will handle both TCP and UDP requests.
 #### DNS servers with ECS support
 
 + DNSPod 119.29.29.29:53
-+ GoogleDNS 8.8.8.8:53 \[2001:4860:4860::8888\]:53
 
 **For DNSPod, ECS only works via udp, you can test it by [patched dig](https://www.gsic.uva.es/~jnisigl/dig-edns-client-subnet.html)**
 
