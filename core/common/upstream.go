@@ -1,4 +1,4 @@
-package outbound
+package common
 
 type DNSUpstream struct {
 	Name             string

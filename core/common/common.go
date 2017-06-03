@@ -63,3 +63,15 @@ func getReservedIPNetworkList() []*net.IPNet {
 	}
 	return ipnl
 }
+
+func FindIPByType(msg *dns.Msg, t uint16) string {
+
+	for _, rr := range msg.Answer {
+		if rr.Header().Rrtype == t {
+			items := strings.SplitN(rr.String(), "\t", 5)
+			return items[4]
+		}
+	}
+
+	return ""
+}

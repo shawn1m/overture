@@ -11,8 +11,8 @@ import (
 )
 
 type Dispatcher struct {
-	PrimaryDNS     []*DNSUpstream
-	AlternativeDNS []*DNSUpstream
+	PrimaryDNS     []*common.DNSUpstream
+	AlternativeDNS []*common.DNSUpstream
 	OnlyPrimaryDNS bool
 
 	PrimaryClientBundle     *ClientBundle

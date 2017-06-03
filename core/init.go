@@ -8,12 +8,13 @@ package core
 import (
 	"github.com/shawn1m/overture/core/inbound"
 	"github.com/shawn1m/overture/core/outbound"
+	"github.com/shawn1m/overture/core/config"
 )
 
 // Initiate the server with config file
 func InitServer(configFilePath string) {
 
-	config := NewConfig(configFilePath)
+	config := config.NewConfig(configFilePath)
 
 	// New dispatcher without ClientBundle, ClientBundle must be initiated when server is running
 	d := &outbound.Dispatcher{

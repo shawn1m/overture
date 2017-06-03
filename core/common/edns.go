@@ -1,4 +1,4 @@
-package outbound
+package common
 
 import (
 	"net"
@@ -11,7 +11,7 @@ type EDNSClientSubnetType struct {
 	ExternalIP string
 }
 
-func setEDNSClientSubnet(m *dns.Msg, ip string) {
+func SetEDNSClientSubnet(m *dns.Msg, ip string) {
 
 	if ip == "" {
 		return
@@ -25,7 +25,7 @@ func setEDNSClientSubnet(m *dns.Msg, ip string) {
 		m.Extra = append(m.Extra, o)
 	}
 
-	es := isEDNSClientSubnet(o)
+	es := IsEDNSClientSubnet(o)
 	if es == nil {
 		es = new(dns.EDNS0_SUBNET)
 		es.Code = dns.EDNS0SUBNET
@@ -42,7 +42,7 @@ func setEDNSClientSubnet(m *dns.Msg, ip string) {
 	}
 }
 
-func isEDNSClientSubnet(o *dns.OPT) *dns.EDNS0_SUBNET {
+func IsEDNSClientSubnet(o *dns.OPT) *dns.EDNS0_SUBNET {
 
 	for _, s := range o.Option {
 		switch e := s.(type) {
@@ -53,7 +53,7 @@ func isEDNSClientSubnet(o *dns.OPT) *dns.EDNS0_SUBNET {
 	return nil
 }
 
-func getEDNSClientSubnetIP(m *dns.Msg) string {
+func GetEDNSClientSubnetIP(m *dns.Msg) string {
 
 	o := m.IsEdns0()
 	if o != nil {

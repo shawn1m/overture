@@ -2,7 +2,7 @@
 // Use of this source code is governed by The MIT License (MIT) that can be
 // found in the LICENSE file.
 
-package core
+package config
 
 import (
 	"bufio"
@@ -18,13 +18,13 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/shawn1m/overture/core/cache"
 	"github.com/shawn1m/overture/core/hosts"
-	"github.com/shawn1m/overture/core/outbound"
+	"github.com/shawn1m/overture/core/common"
 )
 
 type Config struct {
 	BindAddress        string `json:"BindAddress"`
-	PrimaryDNS         []*outbound.DNSUpstream
-	AlternativeDNS     []*outbound.DNSUpstream
+	PrimaryDNS         []*common.DNSUpstream
+	AlternativeDNS     []*common.DNSUpstream
 	OnlyPrimaryDNS     bool
 	RedirectIPv6Record bool
 	IPNetworkFile      string

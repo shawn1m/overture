@@ -17,14 +17,14 @@ type ClientBundle struct {
 
 	ClientList []*Client
 
-	DNSUpstreamList []*DNSUpstream
+	DNSUpstreamList []*common.DNSUpstream
 	InboundIP       string
 
 	Hosts *hosts.Hosts
 	Cache *cache.Cache
 }
 
-func NewClientBundle(q *dns.Msg, ul []*DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *ClientBundle {
+func NewClientBundle(q *dns.Msg, ul []*common.DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *ClientBundle {
 
 	cb := &ClientBundle{QuestionMessage: *q, DNSUpstreamList: ul, InboundIP: ip, Hosts: h, Cache: cache}
 
@@ -91,6 +91,6 @@ func (cb *ClientBundle) ExchangeFromLocal() bool {
 func (cb *ClientBundle) CacheResult() {
 
 	if cb.Cache != nil {
-		cb.Cache.InsertMessage(cache.Key(cb.QuestionMessage.Question[0], getEDNSClientSubnetIP(&cb.QuestionMessage)), cb.ResponseMessage)
+		cb.Cache.InsertMessage(cache.Key(cb.QuestionMessage.Question[0], common.GetEDNSClientSubnetIP(&cb.QuestionMessage)), cb.ResponseMessage)
 	}
 }

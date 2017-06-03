@@ -18,7 +18,7 @@ type Client struct {
 	ResponseMessage *dns.Msg
 	QuestionMessage dns.Msg
 
-	DNSUpstream        *DNSUpstream
+	DNSUpstream        *common.DNSUpstream
 	EDNSClientSubnetIP string
 	InboundIP          string
 
@@ -26,7 +26,7 @@ type Client struct {
 	Cache *cache.Cache
 }
 
-func NewClient(q *dns.Msg, u *DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *Client {
+func NewClient(q *dns.Msg, u *common.DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *Client {
 
 	c := &Client{QuestionMessage: *q, DNSUpstream: u, InboundIP: ip, Hosts: h, Cache: cache}
 
@@ -49,8 +49,8 @@ func (c *Client) getEDNSClientSubnetIP() {
 
 func (c *Client) ExchangeFromRemote(isCache bool, isLog bool) {
 
-	setEDNSClientSubnet(&c.QuestionMessage, c.EDNSClientSubnetIP)
-	c.EDNSClientSubnetIP = getEDNSClientSubnetIP(&c.QuestionMessage)
+	common.SetEDNSClientSubnet(&c.QuestionMessage, c.EDNSClientSubnetIP)
+	c.EDNSClientSubnetIP = common.GetEDNSClientSubnetIP(&c.QuestionMessage)
 
 	var conn net.Conn
 	if c.DNSUpstream.SOCKS5Address != "" {
@@ -229,6 +229,6 @@ func (c *Client) logAnswer(indicator string) {
 func (c *Client) CacheResult() {
 
 	if c.Cache != nil {
-		c.Cache.InsertMessage(cache.Key(c.QuestionMessage.Question[0], getEDNSClientSubnetIP(&c.QuestionMessage)), c.ResponseMessage)
+		c.Cache.InsertMessage(cache.Key(c.QuestionMessage.Question[0], common.GetEDNSClientSubnetIP(&c.QuestionMessage)), c.ResponseMessage)
 	}
 }
