@@ -6,10 +6,11 @@ addons:
     packages:
       - python3
 script:
-  - "echo Just for test!"
+  - "python3 ./build.py -ib"
+  - "go test -v ./..."
 before_deploy:
   - "go version"
-  - "python3 ./build.py"
+  - "python3 ./build.py -id"
 deploy:
   provider: releases
   api_key:

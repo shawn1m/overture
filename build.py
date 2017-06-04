@@ -2,6 +2,7 @@
 
 import subprocess
 import base64
+import sys
 
 GO_OS_ARCH_LIST = [
     ["darwin", "amd64"],
@@ -62,9 +63,12 @@ def create_hosts_sample_file():
 
 if __name__ == "__main__":
 
-    download_file()
-    # decode_domain_sample()
-    create_hosts_sample_file()
-    subprocess.check_call("cp config.sample.json config.json", shell=True)
+    subprocess.check_call("mv config.sample.json config.json", shell=True)
 
-    go_build_zip()
+    if "-id" not in sys.argv:
+        download_file()
+        # decode_domain_sample()
+        create_hosts_sample_file()
+
+    if "-ib" not in sys.argv:
+        go_build_zip()
