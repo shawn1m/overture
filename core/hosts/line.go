@@ -40,7 +40,7 @@ func newHostsLineList(data []byte) *hostsLineList {
 	ds := string(data)
 	hl := new(hostsLineList)
 
-	defer common.TimeTrack(time.Now(), "Load hosts")
+	defer log.Debugf("%s took %s", "Load hosts", time.Since(time.Now()))
 	lineList := strings.Split(ds, "\n")
 
 	for _, l := range lineList {

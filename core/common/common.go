@@ -8,7 +8,6 @@ package common
 import (
 	"net"
 	"strings"
-	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
@@ -28,12 +27,6 @@ func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool) bool {
 	}
 
 	return false
-}
-
-func TimeTrack(start time.Time, name string) {
-
-	elapsed := time.Since(start)
-	log.Debugf("%s took %s", name, elapsed)
 }
 
 func IsAnswerEmpty(m *dns.Msg) bool {
@@ -64,7 +57,7 @@ func getReservedIPNetworkList() []*net.IPNet {
 	return ipnl
 }
 
-func FindIPByType(msg *dns.Msg, t uint16) string {
+func FindRecordByType(msg *dns.Msg, t uint16) string {
 
 	for _, rr := range msg.Answer {
 		if rr.Header().Rrtype == t {
