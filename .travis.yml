@@ -10,6 +10,7 @@ script:
   - "go test -v ./..."
 before_deploy:
   - "go version"
+  - "ls -al"
   - "python3 ./build.py -id"
 deploy:
   provider: releases
