@@ -63,7 +63,7 @@ def create_hosts_sample_file():
 
 if __name__ == "__main__":
 
-    subprocess.check_call("mv config.sample.json config.json", shell=True)
+    subprocess.check_call("cp config.sample.json config.json", shell=True)
 
     if "-id" not in sys.argv:
         download_file()
