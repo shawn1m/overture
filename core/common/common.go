@@ -13,7 +13,13 @@ import (
 	"github.com/miekg/dns"
 )
 
-var ReservedIPNetworkList = getReservedIPNetworkList()
+var ReservedIPNetworkList []*net.IPNet
+
+func init(){
+
+	ReservedIPNetworkList = getReservedIPNetworkList()
+}
+
 
 func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool) bool {
 

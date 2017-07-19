@@ -3,7 +3,6 @@ package outbound
 import (
 	"net"
 	"strings"
-	"sync"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
@@ -39,30 +38,14 @@ func (d *Dispatcher) Exchange() {
 		return
 	}
 
-	var awg sync.WaitGroup
-	awg.Add(1)
-	go func() {
-		d.AlternativeClientBundle.ExchangeFromRemote(false, true)
-		awg.Done()
-	}()
-
 	if ok := d.ExchangeForIPv6() || d.ExchangeForDomain(); ok {
-		awg.Wait()
-		d.ActiveClientBundle.CacheResult()
+		d.AlternativeClientBundle.ExchangeFromRemote(true, true)
 		return
 	}
 
-	var pwg sync.WaitGroup
-	pwg.Add(1)
-	go func() {
-		d.PrimaryClientBundle.ExchangeFromRemote(false, true)
-		pwg.Done()
-	}()
-
-	pwg.Wait()
-	d.ExchangeForPrimaryDNSResponse()
+	d.ChooseActiveClientBundle()
 	if d.ActiveClientBundle == d.AlternativeClientBundle {
-		awg.Wait()
+		d.ActiveClientBundle.ExchangeFromRemote(false, true)
 	}
 	d.ActiveClientBundle.CacheResult()
 }
@@ -97,7 +80,10 @@ func (d *Dispatcher) ExchangeForDomain() bool {
 	return false
 }
 
-func (d *Dispatcher) ExchangeForPrimaryDNSResponse() {
+func (d *Dispatcher) ChooseActiveClientBundle() {
+
+	d.ActiveClientBundle = d.PrimaryClientBundle
+	d.PrimaryClientBundle.ExchangeFromRemote(false, true)
 
 	if d.PrimaryClientBundle.ResponseMessage == nil || len(d.PrimaryClientBundle.ResponseMessage.Answer) == 0 {
 		log.Debug("Primary DNS answer is empty, finally use alternative DNS")
