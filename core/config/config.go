@@ -17,8 +17,8 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/shawn1m/overture/core/cache"
-	"github.com/shawn1m/overture/core/hosts"
 	"github.com/shawn1m/overture/core/common"
+	"github.com/shawn1m/overture/core/hosts"
 )
 
 type Config struct {

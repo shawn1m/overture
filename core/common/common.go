@@ -15,11 +15,10 @@ import (
 
 var ReservedIPNetworkList []*net.IPNet
 
-func init(){
+func init() {
 
 	ReservedIPNetworkList = getReservedIPNetworkList()
 }
-
 
 func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool) bool {
 
@@ -35,14 +34,7 @@ func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool) bool {
 	return false
 }
 
-func IsAnswerEmpty(m *dns.Msg) bool {
-
-	if len(m.Answer) == 0 {
-		return true
-	}
-
-	return false
-}
+func HasAnswer(m *dns.Msg) bool { return len(m.Answer) != 0 }
 
 func HasSubDomain(s string, sub string) bool {
 

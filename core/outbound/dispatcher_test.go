@@ -1,31 +1,32 @@
 package outbound
 
 import (
-	"testing"
 	"os"
+	"testing"
 	"time"
 
 	"github.com/miekg/dns"
-	"github.com/shawn1m/overture/core/config"
 	"github.com/shawn1m/overture/core/common"
+	"github.com/shawn1m/overture/core/config"
 )
 
 var c *config.Config
-var d *Dispatcher
-var inboundIP string
+var d Dispatcher
 
-func init(){
+func init() {
 	os.Chdir("../..")
 	c = config.NewConfig("config.test.json")
-	d = &Dispatcher{
+	d = Dispatcher{
 		PrimaryDNS:         c.PrimaryDNS,
 		AlternativeDNS:     c.AlternativeDNS,
 		OnlyPrimaryDNS:     c.OnlyPrimaryDNS,
 		IPNetworkList:      c.IPNetworkList,
 		DomainList:         c.DomainList,
 		RedirectIPv6Record: c.RedirectIPv6Record,
+		InboundIP:          "",
+		Hosts:              c.Hosts,
+		Cache:              c.Cache,
 	}
-	inboundIP = ""
 }
 
 func TestDispatcher(t *testing.T) {
@@ -43,7 +44,7 @@ func TestDispatcher(t *testing.T) {
 	testCache(t)
 }
 
-func testDomestic(t *testing.T){
+func testDomestic(t *testing.T) {
 
 	exchange("www.baidu.com.", dns.TypeA)
 	if common.FindRecordByType(d.ActiveClientBundle.ResponseMessage, dns.TypeA) == "" {
@@ -51,15 +52,15 @@ func testDomestic(t *testing.T){
 	}
 }
 
-func testForeign(t *testing.T){
+func testForeign(t *testing.T) {
 
 	exchange("www.twitter.com.", dns.TypeA)
-	if common.FindRecordByType(d.ActiveClientBundle.ResponseMessage, dns.TypeCNAME) != "twitter.com."{
+	if common.FindRecordByType(d.ActiveClientBundle.ResponseMessage, dns.TypeCNAME) != "twitter.com." {
 		t.Error("twitter.com should have an twitter.com CNAME record")
 	}
 }
 
-func testAAAA(t *testing.T){
+func testAAAA(t *testing.T) {
 
 	exchange("www.twitter.com.", dns.TypeAAAA)
 	if common.FindRecordByType(d.ActiveClientBundle.ResponseMessage, dns.TypeAAAA) != "" {
@@ -67,7 +68,7 @@ func testAAAA(t *testing.T){
 	}
 }
 
-func testHosts(t *testing.T){
+func testHosts(t *testing.T) {
 
 	exchange("localhost.", dns.TypeA)
 	if common.FindRecordByType(d.ActiveClientBundle.ResponseMessage, dns.TypeA) != "127.0.0.1" {
@@ -75,7 +76,7 @@ func testHosts(t *testing.T){
 	}
 }
 
-func testIPResponse(t *testing.T){
+func testIPResponse(t *testing.T) {
 
 	exchange("127.0.0.1.", dns.TypeA)
 	if common.FindRecordByType(d.ActiveClientBundle.ResponseMessage, dns.TypeA) != "127.0.0.1" {
@@ -88,21 +89,20 @@ func testIPResponse(t *testing.T){
 	}
 }
 
-func testCache(t *testing.T){
+func testCache(t *testing.T) {
 
 	exchange("www.cnn.com.", dns.TypeA)
 	now := time.Now()
 	d.Exchange()
-	if time.Since(now) > 10 * time.Millisecond{
+	if time.Since(now) > 10*time.Millisecond {
 		t.Error("Cache response slower than 10ms")
 	}
 }
 
-func exchange(z string, t uint16){
+func exchange(z string, t uint16) {
 
 	q := new(dns.Msg)
 	q.SetQuestion(z, t)
-	d.PrimaryClientBundle = NewClientBundle(q, d.PrimaryDNS, inboundIP, c.Hosts, c.Cache)
-	d.AlternativeClientBundle = NewClientBundle(q, d.AlternativeDNS, inboundIP, c.Hosts, c.Cache)
+	d.QuestionMessage = q
 	d.Exchange()
 }

@@ -6,9 +6,9 @@
 package core
 
 import (
+	"github.com/shawn1m/overture/core/config"
 	"github.com/shawn1m/overture/core/inbound"
 	"github.com/shawn1m/overture/core/outbound"
-	"github.com/shawn1m/overture/core/config"
 )
 
 // Initiate the server with config file
@@ -17,13 +17,15 @@ func InitServer(configFilePath string) {
 	config := config.NewConfig(configFilePath)
 
 	// New dispatcher without ClientBundle, ClientBundle must be initiated when server is running
-	d := &outbound.Dispatcher{
+	d := outbound.Dispatcher{
 		PrimaryDNS:         config.PrimaryDNS,
 		AlternativeDNS:     config.AlternativeDNS,
 		OnlyPrimaryDNS:     config.OnlyPrimaryDNS,
 		IPNetworkList:      config.IPNetworkList,
 		DomainList:         config.DomainList,
 		RedirectIPv6Record: config.RedirectIPv6Record,
+		Hosts:              config.Hosts,
+		Cache:              config.Cache,
 	}
 
 	s := &inbound.Server{
@@ -31,8 +33,6 @@ func InitServer(configFilePath string) {
 		Dispatcher:  d,
 		MinimumTTL:  config.MinimumTTL,
 		RejectQtype: config.RejectQtype,
-		Hosts:       config.Hosts,
-		Cache:       config.Cache,
 	}
 
 	s.Run()

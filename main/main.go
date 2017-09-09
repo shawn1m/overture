@@ -40,7 +40,7 @@ func main() {
 		log.SetLevel(log.InfoLevel)
 	}
 
-	if logPath != ""{
+	if logPath != "" {
 		lf, err := os.OpenFile(logPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
 		if err != nil {
 			println("Logfile error: Please check your log file path")

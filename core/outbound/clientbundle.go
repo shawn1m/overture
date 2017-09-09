@@ -13,7 +13,7 @@ import (
 
 type ClientBundle struct {
 	ResponseMessage *dns.Msg
-	QuestionMessage dns.Msg
+	QuestionMessage *dns.Msg
 
 	ClientList []*Client
 
@@ -26,11 +26,11 @@ type ClientBundle struct {
 
 func NewClientBundle(q *dns.Msg, ul []*common.DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *ClientBundle {
 
-	cb := &ClientBundle{QuestionMessage: *q, DNSUpstreamList: ul, InboundIP: ip, Hosts: h, Cache: cache}
+	cb := &ClientBundle{QuestionMessage: q.Copy(), DNSUpstreamList: ul, InboundIP: ip, Hosts: h, Cache: cache}
 
 	for _, u := range ul {
 
-		c := NewClient(&cb.QuestionMessage, u, cb.InboundIP, cb.Hosts, cb.Cache)
+		c := NewClient(cb.QuestionMessage, u, cb.InboundIP, cb.Hosts, cb.Cache)
 		cb.ClientList = append(cb.ClientList, c)
 	}
 
@@ -52,21 +52,14 @@ func (cb *ClientBundle) ExchangeFromRemote(isCache bool, isLog bool) {
 
 	for i := 0; i < len(cb.ClientList); i++ {
 		if c := <-ch; c.ResponseMessage != nil {
-			if common.IsAnswerEmpty(c.ResponseMessage) {
-				ec = c
+			ec = c
+			if common.HasAnswer(c.ResponseMessage) {
 				break
 			}
-			cb.ResponseMessage = c.ResponseMessage
-			cb.QuestionMessage = c.QuestionMessage
-
-			if isCache {
-				cb.CacheResult()
-			}
-
-			return
 		}
 	}
-	if ec != nil {
+
+	if ec != nil && ec.ResponseMessage != nil {
 		cb.ResponseMessage = ec.ResponseMessage
 		cb.QuestionMessage = ec.QuestionMessage
 
@@ -91,6 +84,6 @@ func (cb *ClientBundle) ExchangeFromLocal() bool {
 func (cb *ClientBundle) CacheResult() {
 
 	if cb.Cache != nil {
-		cb.Cache.InsertMessage(cache.Key(cb.QuestionMessage.Question[0], common.GetEDNSClientSubnetIP(&cb.QuestionMessage)), cb.ResponseMessage)
+		cb.Cache.InsertMessage(cache.Key(cb.QuestionMessage.Question[0], common.GetEDNSClientSubnetIP(cb.QuestionMessage)), cb.ResponseMessage)
 	}
 }

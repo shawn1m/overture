@@ -16,7 +16,7 @@ import (
 
 type Client struct {
 	ResponseMessage *dns.Msg
-	QuestionMessage dns.Msg
+	QuestionMessage *dns.Msg
 
 	DNSUpstream        *common.DNSUpstream
 	EDNSClientSubnetIP string
@@ -28,7 +28,7 @@ type Client struct {
 
 func NewClient(q *dns.Msg, u *common.DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *Client {
 
-	c := &Client{QuestionMessage: *q, DNSUpstream: u, InboundIP: ip, Hosts: h, Cache: cache}
+	c := &Client{QuestionMessage: q.Copy(), DNSUpstream: u, InboundIP: ip, Hosts: h, Cache: cache}
 
 	c.getEDNSClientSubnetIP()
 	return c
@@ -49,8 +49,8 @@ func (c *Client) getEDNSClientSubnetIP() {
 
 func (c *Client) ExchangeFromRemote(isCache bool, isLog bool) {
 
-	common.SetEDNSClientSubnet(&c.QuestionMessage, c.EDNSClientSubnetIP)
-	c.EDNSClientSubnetIP = common.GetEDNSClientSubnetIP(&c.QuestionMessage)
+	common.SetEDNSClientSubnet(c.QuestionMessage, c.EDNSClientSubnetIP)
+	c.EDNSClientSubnetIP = common.GetEDNSClientSubnetIP(c.QuestionMessage)
 
 	var conn net.Conn
 	if c.DNSUpstream.SOCKS5Address != "" {
@@ -80,7 +80,7 @@ func (c *Client) ExchangeFromRemote(isCache bool, isLog bool) {
 
 	dc := &dns.Conn{Conn: conn}
 	defer dc.Close()
-	err := dc.WriteMsg(&c.QuestionMessage)
+	err := dc.WriteMsg(c.QuestionMessage)
 	if err != nil {
 		log.Warn(c.DNSUpstream.Name + " Fail: Send question message failed")
 		return
@@ -99,6 +99,16 @@ func (c *Client) ExchangeFromRemote(isCache bool, isLog bool) {
 	}
 
 	c.ResponseMessage = temp
+
+	//for i := 0;i < len(c.ResponseMessage.Answer); i++{
+	//	if c.ResponseMessage.Answer[i].Header().Rrtype == dns.TypeA || c.ResponseMessage.Answer[i].Header().Rrtype == dns.TypeAAAA{
+	//		c.ResponseMessage.Answer[i].Header().Name = c.QuestionMessage.Question[0].Name
+	//	}
+	//	if c.ResponseMessage.Answer[i].Header().Rrtype == dns.TypeCNAME{
+	//		c.ResponseMessage.Answer = c.ResponseMessage.Answer[:i+copy(c.ResponseMessage.Answer[i:], c.ResponseMessage.Answer[i+1:])]
+	//		i -= 1
+	//	}
+	//}
 
 	if isLog {
 		c.logAnswer("")
@@ -209,7 +219,7 @@ func (c *Client) setLocalResponseMessage(rrl []dns.RR) {
 		c.ResponseMessage.Answer = append(c.ResponseMessage.Answer, rr)
 	}
 	shuffleRRList(c.ResponseMessage.Answer)
-	c.ResponseMessage.SetReply(&c.QuestionMessage)
+	c.ResponseMessage.SetReply(c.QuestionMessage)
 	c.ResponseMessage.RecursionAvailable = true
 }
 
@@ -229,6 +239,6 @@ func (c *Client) logAnswer(indicator string) {
 func (c *Client) CacheResult() {
 
 	if c.Cache != nil {
-		c.Cache.InsertMessage(cache.Key(c.QuestionMessage.Question[0], common.GetEDNSClientSubnetIP(&c.QuestionMessage)), c.ResponseMessage)
+		c.Cache.InsertMessage(cache.Key(c.QuestionMessage.Question[0], common.GetEDNSClientSubnetIP(c.QuestionMessage)), c.ResponseMessage)
 	}
 }

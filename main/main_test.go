@@ -1,8 +1,8 @@
 package main
 
 import (
-	"testing"
 	"os"
+	"testing"
 )
 
 func TestMain(m *testing.M) {
@@ -12,10 +12,10 @@ func TestMain(m *testing.M) {
 	shutdown()
 }
 
-func setup(){
+func setup() {
 
 }
 
-func shutdown(){
+func shutdown() {
 
 }

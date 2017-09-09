@@ -7,9 +7,14 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
 	"github.com/shawn1m/overture/core/common"
+
+	"github.com/shawn1m/overture/core/cache"
+	"github.com/shawn1m/overture/core/hosts"
 )
 
 type Dispatcher struct {
+	QuestionMessage *dns.Msg
+
 	PrimaryDNS     []*common.DNSUpstream
 	AlternativeDNS []*common.DNSUpstream
 	OnlyPrimaryDNS bool
@@ -21,9 +26,17 @@ type Dispatcher struct {
 	IPNetworkList      []*net.IPNet
 	DomainList         []string
 	RedirectIPv6Record bool
+
+	InboundIP string
+
+	Hosts *hosts.Hosts
+	Cache *cache.Cache
 }
 
 func (d *Dispatcher) Exchange() {
+
+	d.PrimaryClientBundle = NewClientBundle(d.QuestionMessage, d.PrimaryDNS, d.InboundIP, d.Hosts, d.Cache)
+	d.AlternativeClientBundle = NewClientBundle(d.QuestionMessage, d.AlternativeDNS, d.InboundIP, d.Hosts, d.Cache)
 
 	for _, cb := range [2]*ClientBundle{d.PrimaryClientBundle, d.AlternativeClientBundle} {
 		if ok := cb.ExchangeFromLocal(); ok {
@@ -33,8 +46,8 @@ func (d *Dispatcher) Exchange() {
 	}
 
 	if d.OnlyPrimaryDNS {
-		d.PrimaryClientBundle.ExchangeFromRemote(true, true)
 		d.ActiveClientBundle = d.PrimaryClientBundle
+		d.ActiveClientBundle.ExchangeFromRemote(true, true)
 		return
 	}
 
@@ -85,9 +98,9 @@ func (d *Dispatcher) ChooseActiveClientBundle() {
 	d.ActiveClientBundle = d.PrimaryClientBundle
 	d.PrimaryClientBundle.ExchangeFromRemote(false, true)
 
-	if d.PrimaryClientBundle.ResponseMessage == nil || len(d.PrimaryClientBundle.ResponseMessage.Answer) == 0 {
-		log.Debug("Primary DNS answer is empty, finally use alternative DNS")
-		d.ActiveClientBundle = d.AlternativeClientBundle
+	if d.PrimaryClientBundle.ResponseMessage == nil || !common.HasAnswer(d.PrimaryClientBundle.ResponseMessage) {
+		//log.Debug("Primary DNS answer is empty, finally use alternative DNS")
+		//d.ActiveClientBundle = d.AlternativeClientBundle
 		return
 	}
 

@@ -32,7 +32,7 @@
   "DomainFile": "./domain_sample",
   "DomainBase64Decode": true,
   "HostsFile": "./hosts_sample",
-  "MinimumTTL": 0,
-  "CacheSize" : 100000,
+  "MinimumTTL": 100000,
+  "CacheSize" : 604800,
   "RejectQtype": [255]
 }
