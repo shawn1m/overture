@@ -232,7 +232,7 @@ func (c *Client) logAnswer(indicator string) {
 		} else {
 			name = c.DNSUpstream.Name
 		}
-		log.Debug(name + " Answer: " + a.String())
+		log.Debug("Answer from " + name + ": " + a.String())
 	}
 }
 
