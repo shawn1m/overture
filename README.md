@@ -17,8 +17,8 @@ corresponding git version tag. The README in master branch are subject to change
 + Full IPv6 support
 + Multiple DNS upstream
     + Via UDP/TCP with custom port
-    + Via SOCKS5 proxy
-    + With EDNS Client Subnet(ECS) [RFC7871](https://tools.ietf.org/html/rfc7871)
+    + Via SOCKS5 proxy (TCP only)
+    + With EDNS Client Subnet (ECS) [RFC7871](https://tools.ietf.org/html/rfc7871)
 + Dispatcher
     + IPv6 record (AAAA) redirection
     + Custom IP network
@@ -105,7 +105,7 @@ Configuration file is "config.json" by default:
     }
   ],
   "OnlyPrimaryDNS": false,
-  "RedirectIPv6Record": true,
+  "RedirectIPv6Record": false,
   "IPNetworkFile": "./ip_network_sample",
   "DomainFile": "./domain_sample",
   "DomainBase64Decode": true,
@@ -119,9 +119,10 @@ Configuration file is "config.json" by default:
 Tips:
 
 + BindAddress: Specifying only port (e.g. `:53`) will have overture listen on all available addresses (both IPv4 and
-IPv6). Overture will handle both TCP and UDP requests.
+IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses are enclosed in square brackets (e.g. `[2001:4860:4860::8888]:53`.)
 + DNS: You can specify multiple DNS upstream servers here.
     + Name: This field is only used for logging.
+    + Address: Same as BindAddress.
     + Protocol: `tcp` or `udp`
     + SOCKS5Address: Forward dns query to this SOCKS5 proxy, `“”` to disable.
     + EDNSClientSubnet: Used to improve DNS accuracy. Please check [RFC7871](https://tools.ietf.org/html/rfc7871) for
@@ -162,9 +163,7 @@ IPv6). Overture will handle both TCP and UDP requests.
 
 **For DNSPod, ECS only works via udp, you can test it by [patched dig](https://www.gsic.uva.es/~jnisigl/dig-edns-client-subnet.html)**
 
-Check the ``; CLIENT-SUBNET: 119.29.29.29/32/24``, if it exists, it works.
-
-The accuracy depends on the server side, do not judge ECS feature by it.
+You can compare the response IP with the client IP to test the feature. The accuracy depends on the server side.
 
 ```
 $ dig @119.29.29.29 www.qq.com +client=119.29.29.29
