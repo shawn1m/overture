@@ -1,0 +1,13 @@
+[Unit]
+Description=A DNS upstream switcher written in Go in order to purify DNS records
+After=network.target
+
+[Service]
+User=nobody
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+ExecStart=/usr/bin/overture -c /etc/overture/config.json
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

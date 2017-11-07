@@ -1,0 +1,16 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: overture
+Source: https://github.com/shawn1m/overture
+Files-Excluded: vendor Godeps/_workspace
+
+Files: *
+Copyright: 2016 Shawn
+License: TODO
+
+Files: debian/*
+Copyright: 2017 Simon Shi <simonsmh@gmail.com>
+License: TODO
+Comment: Debian packaging is licensed under the same terms as upstream
+
+License: TODO
+TODO
