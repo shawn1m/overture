@@ -20,5 +20,9 @@ Package: overture
 Architecture: any
 Built-Using: ${misc:Built-Using}
 Depends: ${shlibs:Depends},
-         ${misc:Depends}
-Description: A DNS server/forwarder/dispatcher written in Go
+         ${misc:Depends},
+         lsb-base
+Description: DNS server/forwarder/dispatcher written in Go
+ Overture means an orchestral piece at the beginning of a classical music
+ composition, just like DNS which is nearly the first step of surfing
+ the Internet.
