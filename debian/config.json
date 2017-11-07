@@ -1,0 +1,38 @@
+{
+  "BindAddress": ":53",
+  "PrimaryDNS": [
+    {
+      "Name": "DNSPod",
+      "Address": "119.29.29.29:53",
+      "Protocol": "udp",
+      "SOCKS5Address": "",
+      "Timeout": 6,
+      "EDNSClientSubnet": {
+        "Policy": "disable",
+        "ExternalIP": ""
+      }
+    }
+  ],
+  "AlternativeDNS": [
+    {
+      "Name": "OpenDNS",
+      "Address": "208.67.222.222:443",
+      "Protocol": "tcp",
+      "SOCKS5Address": "",
+      "Timeout": 6,
+      "EDNSClientSubnet": {
+        "Policy": "disable",
+        "ExternalIP": ""
+      }
+    }
+  ],
+  "OnlyPrimaryDNS": false,
+  "RedirectIPv6Record": false,
+  "IPNetworkFile": "./ip_network_sample",
+  "DomainFile": "./domain_sample",
+  "DomainBase64Decode": true,
+  "HostsFile": "./hosts_sample",
+  "MinimumTTL": 0,
+  "CacheSize" : 0,
+  "RejectQtype": [255]
+}
