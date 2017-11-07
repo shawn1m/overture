@@ -4,7 +4,8 @@
 #  /etc/default/overture for environment variables.
 
 [Unit]
-Description=A DNS upstream switcher written in Go in order to purify DNS records
+Description=DNS upstream switcher written in Go in order to purify DNS records
+Documentation=https://github.com/shawn1m/overture
 After=network.target
 
 [Service]
