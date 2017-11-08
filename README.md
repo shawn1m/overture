@@ -119,7 +119,7 @@ Configuration file is "config.json" by default:
 Tips:
 
 + BindAddress: Specifying only port (e.g. `:53`) will have overture listen on all available addresses (both IPv4 and
-IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses are enclosed in square brackets (e.g. `[2001:4860:4860::8888]:53`.)
+IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses are enclosed in square brackets (e.g. `[2001:4860:4860::8888]:53`)
 + DNS: You can specify multiple DNS upstream servers here.
     + Name: This field is only used for logging.
     + Address: Same as BindAddress.
@@ -224,7 +224,7 @@ www.qq.com.		43	IN	A	14.17.42.40
 + Code reference:
     + [skydns](https://github.com/skynetservices/skydns): MIT
     + [go-dnsmasq](https://github.com/janeczku/go-dnsmasq):  MIT
-+ Contributors: @V-E-O, @sh1r0, @maddie, @hexchain, @everfly
++ Contributors: @V-E-O, @sh1r0, @maddie, @hexchain, @everfly, @simonsmh
 
 ## License
 
