@@ -1,7 +1,7 @@
 Source: overture
 Section: net
 Priority: optional
-Maintainer: Debian Go Packaging Team <pkg-go-maintainers@lists.alioth.debian.org>
+Maintainer: Simon Shi <simonsmh@gmail.com>
 Uploaders: Simon Shi <simonsmh@gmail.com>
 Build-Depends: debhelper (>= 10),
                dh-golang,

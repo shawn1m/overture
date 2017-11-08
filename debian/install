@@ -1,2 +1,2 @@
-debian/config.json usr/share/overture
+debian/config.json etc/overture
 debian/overture.service lib/systemd/system
