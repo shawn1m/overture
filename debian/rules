@@ -1,7 +1,5 @@
 #!/usr/bin/make -f
 
-export DH_VERBOSE=1
-
 export DH_GOPKG := github.com/shawn1m/overture
 
 export GOPATH := $(CURDIR)/obj-$(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
