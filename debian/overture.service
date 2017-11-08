@@ -1,0 +1,22 @@
+#  This file is part of overture.
+#
+#  This file is default for Debian packaging. See also
+#  /etc/default/overture for environment variables.
+
+[Unit]
+Description=DNS upstream switcher written in Go in order to purify DNS records
+Documentation=https://github.com/shawn1m/overture
+After=network.target
+
+[Service]
+User=nobody
+Group=nogroup
+LimitNOFILE=32768
+EnvironmentFile=/etc/default/overture
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+ExecStart=/usr/bin/overture -c ${CONFFILE} ${DAEMON_ARGS}
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
