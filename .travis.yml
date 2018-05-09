@@ -1,6 +1,6 @@
 language: go
 go:
-  - 1.9.x
+  - 1.10.x
 addons:
   apt:
     packages:
@@ -22,7 +22,8 @@ deploy:
     - overture-linux-amd64.zip
     - overture-linux-arm.zip
     - overture-linux-arm64.zip
-    - overture-linux-mips.zip
+    - overture-linux-mips-softfloat.zip
+    - overture-linux-mips-hardfloat.zip
     - overture-linux-mipsle.zip
     - overture-linux-mips64.zip
     - overture-linux-mips64le.zip

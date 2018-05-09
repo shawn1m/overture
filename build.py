@@ -10,7 +10,8 @@ GO_OS_ARCH_LIST = [
     ["linux", "amd64"],
     ["linux", "arm"],
     ["linux", "arm64"],
-    ["linux", "mips"],
+    ["linux", "mips", "softfloat"],
+    ["linux", "mips", "hardfloat"],
     ["linux", "mipsle"],
     ["linux", "mips64"],
     ["linux", "mips64le"],
@@ -34,17 +35,18 @@ def download_file():
 
 def go_build_zip():
     subprocess.check_call("go get -v github.com/shawn1m/overture/main", shell=True)
-    for o, a in GO_OS_ARCH_LIST:
-        zip_name = "overture-" + o + "-" + a
+    for o, a, *p in GO_OS_ARCH_LIST:
+        zip_name = "overture-" + o + "-" + a + ("-" + (p[0] if p else "") if p else "")
         binary_name = zip_name + (".exe" if o == "windows" else "")
         version = subprocess.check_output("git describe --tags", shell=True).decode()
+        mipsflag = (" GOMIPS=" + (p[0] if p else "") if p else "")
         try:
-            subprocess.check_call("GOOS=" + o + " GOARCH=" + a + " CGO_ENABLED=0" + " go build -ldflags \"-s -w " +
+            subprocess.check_call("GOOS=" + o + " GOARCH=" + a + mipsflag + " CGO_ENABLED=0" + " go build -ldflags \"-s -w " +
                                   "-X main.version=" + version + "\" -o " + binary_name + " main/main.go", shell=True)
             subprocess.check_call("zip " + zip_name + ".zip " + binary_name + " " + IP_NETWORK_SAMPLE_DICT["name"] + " " +
                                   DOMAIN_SAMPLE_DICT["name"] + " hosts_sample config.json", shell=True)
         except subprocess.CalledProcessError:
-            print(o + " " + a + " failed.")
+            print(o + " " + a + " " + (p[0] if p else "") + " failed.")
 
 
 def decode_domain_sample():
