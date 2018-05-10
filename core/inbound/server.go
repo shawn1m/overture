@@ -49,7 +49,7 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 	s.Dispatcher.InboundIP = inboundIP
 	s.Dispatcher.QuestionMessage = q
 
-	log.Debug("Question from " +inboundIP + ": " + q.Question[0].String())
+	log.Debug("Question from " + inboundIP + ": " + q.Question[0].String())
 
 	for _, qt := range s.RejectQtype {
 		if isQuestionType(q, qt) {
