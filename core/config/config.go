@@ -121,6 +121,17 @@ func (c *Config) getDomainList() {
 		dl = re.FindAllString(string(f), -1)
 	}
 
+	uniqueDl := map[string]bool{}
+	for _, e := range dl {
+		uniqueDl[e] = true
+	}
+
+	dl = []string{}
+
+	for k := range uniqueDl {
+		dl = append(dl, k)
+	}
+
 	if len(dl) > 0 {
 		log.Info("Load domain file successful")
 	} else {
