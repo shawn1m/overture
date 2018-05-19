@@ -53,7 +53,7 @@ def go_build_zip():
             subprocess.check_call("GOOS=" + o + " GOARCH=" + a + mipsflag + " CGO_ENABLED=0" + " go build -ldflags \"-s -w " +
                                   "-X main.version=" + version + "\" -o " + binary_name + " main/main.go", shell=True)
             subprocess.check_call("zip " + zip_name + ".zip " + binary_name + " " + IP_NETWORK_SAMPLE_DICT["name"] + " " +
-                                  DOMAIN_SAMPLE_DICT["name"] + " hosts_sample config.json", shell=True)
+                                  DOMAIN_SAMPLE_DICT["name"] + " hosts_sample domain_white_sample config.json", shell=True)
         except subprocess.CalledProcessError:
             print(o + " " + a + " " + (p[0] if p else "") + " failed.")
 
