@@ -29,16 +29,18 @@ type Config struct {
 	RedirectIPv6Record bool
 	IPNetworkFile      string
 	DomainFile         string
+	DomainWhiteFile    string
 	DomainBase64Decode bool
 	HostsFile          string
 	MinimumTTL         int
 	CacheSize          int
 	RejectQtype        []uint16
 
-	DomainList    []string
-	IPNetworkList []*net.IPNet
-	Hosts         *hosts.Hosts
-	Cache         *cache.Cache
+	DomainList      []string
+	DomainWhiteList []string
+	IPNetworkList   []*net.IPNet
+	Hosts           *hosts.Hosts
+	Cache           *cache.Cache
 }
 
 // New config with json file and do some other initiate works
@@ -48,6 +50,7 @@ func NewConfig(configFile string) *Config {
 
 	config.getIPNetworkList()
 	config.getDomainList()
+	config.getDomainWhiteList()
 
 	if config.MinimumTTL > 0 {
 		log.Info("Minimum TTL is " + strconv.Itoa(config.MinimumTTL))
@@ -96,6 +99,35 @@ func parseJson(path string) *Config {
 	}
 
 	return j
+}
+
+func (c *Config) getDomainWhiteList() {
+	var dl []string
+	f, err := ioutil.ReadFile(c.DomainWhiteFile)
+	if err != nil {
+		log.Error("Open Domain WhiteList file failed: ", err)
+		return
+	}
+
+	lines := 0
+	s := string(f)
+	dl = []string{}
+
+	for _, line := range strings.Split(s, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		dl = append(dl, line)
+		lines++
+	}
+
+	if len(dl) > 0 {
+		log.Infof("Load domain whitelist file successful with %d records ", lines)
+	} else {
+		log.Warn("There is no element in domain whitelist file")
+	}
+	c.DomainWhiteList = dl
 }
 
 func (c *Config) getDomainList() {
