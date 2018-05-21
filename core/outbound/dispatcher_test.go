@@ -22,6 +22,7 @@ func init() {
 		OnlyPrimaryDNS:     c.OnlyPrimaryDNS,
 		IPNetworkList:      c.IPNetworkList,
 		DomainList:         c.DomainList,
+		DomainWhiteList:    c.DomainWhiteList,
 		RedirectIPv6Record: c.RedirectIPv6Record,
 		InboundIP:          "",
 		Hosts:              c.Hosts,

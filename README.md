@@ -108,6 +108,7 @@ Configuration file is "config.json" by default:
   "RedirectIPv6Record": false,
   "IPNetworkFile": "./ip_network_sample",
   "DomainFile": "./domain_sample",
+  "DomainWhiteFile": "./domain_white_sample",
   "DomainBase64Decode": true,
   "HostsFile": "./hosts_sample",
   "MinimumTTL": 0,
@@ -139,7 +140,13 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
 + CacheSize: The number of query record to cache, use `0` to disable.
 + RejectQtype: Reject inbound query with specific DNS record types, check [List of DNS record types](https://en.wikipedia.org/wiki/List_of_DNS_record_types) for details.
 
-#### Domain file example (Find domains and suffix match)
+#### Domain file (force using AlternativeDNS) example (Find domains and suffix match)
+
+    example.com
+    xxx.xx
+
+
+#### Domain whitelist (force using PrimaryDNS) file example (Find domains and suffix match)
 
     example.com
     xxx.xx

@@ -30,6 +30,7 @@
   "RedirectIPv6Record": false,
   "IPNetworkFile": "./ip_network_sample",
   "DomainFile": "./domain_sample",
+  "DomainWhiteFile": "./domain_white_sample",
   "DomainBase64Decode": true,
   "HostsFile": "./hosts_sample",
   "MinimumTTL": 0,

@@ -25,6 +25,7 @@ type Dispatcher struct {
 
 	IPNetworkList      []*net.IPNet
 	DomainList         []string
+	DomainWhiteList         []string
 	RedirectIPv6Record bool
 
 	InboundIP string
@@ -45,7 +46,7 @@ func (d *Dispatcher) Exchange() {
 		}
 	}
 
-	if d.OnlyPrimaryDNS {
+	if d.OnlyPrimaryDNS || d.ExchangeForDomainWhiteList() {
 		d.ActiveClientBundle = d.PrimaryClientBundle
 		d.ActiveClientBundle.ExchangeFromRemote(true, true)
 		return
@@ -89,6 +90,25 @@ func (d *Dispatcher) ExchangeForDomain() bool {
 	}
 
 	log.Debug("Domain match fail, try to use primary DNS")
+
+	return false
+}
+
+func (d *Dispatcher) ExchangeForDomainWhiteList() bool {
+
+	qn := d.PrimaryClientBundle.QuestionMessage.Question[0].Name[:len(d.PrimaryClientBundle.QuestionMessage.Question[0].Name)-1]
+
+	for _, domain := range d.DomainWhiteList {
+
+		if qn == domain || strings.HasSuffix(qn, "."+domain) {
+			log.Debug("Matched: Domain WhiteList " + qn + " " + domain)
+			d.ActiveClientBundle = d.PrimaryClientBundle
+			log.Debug("Finally use primary DNS")
+			return true
+		}
+	}
+
+	log.Debug("Domain white list match fail, try to use alternative DNS")
 
 	return false
 }

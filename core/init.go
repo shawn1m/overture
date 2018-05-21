@@ -23,6 +23,7 @@ func InitServer(configFilePath string) {
 		OnlyPrimaryDNS:     config.OnlyPrimaryDNS,
 		IPNetworkList:      config.IPNetworkList,
 		DomainList:         config.DomainList,
+		DomainWhiteList:    config.DomainWhiteList,
 		RedirectIPv6Record: config.RedirectIPv6Record,
 		Hosts:              config.Hosts,
 		Cache:              config.Cache,
