@@ -20,6 +20,7 @@ func SetEDNSClientSubnet(m *dns.Msg, ip string) {
 	o := m.IsEdns0()
 	if o == nil {
 		o = new(dns.OPT)
+		o.SetUDPSize(4096)
 		o.Hdr.Name = "."
 		o.Hdr.Rrtype = dns.TypeOPT
 		m.Extra = append(m.Extra, o)

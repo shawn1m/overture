@@ -15,6 +15,8 @@ GO_OS_ARCH_LIST = [
     ["linux", "mipsle"],
     ["linux", "mips64"],
     ["linux", "mips64le"],
+    ["freebsd", "386"],
+    ["freebsd", "amd64"],
     ["windows", "386"],
     ["windows", "amd64"]
               ]
