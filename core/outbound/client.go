@@ -90,8 +90,10 @@ func (c *Client) ExchangeFromRemote(isCache bool, isLog bool) {
 	if err != nil {
 		if err == dns.ErrTruncated {
 			log.Warn(c.DNSUpstream.Name + " Fail: Maybe this server does not support EDNS Client Subnet")
-			return
+		}else{
+			log.Warn(c.DNSUpstream.Name + " Fail: ", err)
 		}
+		return
 	}
 	if temp == nil {
 		log.Debug(c.DNSUpstream.Name + " Fail: Response message is nil, maybe timeout, please check your query or dns configuration")
