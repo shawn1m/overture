@@ -27,12 +27,17 @@
     }
   ],
   "OnlyPrimaryDNS": false,
-  "RedirectIPv6Record": true,
-  "IPNetworkFile": "./ip_network_sample",
-  "DomainFile": "./domain_sample",
-  "DomainBase64Decode": true,
+  "IPv6UseAlternativeDNS": false,
+  "IPNetworkFile": {
+    "Primary": "./ip_network_primary_sample",
+    "Alternative": "./ip_network_alternative_sample"
+  },
+  "DomainFile": {
+    "Primary": "./domain_primary_sample",
+    "Alternative": "./domain_alternative_sample"
+  },
   "HostsFile": "./hosts_sample",
-  "MinimumTTL": 100000,
-  "CacheSize" : 604800,
+  "MinimumTTL": 0,
+  "CacheSize" : 0,
   "RejectQtype": [255]
 }

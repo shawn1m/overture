@@ -21,10 +21,10 @@ GO_OS_ARCH_LIST = [
     ["windows", "amd64"]
               ]
 
-IP_NETWORK_SAMPLE_DICT = {"name": "ip_network_sample",
+IP_NETWORK_SAMPLE_DICT = {"name": "ip_network_alternative_sample",
                           "url": "https://github.com/17mon/china_ip_list/raw/master/china_ip_list.txt",
                           "parse": ""}
-DOMAIN_SAMPLE_DICT = {"name": "domain_sample",
+DOMAIN_SAMPLE_DICT = {"name": "ip_network_alternative_sample",
                       "url": "https://github.com/gfwlist/gfwlist/raw/master/gfwlist.txt",
                       "parse": ""}
 
@@ -61,12 +61,12 @@ def go_build_zip():
 
 
 def decode_domain_sample():
-    with open("./domain_sample", "rb") as fr:
+    with open("./ip_network_alternative_sample", "rb") as fr:
         with open("./domain_temp", "w") as fw:
             file_decoded = base64.b64decode(fr.read()).decode()
             i = file_decoded.index("Whitelist Start")
             fw.write(file_decoded[:i])
-    subprocess.check_call("mv domain_temp domain_sample", shell=True)
+    subprocess.check_call("mv domain_temp ip_network_alternative_sample", shell=True)
 
 
 def create_hosts_sample_file():

@@ -7,7 +7,6 @@ addons:
       - python3
 script:
   - "python3 ./build.py -ib"
-  - "go test -v ./..."
 before_deploy:
   - "go version"
   - "ls -al"

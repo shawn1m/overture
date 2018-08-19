@@ -23,10 +23,11 @@ type Dispatcher struct {
 	AlternativeClientBundle *ClientBundle
 	ActiveClientBundle      *ClientBundle
 
-	IPNetworkList      []*net.IPNet
-	DomainList         []string
-	DomainWhiteList         []string
-	RedirectIPv6Record bool
+	IPNetworkPrimaryList     []*net.IPNet
+	IPNetworkAlternativeList []*net.IPNet
+	DomainPrimaryList        []string
+	DomainAlternativeList    []string
+	RedirectIPv6Record       bool
 
 	InboundIP string
 
@@ -46,14 +47,15 @@ func (d *Dispatcher) Exchange() {
 		}
 	}
 
-	if d.OnlyPrimaryDNS || d.ExchangeForDomainWhiteList() {
+	if d.OnlyPrimaryDNS || d.ExchangeForPrimaryDomain() {
 		d.ActiveClientBundle = d.PrimaryClientBundle
 		d.ActiveClientBundle.ExchangeFromRemote(true, true)
 		return
 	}
 
-	if ok := d.ExchangeForIPv6() || d.ExchangeForDomain(); ok {
-		d.AlternativeClientBundle.ExchangeFromRemote(true, true)
+	if ok := d.ExchangeForIPv6() || d.ExchangeForAlternativeDomain(); ok {
+		d.ActiveClientBundle = d.AlternativeClientBundle
+		d.ActiveClientBundle.ExchangeFromRemote(true, true)
 		return
 	}
 
@@ -75,11 +77,11 @@ func (d *Dispatcher) ExchangeForIPv6() bool {
 	return false
 }
 
-func (d *Dispatcher) ExchangeForDomain() bool {
+func (d *Dispatcher) ExchangeForAlternativeDomain() bool {
 
 	qn := d.PrimaryClientBundle.QuestionMessage.Question[0].Name[:len(d.PrimaryClientBundle.QuestionMessage.Question[0].Name)-1]
 
-	for _, domain := range d.DomainList {
+	for _, domain := range d.DomainAlternativeList {
 
 		if qn == domain || strings.HasSuffix(qn, "."+domain) {
 			log.Debug("Matched: Custom domain " + qn + " " + domain)
@@ -94,11 +96,11 @@ func (d *Dispatcher) ExchangeForDomain() bool {
 	return false
 }
 
-func (d *Dispatcher) ExchangeForDomainWhiteList() bool {
+func (d *Dispatcher) ExchangeForPrimaryDomain() bool {
 
 	qn := d.PrimaryClientBundle.QuestionMessage.Question[0].Name[:len(d.PrimaryClientBundle.QuestionMessage.Question[0].Name)-1]
 
-	for _, domain := range d.DomainWhiteList {
+	for _, domain := range d.DomainPrimaryList {
 
 		if qn == domain || strings.HasSuffix(qn, "."+domain) {
 			log.Debug("Matched: Domain WhiteList " + qn + " " + domain)
@@ -127,20 +129,26 @@ func (d *Dispatcher) ChooseActiveClientBundle() {
 	for _, a := range d.PrimaryClientBundle.ResponseMessage.Answer {
 		if a.Header().Rrtype == dns.TypeA {
 			log.Debug("Try to match response ip address with IP network")
-			if common.IsIPMatchList(net.ParseIP(a.(*dns.A).A.String()), d.IPNetworkList, true) {
+			if common.IsIPMatchList(net.ParseIP(a.(*dns.A).A.String()), d.IPNetworkPrimaryList, true) {
+				d.ActiveClientBundle = d.PrimaryClientBundle
+				log.Debug("Primary")
+				break
+			}
+			if common.IsIPMatchList(net.ParseIP(a.(*dns.A).A.String()), d.IPNetworkAlternativeList, true) {
+				d.ActiveClientBundle = d.AlternativeClientBundle
+				log.Debug("Alternative")
 				break
 			}
 		} else if a.Header().Rrtype == dns.TypeAAAA {
 			log.Debug("Try to match response ip address with IP network")
-			if common.IsIPMatchList(net.ParseIP(a.(*dns.AAAA).AAAA.String()), d.IPNetworkList, true) {
+			if common.IsIPMatchList(net.ParseIP(a.(*dns.AAAA).AAAA.String()), d.IPNetworkPrimaryList, true) {
+				d.ActiveClientBundle = d.AlternativeClientBundle
+				log.Debug("IPv6")
 				break
 			}
 		} else {
 			continue
 		}
-
-		log.Debug("IP network match fail, finally use alternative DNS")
-		d.ActiveClientBundle = d.AlternativeClientBundle
 		return
 	}
 

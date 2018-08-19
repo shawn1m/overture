@@ -41,3 +41,5 @@ vendor/
 
 overture-*
 *.log
+
+config.dev.json
