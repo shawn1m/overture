@@ -34,7 +34,6 @@ def go_build_zip():
             subprocess.check_call("zip " + zip_name + ".zip " + binary_name + " " + "hosts_sample "
                                                                                     "ip_network_primary_sample "
                                                                                     "ip_network_alternative_sample "
-                                                                                    "alternative_sample "
                                                                                     "domain_primary_sample "
                                                                                     "domain_alternative_sample "
                                                                                     "config.json", shell=True)
