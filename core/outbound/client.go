@@ -38,7 +38,7 @@ func (c *Client) getEDNSClientSubnetIP() {
 
 	switch c.DNSUpstream.EDNSClientSubnet.Policy {
 	case "auto":
-		if !common.IsIPMatchList(net.ParseIP(c.InboundIP), common.ReservedIPNetworkList, false) {
+		if !common.IsIPMatchList(net.ParseIP(c.InboundIP), common.ReservedIPNetworkList, false, "") {
 			c.EDNSClientSubnetIP = c.InboundIP
 		} else {
 			c.EDNSClientSubnetIP = c.DNSUpstream.EDNSClientSubnet.ExternalIP

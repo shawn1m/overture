@@ -20,12 +20,12 @@ func init() {
 	ReservedIPNetworkList = getReservedIPNetworkList()
 }
 
-func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool) bool {
+func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool, name string) bool {
 
 	for _, ip_net := range ipnl {
 		if ip_net.Contains(ip) {
 			if isLog {
-				log.Debug("Matched: IP network " + ip.String() + " " + ip_net.String())
+				log.Debug("Matched: IP network " + name + " " + ip.String() + " " + ip_net.String())
 			}
 			return true
 		}

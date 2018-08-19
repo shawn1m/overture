@@ -128,7 +128,7 @@ func getDomainList(file string) []string {
 	}
 
 	if len(dl) > 0 {
-		log.Infof("Load domain whitelist file successful with %d records ", lines)
+		log.Infof("Load domain " + file + " successful with %d records ", lines)
 	} else {
 		log.Warn("There is no element in domain whitelist file")
 	}
