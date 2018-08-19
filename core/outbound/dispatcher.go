@@ -150,9 +150,8 @@ func (d *Dispatcher) ChooseActiveClientBundle() {
 				return
 				log.Debug("Finally use alternative DNS")
 			}
-
-			log.Debug("Finally use primary DNS")
-			d.ActiveClientBundle = d.PrimaryClientBundle
-		}
+	}
+			log.Debug("IP network match failed, finally use alternative DNS")
+			d.ActiveClientBundle = d.AlternativeClientBundle
 	}
 }

@@ -21,18 +21,18 @@ corresponding git version tag. The README in master branch are subject to change
     + With EDNS Client Subnet (ECS) [RFC7871](https://tools.ietf.org/html/rfc7871)
 + Dispatcher
     + IPv6 record (AAAA) redirection
-    + Custom IP network
     + Custom domain
+    + Custom IP network
 + Minimum TTL modification
-+ Hosts (prefix wildcard, random order of multiple answers)
++ Hosts (Random order if there are multiple answers)
 + Cache with ECS
 
 ### Dispatch process
 
-Overture forces IPv6 and custom domain DNS queries to use alternative DNS when applicable.
+Overture can force custom domain DNS queries to use selected DNS when applicable.
 
-As for custom IP network, overture will first query the domain with primary DNS, if the answer is empty or the IP
-is not matched then overture will query the alternative DNS servers and use their answer instead.
+For custom IP network, overture will query the domain with primary DNS firstly. If the answer is empty or the IP
+is not matched then overture will finally use the alternative DNS servers.
 
 ## Installation
 
@@ -105,11 +105,15 @@ Configuration file is "config.json" by default:
     }
   ],
   "OnlyPrimaryDNS": false,
-  "RedirectIPv6Record": false,
-  "IPNetworkFile": "./ip_network_sample",
-  "DomainFile": "./domain_sample",
-  "DomainWhiteFile": "./domain_white_sample",
-  "DomainBase64Decode": true,
+  "IPv6UseAlternativeDNS": false,
+  "IPNetworkFile": {
+    "Primary": "./ip_network_primary_sample",
+    "Alternative": "./ip_network_alternative_sample"
+  },
+  "DomainFile": {
+    "Primary": "./domain_primary_sample",
+    "Alternative": "./domain_alternative_sample"
+  },
   "HostsFile": "./hosts_sample",
   "MinimumTTL": 0,
   "CacheSize" : 0,
@@ -133,20 +137,14 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
             + `disable`: Disable this feature.
         + ExternalIP: If this field is empty, ECS will be disabled when the inbound IP is not an external IP.
 + OnlyPrimaryDNS: Disable dispatcher feature, use primary DNS only.
-+ RedirectIPv6Record: Redirect IPv6 DNS queries to alternative DNS servers.
++ IPv6UseAlternativeDNS: Redirect IPv6 DNS queries to alternative DNS servers.
 + File: Absolute path like `/path/to/file` is allowed. For Windows users, please use properly escaped path like
   `C:\\path\\to\\file.txt` in the configuration.
 + MinimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
 + CacheSize: The number of query record to cache, use `0` to disable.
 + RejectQtype: Reject inbound query with specific DNS record types, check [List of DNS record types](https://en.wikipedia.org/wiki/List_of_DNS_record_types) for details.
 
-#### Domain file (force using AlternativeDNS) example (Find domains and suffix match)
-
-    example.com
-    xxx.xx
-
-
-#### Domain whitelist (force using PrimaryDNS) file example (Find domains and suffix match)
+#### Domain file example (Suffix match)
 
     example.com
     xxx.xx
@@ -157,12 +155,11 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
     10.8.0.0/16
     ::1/128
 
-#### Hosts file example (Support prefix wildcard only, *.xxx.xx includes xxx.xx)
+#### Hosts file example
 
     127.0.0.1 localhost
     ::1 localhost
     10.8.0.1 example.com
-    192.168.0.2 *.xxx.xx
 
 #### DNS servers with ECS support
 
@@ -231,7 +228,7 @@ www.qq.com.		43	IN	A	14.17.42.40
 + Code reference:
     + [skydns](https://github.com/skynetservices/skydns): MIT
     + [go-dnsmasq](https://github.com/janeczku/go-dnsmasq):  MIT
-+ Contributors: @V-E-O, @sh1r0, @maddie, @hexchain, @everfly, @simonsmh, @jemyzhang
++ Contributors: @V-E-O, @sh1r0, @maddie, @hexchain, @everfly, @simonsmh, @jemyzhang, @hexchain, @sh1r0, @yujinqiu
 
 ## License
 
