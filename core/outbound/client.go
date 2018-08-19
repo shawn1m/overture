@@ -43,6 +43,12 @@ func (c *Client) getEDNSClientSubnetIP() {
 		} else {
 			c.EDNSClientSubnetIP = c.DNSUpstream.EDNSClientSubnet.ExternalIP
 		}
+	case "manual":
+		if c.DNSUpstream.EDNSClientSubnet.ExternalIP != "" &&
+			!common.IsIPMatchList(net.ParseIP(c.DNSUpstream.EDNSClientSubnet.ExternalIP), common.ReservedIPNetworkList, false, "") {
+			c.EDNSClientSubnetIP = c.DNSUpstream.EDNSClientSubnet.ExternalIP
+			return
+		}
 	case "disable":
 	}
 }

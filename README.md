@@ -134,6 +134,7 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
     details.
         + Policy
             + `auto`: If client IP is not in the reserved IP network, use client IP. Otherwise, use external IP.
+            + `manual`: Use external IP if this field is not empty, otherwise use client IP if it is not reserved IP.
             + `disable`: Disable this feature.
         + ExternalIP: If this field is empty, ECS will be disabled when the inbound IP is not an external IP.
 + OnlyPrimaryDNS: Disable dispatcher feature, use primary DNS only.
