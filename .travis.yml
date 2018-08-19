@@ -6,11 +6,11 @@ addons:
     packages:
       - python3
 script:
-  - "python3 ./build.py -ib"
+  - "python3 ./build.py -create-sample"
 before_deploy:
   - "go version"
   - "ls -al"
-  - "python3 ./build.py -id"
+  - "python3 ./build.py -build"
 deploy:
   provider: releases
   api_key:
