@@ -6,12 +6,10 @@ package config
 
 import (
 	"bufio"
-	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
 	"net"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -22,25 +20,30 @@ import (
 )
 
 type Config struct {
-	BindAddress        string `json:"BindAddress"`
-	PrimaryDNS         []*common.DNSUpstream
-	AlternativeDNS     []*common.DNSUpstream
-	OnlyPrimaryDNS     bool
-	RedirectIPv6Record bool
-	IPNetworkFile      string
-	DomainFile         string
-	DomainWhiteFile    string
-	DomainBase64Decode bool
+	BindAddress           string `json:"BindAddress"`
+	PrimaryDNS            []*common.DNSUpstream
+	AlternativeDNS        []*common.DNSUpstream
+	OnlyPrimaryDNS        bool
+	IPv6UseAlternativeDNS bool
+	IPNetworkFile struct {
+		Primary string
+		Alternative string
+	}
+	DomainFile struct{
+		Primary string
+		Alternative string
+	}
 	HostsFile          string
 	MinimumTTL         int
 	CacheSize          int
 	RejectQtype        []uint16
 
-	DomainList      []string
-	DomainWhiteList []string
-	IPNetworkList   []*net.IPNet
-	Hosts           *hosts.Hosts
-	Cache           *cache.Cache
+	DomainPrimaryList        []string
+	DomainAlternativeList    []string
+	IPNetworkPrimaryList     []*net.IPNet
+	IPNetworkAlternativeList []*net.IPNet
+	Hosts                    *hosts.Hosts
+	Cache                    *cache.Cache
 }
 
 // New config with json file and do some other initiate works
@@ -48,9 +51,11 @@ func NewConfig(configFile string) *Config {
 
 	config := parseJson(configFile)
 
-	config.getIPNetworkList()
-	config.getDomainList()
-	config.getDomainWhiteList()
+	config.DomainPrimaryList = getDomainList(config.DomainFile.Primary)
+	config.DomainAlternativeList = getDomainList(config.DomainFile.Alternative)
+
+	config.IPNetworkPrimaryList = getIPNetworkList(config.IPNetworkFile.Primary)
+	config.IPNetworkAlternativeList = getIPNetworkList(config.IPNetworkFile.Alternative)
 
 	if config.MinimumTTL > 0 {
 		log.Info("Minimum TTL is " + strconv.Itoa(config.MinimumTTL))
@@ -101,17 +106,17 @@ func parseJson(path string) *Config {
 	return j
 }
 
-func (c *Config) getDomainWhiteList() {
-	var dl []string
-	f, err := ioutil.ReadFile(c.DomainWhiteFile)
+func getDomainList(file string) []string {
+
+	f, err := ioutil.ReadFile(file)
 	if err != nil {
 		log.Error("Open Domain WhiteList file failed: ", err)
-		return
+		return nil
 	}
 
 	lines := 0
 	s := string(f)
-	dl = []string{}
+	dl := []string{}
 
 	for _, line := range strings.Split(s, "\n") {
 		line = strings.TrimSpace(line)
@@ -123,62 +128,23 @@ func (c *Config) getDomainWhiteList() {
 	}
 
 	if len(dl) > 0 {
-		log.Infof("Load domain whitelist file successful with %d records ", lines)
+		log.Infof("Load domain " + file + " successful with %d records ", lines)
 	} else {
 		log.Warn("There is no element in domain whitelist file")
 	}
-	c.DomainWhiteList = dl
+
+	return dl
 }
 
-func (c *Config) getDomainList() {
 
-	var dl []string
-	f, err := ioutil.ReadFile(c.DomainFile)
-	if err != nil {
-		log.Error("Open Custom domain file failed: ", err)
-		return
-	}
 
-	re := regexp.MustCompile(`([\w\-\_]+\.[\w\.\-\_]+)[\/\*]*`)
-	if c.DomainBase64Decode {
-		fd, err := base64.StdEncoding.DecodeString(string(f))
-		if err != nil {
-			log.Error("Decode Custom domain failed: ", err)
-			return
-		}
-		fds := string(fd)
-		n := strings.Index(fds, "Whitelist Start")
-		dl = re.FindAllString(fds[:n], -1)
-	} else {
-		dl = re.FindAllString(string(f), -1)
-	}
-
-	uniqueDl := map[string]bool{}
-	for _, e := range dl {
-		uniqueDl[e] = true
-	}
-
-	dl = []string{}
-
-	for k := range uniqueDl {
-		dl = append(dl, k)
-	}
-
-	if len(dl) > 0 {
-		log.Info("Load domain file successful")
-	} else {
-		log.Warn("There is no element in domain file")
-	}
-	c.DomainList = dl
-}
-
-func (c *Config) getIPNetworkList() {
+func getIPNetworkList(file string) []*net.IPNet {
 
 	ipnl := make([]*net.IPNet, 0)
-	f, err := os.Open(c.IPNetworkFile)
+	f, err := os.Open(file)
 	if err != nil {
 		log.Error("Open IP network file failed: ", err)
-		return
+		return nil
 	}
 	defer f.Close()
 	s := bufio.NewScanner(f)
@@ -189,11 +155,12 @@ func (c *Config) getIPNetworkList() {
 		}
 		ipnl = append(ipnl, ip_net)
 	}
+
 	if len(ipnl) > 0 {
-		log.Info("Load IP network file successful")
+		log.Info("Load " + file + " successful")
 	} else {
-		log.Warn("There is no element in IP network file")
+		log.Warn("There is no element in " + file)
 	}
 
-	c.IPNetworkList = ipnl
+	return ipnl
 }

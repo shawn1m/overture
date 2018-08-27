@@ -23,10 +23,11 @@ type Dispatcher struct {
 	AlternativeClientBundle *ClientBundle
 	ActiveClientBundle      *ClientBundle
 
-	IPNetworkList      []*net.IPNet
-	DomainList         []string
-	DomainWhiteList         []string
-	RedirectIPv6Record bool
+	IPNetworkPrimaryList     []*net.IPNet
+	IPNetworkAlternativeList []*net.IPNet
+	DomainPrimaryList        []string
+	DomainAlternativeList    []string
+	RedirectIPv6Record       bool
 
 	InboundIP string
 
@@ -46,14 +47,15 @@ func (d *Dispatcher) Exchange() {
 		}
 	}
 
-	if d.OnlyPrimaryDNS || d.ExchangeForDomainWhiteList() {
+	if d.OnlyPrimaryDNS || d.ExchangeForPrimaryDomain() {
 		d.ActiveClientBundle = d.PrimaryClientBundle
 		d.ActiveClientBundle.ExchangeFromRemote(true, true)
 		return
 	}
 
-	if ok := d.ExchangeForIPv6() || d.ExchangeForDomain(); ok {
-		d.AlternativeClientBundle.ExchangeFromRemote(true, true)
+	if ok := d.ExchangeForIPv6() || d.ExchangeForAlternativeDomain(); ok {
+		d.ActiveClientBundle = d.AlternativeClientBundle
+		d.ActiveClientBundle.ExchangeFromRemote(true, true)
 		return
 	}
 
@@ -75,40 +77,40 @@ func (d *Dispatcher) ExchangeForIPv6() bool {
 	return false
 }
 
-func (d *Dispatcher) ExchangeForDomain() bool {
+func (d *Dispatcher) ExchangeForAlternativeDomain() bool {
 
 	qn := d.PrimaryClientBundle.QuestionMessage.Question[0].Name[:len(d.PrimaryClientBundle.QuestionMessage.Question[0].Name)-1]
 
-	for _, domain := range d.DomainList {
+	for _, domain := range d.DomainAlternativeList {
 
 		if qn == domain || strings.HasSuffix(qn, "."+domain) {
-			log.Debug("Matched: Custom domain " + qn + " " + domain)
+			log.Debug("Matched: Domain alternative " + qn + " " + domain)
 			d.ActiveClientBundle = d.AlternativeClientBundle
 			log.Debug("Finally use alternative DNS")
 			return true
 		}
 	}
 
-	log.Debug("Domain match fail, try to use primary DNS")
+	log.Debug("Domain alternative match fail")
 
 	return false
 }
 
-func (d *Dispatcher) ExchangeForDomainWhiteList() bool {
+func (d *Dispatcher) ExchangeForPrimaryDomain() bool {
 
 	qn := d.PrimaryClientBundle.QuestionMessage.Question[0].Name[:len(d.PrimaryClientBundle.QuestionMessage.Question[0].Name)-1]
 
-	for _, domain := range d.DomainWhiteList {
+	for _, domain := range d.DomainPrimaryList {
 
 		if qn == domain || strings.HasSuffix(qn, "."+domain) {
-			log.Debug("Matched: Domain WhiteList " + qn + " " + domain)
+			log.Debug("Matched: Domain primary " + qn + " " + domain)
 			d.ActiveClientBundle = d.PrimaryClientBundle
 			log.Debug("Finally use primary DNS")
 			return true
 		}
 	}
 
-	log.Debug("Domain white list match fail, try to use alternative DNS")
+	log.Debug("Domain primary match fail")
 
 	return false
 }
@@ -125,25 +127,31 @@ func (d *Dispatcher) ChooseActiveClientBundle() {
 	}
 
 	for _, a := range d.PrimaryClientBundle.ResponseMessage.Answer {
+		log.Debug("Try to match response ip address with IP network")
 		if a.Header().Rrtype == dns.TypeA {
-			log.Debug("Try to match response ip address with IP network")
-			if common.IsIPMatchList(net.ParseIP(a.(*dns.A).A.String()), d.IPNetworkList, true) {
-				break
+			if common.IsIPMatchList(net.ParseIP(a.(*dns.A).A.String()), d.IPNetworkPrimaryList, true, "primary") {
+				d.ActiveClientBundle = d.PrimaryClientBundle
+				log.Debug("Finally use primary DNS")
+				return
+			}
+			if common.IsIPMatchList(net.ParseIP(a.(*dns.A).A.String()), d.IPNetworkAlternativeList, true, "alternative") {
+				d.ActiveClientBundle = d.AlternativeClientBundle
+				log.Debug("Finally use alternative DNS")
+				return
 			}
 		} else if a.Header().Rrtype == dns.TypeAAAA {
-			log.Debug("Try to match response ip address with IP network")
-			if common.IsIPMatchList(net.ParseIP(a.(*dns.AAAA).AAAA.String()), d.IPNetworkList, true) {
-				break
+			if common.IsIPMatchList(net.ParseIP(a.(*dns.AAAA).AAAA.String()), d.IPNetworkPrimaryList, true, "primary") {
+				d.ActiveClientBundle = d.AlternativeClientBundle
+				log.Debug("Finally use primary DNS")
+				return
 			}
-		} else {
-			continue
-		}
-
-		log.Debug("IP network match fail, finally use alternative DNS")
-		d.ActiveClientBundle = d.AlternativeClientBundle
-		return
+			if common.IsIPMatchList(net.ParseIP(a.(*dns.AAAA).AAAA.String()), d.IPNetworkAlternativeList, true, "alternative") {
+				d.ActiveClientBundle = d.AlternativeClientBundle
+				return
+				log.Debug("Finally use alternative DNS")
+			}
 	}
-
-	log.Debug("Finally use primary DNS")
-	d.ActiveClientBundle = d.PrimaryClientBundle
+			log.Debug("IP network match failed, finally use alternative DNS")
+			d.ActiveClientBundle = d.AlternativeClientBundle
+	}
 }

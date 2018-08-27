@@ -6,12 +6,11 @@ addons:
     packages:
       - python3
 script:
-  - "python3 ./build.py -ib"
-  - "go test -v ./..."
+  - "python3 ./build.py -create-sample"
 before_deploy:
   - "go version"
   - "ls -al"
-  - "python3 ./build.py -id"
+  - "python3 ./build.py -build"
 deploy:
   provider: releases
   api_key:
@@ -27,6 +26,8 @@ deploy:
     - overture-linux-mipsle.zip
     - overture-linux-mips64.zip
     - overture-linux-mips64le.zip
+    - overture-freebsd-386.zip
+    - overture-freebsd-amd64.zip
     - overture-windows-386.zip
     - overture-windows-amd64.zip
   skip_cleanup: true

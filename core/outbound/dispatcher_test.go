@@ -17,16 +17,16 @@ func init() {
 	os.Chdir("../..")
 	c = config.NewConfig("config.test.json")
 	d = Dispatcher{
-		PrimaryDNS:         c.PrimaryDNS,
-		AlternativeDNS:     c.AlternativeDNS,
-		OnlyPrimaryDNS:     c.OnlyPrimaryDNS,
-		IPNetworkList:      c.IPNetworkList,
-		DomainList:         c.DomainList,
-		DomainWhiteList:    c.DomainWhiteList,
-		RedirectIPv6Record: c.RedirectIPv6Record,
-		InboundIP:          "",
-		Hosts:              c.Hosts,
-		Cache:              c.Cache,
+		PrimaryDNS:            c.PrimaryDNS,
+		AlternativeDNS:        c.AlternativeDNS,
+		OnlyPrimaryDNS:        c.OnlyPrimaryDNS,
+		IPNetworkPrimaryList:  c.IPNetworkPrimaryList,
+		DomainAlternativeList: c.DomainAlternativeList,
+		DomainPrimaryList:     c.DomainPrimaryList,
+		RedirectIPv6Record:    c.IPv6UseAlternativeDNS,
+		InboundIP:             "",
+		Hosts:                 c.Hosts,
+		Cache:                 c.Cache,
 	}
 }
 
@@ -38,7 +38,7 @@ func TestDispatcher(t *testing.T) {
 	testAAAA(t)
 	testForeign(t)
 
-	d.DomainList = nil
+	d.DomainAlternativeList = nil
 	testDomestic(t)
 	testForeign(t)
 
