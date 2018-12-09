@@ -25,15 +25,17 @@ func InitServer(configFilePath string) {
 		IPNetworkAlternativeList: config.IPNetworkAlternativeList,
 		DomainPrimaryList:        config.DomainPrimaryList,
 		DomainAlternativeList:    config.DomainAlternativeList,
-		RedirectIPv6Record:       config.IPv6UseAlternativeDNS,
-		Hosts:                    config.Hosts,
-		Cache:                    config.Cache,
+
+		RedirectIPv6Record: config.IPv6UseAlternativeDNS,
+		MinimumTTL:         config.MinimumTTL,
+
+		Hosts: config.Hosts,
+		Cache: config.Cache,
 	}
 
 	s := &inbound.Server{
 		BindAddress: config.BindAddress,
 		Dispatcher:  d,
-		MinimumTTL:  config.MinimumTTL,
 		RejectQtype: config.RejectQtype,
 	}
 

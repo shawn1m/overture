@@ -19,14 +19,15 @@ type ClientBundle struct {
 
 	DNSUpstreamList []*common.DNSUpstream
 	InboundIP       string
+	MinimumTTL      int
 
 	Hosts *hosts.Hosts
 	Cache *cache.Cache
 }
 
-func NewClientBundle(q *dns.Msg, ul []*common.DNSUpstream, ip string, h *hosts.Hosts, cache *cache.Cache) *ClientBundle {
+func NewClientBundle(q *dns.Msg, ul []*common.DNSUpstream, ip string, ttl int, h *hosts.Hosts, cache *cache.Cache) *ClientBundle {
 
-	cb := &ClientBundle{QuestionMessage: q.Copy(), DNSUpstreamList: ul, InboundIP: ip, Hosts: h, Cache: cache}
+	cb := &ClientBundle{QuestionMessage: q.Copy(), DNSUpstreamList: ul, InboundIP: ip, MinimumTTL: ttl, Hosts: h, Cache: cache}
 
 	for _, u := range ul {
 
@@ -63,6 +64,8 @@ func (cb *ClientBundle) ExchangeFromRemote(isCache bool, isLog bool) {
 		cb.ResponseMessage = ec.ResponseMessage
 		cb.QuestionMessage = ec.QuestionMessage
 
+		cb.setMinimumTTL()
+
 		if isCache {
 			cb.CacheResult()
 		}
@@ -85,5 +88,18 @@ func (cb *ClientBundle) CacheResult() {
 
 	if cb.Cache != nil {
 		cb.Cache.InsertMessage(cache.Key(cb.QuestionMessage.Question[0], common.GetEDNSClientSubnetIP(cb.QuestionMessage)), cb.ResponseMessage)
+	}
+}
+
+func (cb *ClientBundle) setMinimumTTL() {
+
+	minimumTTL := uint32(cb.MinimumTTL)
+	if minimumTTL == 0 {
+		return
+	}
+	for _, a := range cb.ResponseMessage.Answer {
+		if a.Header().Ttl < minimumTTL {
+			a.Header().Ttl = minimumTTL
+		}
 	}
 }

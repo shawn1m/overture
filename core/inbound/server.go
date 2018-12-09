@@ -16,7 +16,6 @@ type Server struct {
 
 	Dispatcher outbound.Dispatcher
 
-	MinimumTTL  int
 	RejectQtype []uint16
 }
 
@@ -63,21 +62,7 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 
 	cb := d.ActiveClientBundle
 
-	if cb.ResponseMessage != nil {
-		if s.MinimumTTL > 0 {
-			setMinimumTTL(cb.ResponseMessage, uint32(s.MinimumTTL))
-		}
-		w.WriteMsg(cb.ResponseMessage)
-	}
+	w.WriteMsg(cb.ResponseMessage)
 }
 
 func isQuestionType(q *dns.Msg, qt uint16) bool { return q.Question[0].Qtype == qt }
-
-func setMinimumTTL(m *dns.Msg, ttl uint32) {
-
-	for _, a := range m.Answer {
-		if a.Header().Ttl < ttl {
-			a.Header().Ttl = ttl
-		}
-	}
-}

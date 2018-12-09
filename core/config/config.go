@@ -25,18 +25,18 @@ type Config struct {
 	AlternativeDNS        []*common.DNSUpstream
 	OnlyPrimaryDNS        bool
 	IPv6UseAlternativeDNS bool
-	IPNetworkFile struct {
-		Primary string
+	IPNetworkFile         struct {
+		Primary     string
 		Alternative string
 	}
-	DomainFile struct{
-		Primary string
+	DomainFile struct {
+		Primary     string
 		Alternative string
 	}
-	HostsFile          string
-	MinimumTTL         int
-	CacheSize          int
-	RejectQtype        []uint16
+	HostsFile   string
+	MinimumTTL  int
+	CacheSize   int
+	RejectQtype []uint16
 
 	DomainPrimaryList        []string
 	DomainAlternativeList    []string
@@ -128,15 +128,13 @@ func getDomainList(file string) []string {
 	}
 
 	if len(dl) > 0 {
-		log.Infof("Load domain " + file + " successful with %d records ", lines)
+		log.Infof("Load domain "+file+" successful with %d records ", lines)
 	} else {
 		log.Warn("There is no element in domain whitelist file")
 	}
 
 	return dl
 }
-
-
 
 func getIPNetworkList(file string) []*net.IPNet {
 

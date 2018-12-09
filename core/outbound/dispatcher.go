@@ -29,7 +29,8 @@ type Dispatcher struct {
 	DomainAlternativeList    []string
 	RedirectIPv6Record       bool
 
-	InboundIP string
+	InboundIP  string
+	MinimumTTL int
 
 	Hosts *hosts.Hosts
 	Cache *cache.Cache
@@ -37,8 +38,8 @@ type Dispatcher struct {
 
 func (d *Dispatcher) Exchange() {
 
-	d.PrimaryClientBundle = NewClientBundle(d.QuestionMessage, d.PrimaryDNS, d.InboundIP, d.Hosts, d.Cache)
-	d.AlternativeClientBundle = NewClientBundle(d.QuestionMessage, d.AlternativeDNS, d.InboundIP, d.Hosts, d.Cache)
+	d.PrimaryClientBundle = NewClientBundle(d.QuestionMessage, d.PrimaryDNS, d.InboundIP, d.MinimumTTL, d.Hosts, d.Cache)
+	d.AlternativeClientBundle = NewClientBundle(d.QuestionMessage, d.AlternativeDNS, d.InboundIP, d.MinimumTTL, d.Hosts, d.Cache)
 
 	for _, cb := range [2]*ClientBundle{d.PrimaryClientBundle, d.AlternativeClientBundle} {
 		if ok := cb.ExchangeFromLocal(); ok {
@@ -150,8 +151,8 @@ func (d *Dispatcher) ChooseActiveClientBundle() {
 				return
 				log.Debug("Finally use alternative DNS")
 			}
-	}
-			log.Debug("IP network match failed, finally use alternative DNS")
-			d.ActiveClientBundle = d.AlternativeClientBundle
+		}
+		log.Debug("IP network match failed, finally use alternative DNS")
+		d.ActiveClientBundle = d.AlternativeClientBundle
 	}
 }
