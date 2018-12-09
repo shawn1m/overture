@@ -85,7 +85,8 @@ Configuration file is "config.json" by default:
       "Timeout": 6,
       "EDNSClientSubnet": {
         "Policy": "disable",
-        "ExternalIP": ""
+        "ExternalIP": "",
+        "NoCookie": true
       }
     }
   ],
@@ -98,7 +99,8 @@ Configuration file is "config.json" by default:
       "Timeout": 6,
       "EDNSClientSubnet": {
         "Policy": "disable",
-        "ExternalIP": ""
+        "ExternalIP": "",
+        "NoCookie": true
       }
     }
   ],
@@ -135,6 +137,7 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
             + `manual`: Use external IP if this field is not empty, otherwise use client IP if it is not reserved IP.
             + `disable`: Disable this feature.
         + ExternalIP: If this field is empty, ECS will be disabled when the inbound IP is not an external IP.
+        + NoCookie: Disable cookie.
 + OnlyPrimaryDNS: Disable dispatcher feature, use primary DNS only.
 + IPv6UseAlternativeDNS: Redirect IPv6 DNS queries to alternative DNS servers.
 + File: Absolute path like `/path/to/file` is allowed. For Windows users, please use properly escaped path like

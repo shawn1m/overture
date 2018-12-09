@@ -55,7 +55,7 @@ func (c *Client) getEDNSClientSubnetIP() {
 
 func (c *Client) ExchangeFromRemote(isCache bool, isLog bool) {
 
-	common.SetEDNSClientSubnet(c.QuestionMessage, c.EDNSClientSubnetIP)
+	common.SetEDNSClientSubnet(c.QuestionMessage, c.EDNSClientSubnetIP, c.DNSUpstream.EDNSClientSubnet.NoCookie)
 	c.EDNSClientSubnetIP = common.GetEDNSClientSubnetIP(c.QuestionMessage)
 
 	var conn net.Conn
