@@ -42,8 +42,6 @@ For ArchLinux users, package `overture` is available in AUR. If you use a AUR he
 
     yaourt -S overture
 
-For mips users, please assure the kernel FPU emulation is enabled, check [#32](https://github.com/shawn1m/overture/issues/32) [#26](https://github.com/shawn1m/overture/issues/26) [golang/go#18880](https://github.com/golang/go/issues/18880) for details.
-
 ## Usages
 
 Start with the default config file -> ./config.json
