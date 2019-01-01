@@ -10,7 +10,6 @@ script:
 before_deploy:
   - "go version"
   - "ls -al"
-  - "go get github.com/konsorten/go-windows-terminal-sequences"
   - "python3 ./build.py -build"
 deploy:
   provider: releases

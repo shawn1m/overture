@@ -22,7 +22,7 @@ GO_OS_ARCH_LIST = [
 
 
 def go_build_zip():
-    subprocess.check_call("go get -v github.com/shawn1m/overture/main", shell=True)
+    subprocess.check_call("GOOS=windows go get -v github.com/shawn1m/overture/main", shell=True)
     for o, a, *p in GO_OS_ARCH_LIST:
         zip_name = "overture-" + o + "-" + a + ("-" + (p[0] if p else "") if p else "")
         binary_name = zip_name + (".exe" if o == "windows" else "")
