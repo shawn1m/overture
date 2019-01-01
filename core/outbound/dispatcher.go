@@ -142,7 +142,7 @@ func (d *Dispatcher) ChooseActiveClientBundle() {
 			}
 		} else if a.Header().Rrtype == dns.TypeAAAA {
 			if common.IsIPMatchList(net.ParseIP(a.(*dns.AAAA).AAAA.String()), d.IPNetworkPrimaryList, true, "primary") {
-				d.ActiveClientBundle = d.AlternativeClientBundle
+				d.ActiveClientBundle = d.PrimaryClientBundle
 				log.Debug("Finally use primary DNS")
 				return
 			}
