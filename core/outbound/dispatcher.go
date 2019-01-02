@@ -148,8 +148,8 @@ func (d *Dispatcher) ChooseActiveClientBundle() {
 			}
 			if common.IsIPMatchList(net.ParseIP(a.(*dns.AAAA).AAAA.String()), d.IPNetworkAlternativeList, true, "alternative") {
 				d.ActiveClientBundle = d.AlternativeClientBundle
-				return
 				log.Debug("Finally use alternative DNS")
+				return
 			}
 		}
 		log.Debug("IP network match failed, finally use alternative DNS")

@@ -62,9 +62,14 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 
 	cb := d.ActiveClientBundle
 
+	if cb.ResponseMessage == nil {
+		return
+	}
+
 	err := w.WriteMsg(cb.ResponseMessage)
 	if err != nil {
 		log.Warn("Write message fail:", cb.ResponseMessage)
+		return
 	}
 }
 
