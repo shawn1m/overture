@@ -129,6 +129,7 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
     + Name: This field is only used for logging.
     + Address: Same as BindAddress.
     + Protocol: `tcp`, `udp` or `tcp-tls`
+        + `tcp-tls`: Address format is "servername:port@serverAddress", try one.one.one.one:853 or one.one.one.one:853@1.1.1.1
     + SOCKS5Address: Forward dns query to this SOCKS5 proxy, `“”` to disable.
     + EDNSClientSubnet: Used to improve DNS accuracy. Please check [RFC7871](https://tools.ietf.org/html/rfc7871) for
     details.
