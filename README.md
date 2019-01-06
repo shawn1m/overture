@@ -76,6 +76,7 @@ Configuration file is "config.json" by default:
 ```json
 {
   "BindAddress": ":53",
+  "HTTPAddress": ":5555",
   "PrimaryDNS": [
     {
       "Name": "DNSPod",
@@ -125,6 +126,57 @@ Tips:
 
 + BindAddress: Specifying only port (e.g. `:53`) will have overture listen on all available addresses (both IPv4 and
 IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses are enclosed in square brackets (e.g. `[2001:4860:4860::8888]:53`)
++ HTTPAddress: Specifying an HTTP port for debugging, currently used to dump DNS cache, and the request url is `/cache`, available query argument is `nobody`(boolean)
+
+    * true(default): only get the cache size;
+
+        ```bash
+        $ curl 127.0.0.1:5555/cache | jq
+        {
+          "length": 1,
+          "capacity": 100,
+          "body": {}
+        }
+        ```
+
+    * false: get cache size along with cache detail.
+
+        ```bash
+        $ curl 127.0.0.1:5555/cache?nobody=false | jq
+        {
+          "length": 1,
+          "capacity": 100,
+          "body": {
+            "www.baidu.com. 1": [
+              {
+                "name": "www.baidu.com.",
+                "ttl": 1140,
+                "type": "CNAME",
+                "rdata": "www.a.shifen.com."
+              },
+              {
+                "name": "www.a.shifen.com.",
+                "ttl": 300,
+                "type": "CNAME",
+                "rdata": "www.wshifen.com."
+              },
+              {
+                "name": "www.wshifen.com.",
+                "ttl": 300,
+                "type": "A",
+                "rdata": "104.193.88.123"
+              },
+              {
+                "name": "www.wshifen.com.",
+                "ttl": 300,
+                "type": "A",
+                "rdata": "104.193.88.77"
+              }
+            ]
+          }
+        }
+        ```
+
 + DNS: You can specify multiple DNS upstream servers here.
     + Name: This field is only used for logging.
     + Address: Same as BindAddress.
@@ -186,10 +238,10 @@ $ dig @119.29.29.29 www.qq.com +client=119.29.29.29
 ; EDNS: version: 0, flags:; udp: 4096
 ; CLIENT-SUBNET: 119.29.29.29/32/24
 ;; QUESTION SECTION:
-;www.qq.com.			IN	A
+;www.qq.com.            IN  A
 
 ;; ANSWER SECTION:
-www.qq.com.		300	IN	A	101.226.103.106
+www.qq.com.     300 IN  A   101.226.103.106
 
 ;; Query time: 52 msec
 ;; SERVER: 119.29.29.29#53(119.29.29.29)
@@ -210,12 +262,12 @@ $ dig @119.29.29.29 www.qq.com +client=119.29.29.29 +tcp
 ;; OPT PSEUDOSECTION:
 ; EDNS: version: 0, flags:; udp: 4096
 ;; QUESTION SECTION:
-;www.qq.com.			IN	A
+;www.qq.com.            IN  A
 
 ;; ANSWER SECTION:
-www.qq.com.		43	IN	A	59.37.96.63
-www.qq.com.		43	IN	A	14.17.32.211
-www.qq.com.		43	IN	A	14.17.42.40
+www.qq.com.     43  IN  A   59.37.96.63
+www.qq.com.     43  IN  A   14.17.32.211
+www.qq.com.     43  IN  A   14.17.42.40
 
 ;; Query time: 81 msec
 ;; SERVER: 119.29.29.29#53(119.29.29.29)
