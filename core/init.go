@@ -35,6 +35,7 @@ func InitServer(configFilePath string) {
 
 	s := &inbound.Server{
 		BindAddress: config.BindAddress,
+		HTTPAddress: config.HTTPAddress,
 		Dispatcher:  d,
 		RejectQtype: config.RejectQtype,
 	}

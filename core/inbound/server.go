@@ -18,6 +18,7 @@ import (
 
 type Server struct {
 	BindAddress string
+	HTTPAddress string
 
 	Dispatcher outbound.Dispatcher
 
@@ -45,7 +46,7 @@ func (s *Server) DumpCache(w http.ResponseWriter, req *http.Request) {
 
 	query := req.URL.Query()
 	nobody := true
-	if t := query.Get("nobody"); t == "false" {
+	if t := query.Get("nobody"); strings.ToLower(t) == "false" {
 		nobody = false
 	}
 
@@ -103,9 +104,11 @@ func (s *Server) Run() {
 		}(p)
 	}
 
-	http.HandleFunc("/cache", s.DumpCache)
-	wg.Add(1)
-	go http.ListenAndServe(":5555", nil)
+	if s.HTTPAddress != "" {
+		http.HandleFunc("/cache", s.DumpCache)
+		wg.Add(1)
+		go http.ListenAndServe(s.HTTPAddress, nil)
+	}
 
 	wg.Wait()
 }

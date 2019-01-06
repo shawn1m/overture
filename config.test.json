@@ -1,5 +1,6 @@
 {
   "BindAddress": ":53",
+  "HTTPAddress": ":5555",
   "PrimaryDNS": [
     {
       "Name": "DNSPod",
