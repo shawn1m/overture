@@ -11,9 +11,10 @@ import (
 	"sync"
 	"time"
 
+	"strconv"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
-	"strconv"
 )
 
 // Elem hold an answer and additional section that returned from the cache.
@@ -123,4 +124,32 @@ func (c *Cache) Hit(key string, msgid uint16) *dns.Msg {
 		c.Remove(key)
 	}
 	return nil
+}
+
+// Dump returns all dns cache information, for dubugging
+func (c *Cache) Dump(nobody bool) (rs map[string][]string, l int) {
+	if c.capacity <= 0 {
+		return
+	}
+
+	l = len(c.table)
+
+	rs = make(map[string][]string)
+
+	if nobody {
+		return
+	}
+
+	c.RLock()
+	defer c.RUnlock()
+
+	for k, e := range c.table {
+		vs := []string{}
+
+		for _, a := range e.m.Answer {
+			vs = append(vs, a.String())
+		}
+		rs[k] = vs
+	}
+	return
 }
