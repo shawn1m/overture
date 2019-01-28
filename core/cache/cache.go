@@ -21,7 +21,7 @@ import (
 // The signature is put in answer, extra is empty there. This wastes some memory.
 type elem struct {
 	expiration time.Time // time added + TTL, after this the elem is invalid
-	m          *dns.Msg
+	msg        *dns.Msg
 }
 
 // Cache is a cache that holds on the a number of RRs or DNS messages. The cache
@@ -55,11 +55,11 @@ func (c *Cache) Remove(s string) {
 // EvictRandom removes a random member a the cache.
 // Must be called under a write lock.
 func (c *Cache) EvictRandom() {
-	clen := len(c.table)
-	if clen < c.capacity {
+	cacheLength := len(c.table)
+	if cacheLength < c.capacity {
 		return
 	}
-	i := c.capacity - clen
+	i := c.capacity - cacheLength
 	for k := range c.table {
 		delete(c.table, k)
 		i--
@@ -94,7 +94,7 @@ func (c *Cache) Search(s string) (*dns.Msg, time.Time, bool) {
 	}
 	c.RLock()
 	if e, ok := c.table[s]; ok {
-		e1 := e.m.Copy()
+		e1 := e.msg.Copy()
 		c.RUnlock()
 		return e1, e.expiration, true
 	}
@@ -146,7 +146,7 @@ func (c *Cache) Dump(nobody bool) (rs map[string][]string, l int) {
 	for k, e := range c.table {
 		vs := []string{}
 
-		for _, a := range e.m.Answer {
+		for _, a := range e.msg.Answer {
 			vs = append(vs, a.String())
 		}
 		rs[k] = vs

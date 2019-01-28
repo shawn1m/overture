@@ -48,7 +48,7 @@ func TestDispatcher(t *testing.T) {
 func testDomestic(t *testing.T) {
 
 	exchange("www.baidu.com.", dns.TypeA)
-	if common.FindRecordByType(d.ActiveClientBundle.ResponseMessage, dns.TypeA) == "" {
+	if common.FindRecordByType(d.ActiveClientBundle.responseMessage, dns.TypeA) == "" {
 		t.Error("baidu.com should have an A record")
 	}
 }
@@ -56,7 +56,7 @@ func testDomestic(t *testing.T) {
 func testForeign(t *testing.T) {
 
 	exchange("www.twitter.com.", dns.TypeA)
-	if common.FindRecordByType(d.ActiveClientBundle.ResponseMessage, dns.TypeCNAME) != "twitter.com." {
+	if common.FindRecordByType(d.ActiveClientBundle.responseMessage, dns.TypeCNAME) != "twitter.com." {
 		t.Error("twitter.com should have an twitter.com CNAME record")
 	}
 }
@@ -64,7 +64,7 @@ func testForeign(t *testing.T) {
 func testAAAA(t *testing.T) {
 
 	exchange("www.twitter.com.", dns.TypeAAAA)
-	if common.FindRecordByType(d.ActiveClientBundle.ResponseMessage, dns.TypeAAAA) != "" {
+	if common.FindRecordByType(d.ActiveClientBundle.responseMessage, dns.TypeAAAA) != "" {
 		t.Error("twitter.com should not have AAAA record")
 	}
 }
@@ -72,7 +72,7 @@ func testAAAA(t *testing.T) {
 func testHosts(t *testing.T) {
 
 	exchange("localhost.", dns.TypeA)
-	if common.FindRecordByType(d.ActiveClientBundle.ResponseMessage, dns.TypeA) != "127.0.0.1" {
+	if common.FindRecordByType(d.ActiveClientBundle.responseMessage, dns.TypeA) != "127.0.0.1" {
 		t.Error("localhost should be 127.0.0.1")
 	}
 }
@@ -80,12 +80,12 @@ func testHosts(t *testing.T) {
 func testIPResponse(t *testing.T) {
 
 	exchange("127.0.0.1.", dns.TypeA)
-	if common.FindRecordByType(d.ActiveClientBundle.ResponseMessage, dns.TypeA) != "127.0.0.1" {
+	if common.FindRecordByType(d.ActiveClientBundle.responseMessage, dns.TypeA) != "127.0.0.1" {
 		t.Error("127.0.0.1 should be 127.0.0.1")
 	}
 
 	exchange("fe80::7f:4f42:3f4d:f4c8.", dns.TypeAAAA)
-	if common.FindRecordByType(d.ActiveClientBundle.ResponseMessage, dns.TypeAAAA) != "fe80::7f:4f42:3f4d:f4c8" {
+	if common.FindRecordByType(d.ActiveClientBundle.responseMessage, dns.TypeAAAA) != "fe80::7f:4f42:3f4d:f4c8" {
 		t.Error("fe80::7f:4f42:3f4d:f4c8 should be fe80::7f:4f42:3f4d:f4c8")
 	}
 }

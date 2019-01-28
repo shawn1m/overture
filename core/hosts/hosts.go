@@ -13,7 +13,7 @@ import (
 
 // Hosts represents a file containing hosts_sample
 type Hosts struct {
-	hl       *hostsLineList
+	hl       *hostsLines
 	filePath string
 }
 

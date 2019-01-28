@@ -20,7 +20,7 @@ type hostsLine struct {
 	wildcard bool
 }
 
-type hostsLineList []*hostsLine
+type hostsLines []*hostsLine
 
 func (h *hostsLine) Equal(he *hostsLine) bool {
 	if h.wildcard != he.wildcard || h.ipv6 != he.ipv6 {
@@ -35,29 +35,28 @@ func (h *hostsLine) Equal(he *hostsLine) bool {
 	return true
 }
 
-func newHostsLineList(data []byte) *hostsLineList {
+func newHostsLineList(data []byte) *hostsLines {
 
-	ds := string(data)
-	hl := new(hostsLineList)
+	resultLines := new(hostsLines)
 
 	defer log.Debugf("%s took %s", "Load hosts", time.Since(time.Now()))
-	lineList := strings.Split(ds, "\n")
+	lines := strings.Split(string(data), "\n")
 
-	for _, l := range lineList {
+	for _, line := range lines {
 		func(l string) {
 			if h := parseLine(l); h != nil {
-				err := hl.add(h)
+				err := resultLines.add(h)
 				if err != nil {
-					log.Warnf("Bad formatted hostsfile line: %s", err)
+					log.Warnf("Bad formatted hosts file line: %s", err)
 				}
 			}
-		}(l)
+		}(line)
 	}
 
-	return hl
+	return resultLines
 }
 
-func (hl *hostsLineList) FindHosts(name string) (ipv4List []net.IP, ipv6List []net.IP) {
+func (hl *hostsLines) FindHosts(name string) (ipv4List []net.IP, ipv6List []net.IP) {
 
 	for _, h := range *hl {
 		if (h.wildcard == false && h.domain == name) ||
@@ -72,7 +71,7 @@ func (hl *hostsLineList) FindHosts(name string) (ipv4List []net.IP, ipv6List []n
 	return
 }
 
-func (hl *hostsLineList) add(h *hostsLine) error {
+func (hl *hostsLines) add(h *hostsLine) error {
 	// Use too much CPU time when hosts file is big
 	//for _, found := range *hl {
 	//	if found.Equal(h) {

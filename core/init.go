@@ -14,31 +14,26 @@ import (
 // Initiate the server with config file
 func InitServer(configFilePath string) {
 
-	config := config.NewConfig(configFilePath)
+	conf := config.NewConfig(configFilePath)
 
-	// New dispatcher without ClientBundle, ClientBundle must be initiated when server is running
-	d := outbound.Dispatcher{
-		PrimaryDNS:               config.PrimaryDNS,
-		AlternativeDNS:           config.AlternativeDNS,
-		OnlyPrimaryDNS:           config.OnlyPrimaryDNS,
-		IPNetworkPrimaryList:     config.IPNetworkPrimaryList,
-		IPNetworkAlternativeList: config.IPNetworkAlternativeList,
-		DomainPrimaryList:        config.DomainPrimaryList,
-		DomainAlternativeList:    config.DomainAlternativeList,
+	// New dispatcher without RemoteClientBundle, RemoteClientBundle must be initiated when server is running
+	dispatcher := outbound.Dispatcher{
+		PrimaryDNS:               conf.PrimaryDNS,
+		AlternativeDNS:           conf.AlternativeDNS,
+		OnlyPrimaryDNS:           conf.OnlyPrimaryDNS,
+		IPNetworkPrimaryList:     conf.IPNetworkPrimaryList,
+		IPNetworkAlternativeList: conf.IPNetworkAlternativeList,
+		DomainPrimaryList:        conf.DomainPrimaryList,
+		DomainAlternativeList:    conf.DomainAlternativeList,
 
-		RedirectIPv6Record: config.IPv6UseAlternativeDNS,
-		MinimumTTL:         config.MinimumTTL,
+		RedirectIPv6Record: conf.IPv6UseAlternativeDNS,
+		MinimumTTL:         conf.MinimumTTL,
 
-		Hosts: config.Hosts,
-		Cache: config.Cache,
+		Hosts: conf.Hosts,
+		Cache: conf.Cache,
 	}
 
-	s := &inbound.Server{
-		BindAddress: config.BindAddress,
-		HTTPAddress: config.HTTPAddress,
-		Dispatcher:  d,
-		RejectQtype: config.RejectQtype,
-	}
+	s := inbound.NewServer(conf.BindAddress, conf.HTTPAddress, dispatcher, conf.RejectQtype)
 
 	s.Run()
 }

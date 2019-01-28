@@ -17,16 +17,23 @@ import (
 )
 
 type Server struct {
-	BindAddress string
-	HTTPAddress string
+	bindAddress string
+	httpAddress string
+	dispatcher  outbound.Dispatcher
+	rejectQtype []uint16
+}
 
-	Dispatcher outbound.Dispatcher
-
-	RejectQtype []uint16
+func NewServer(bindAddress string, httpAddress string, dispatcher outbound.Dispatcher, rejectQType []uint16) *Server {
+	return &Server{
+		bindAddress: bindAddress,
+		httpAddress: httpAddress,
+		dispatcher:  dispatcher,
+		rejectQtype: rejectQType,
+	}
 }
 
 func (s *Server) DumpCache(w http.ResponseWriter, req *http.Request) {
-	if s.Dispatcher.Cache == nil {
+	if s.dispatcher.Cache == nil {
 		io.WriteString(w, "error: cache not enabled")
 		return
 	}
@@ -50,7 +57,7 @@ func (s *Server) DumpCache(w http.ResponseWriter, req *http.Request) {
 		nobody = false
 	}
 
-	rs, l := s.Dispatcher.Cache.Dump(nobody)
+	rs, l := s.dispatcher.Cache.Dump(nobody)
 	body := make(map[string][]*answer)
 
 	for k, es := range rs {
@@ -72,7 +79,7 @@ func (s *Server) DumpCache(w http.ResponseWriter, req *http.Request) {
 	res := response{
 		Body:     body,
 		Length:   l,
-		Capacity: s.Dispatcher.Cache.Capacity(),
+		Capacity: s.dispatcher.Cache.Capacity(),
 	}
 
 	responseBytes, err := json.Marshal(&res)
@@ -92,11 +99,11 @@ func (s *Server) Run() {
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
 
-	log.Info("Start overture on " + s.BindAddress)
+	log.Info("Start overture on " + s.bindAddress)
 
 	for _, p := range [2]string{"tcp", "udp"} {
 		go func(p string) {
-			err := dns.ListenAndServe(s.BindAddress, p, mux)
+			err := dns.ListenAndServe(s.bindAddress, p, mux)
 			if err != nil {
 				log.Fatal("Listen "+p+" failed: ", err)
 				os.Exit(1)
@@ -104,10 +111,10 @@ func (s *Server) Run() {
 		}(p)
 	}
 
-	if s.HTTPAddress != "" {
+	if s.httpAddress != "" {
 		http.HandleFunc("/cache", s.DumpCache)
 		wg.Add(1)
-		go http.ListenAndServe(s.HTTPAddress, nil)
+		go http.ListenAndServe(s.httpAddress, nil)
 	}
 
 	wg.Wait()
@@ -116,30 +123,26 @@ func (s *Server) Run() {
 func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 
 	inboundIP, _, _ := net.SplitHostPort(w.RemoteAddr().String())
-	s.Dispatcher.InboundIP = inboundIP
-	s.Dispatcher.QuestionMessage = q
+	s.dispatcher.InboundIP = inboundIP
+	s.dispatcher.QuestionMessage = q
 
 	log.Debug("Question from " + inboundIP + ": " + q.Question[0].String())
 
-	for _, qt := range s.RejectQtype {
+	for _, qt := range s.rejectQtype {
 		if isQuestionType(q, qt) {
 			return
 		}
 	}
 
-	d := s.Dispatcher
+	responseMessage := s.dispatcher.Exchange()
 
-	d.Exchange()
-
-	cb := d.ActiveClientBundle
-
-	if cb.ResponseMessage == nil {
+	if responseMessage == nil {
 		return
 	}
 
-	err := w.WriteMsg(cb.ResponseMessage)
+	err := w.WriteMsg(responseMessage)
 	if err != nil {
-		log.Warn("Write message fail:", cb.ResponseMessage)
+		log.Warn("Write message fail:", responseMessage)
 		return
 	}
 }
