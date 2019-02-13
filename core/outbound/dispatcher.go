@@ -128,7 +128,11 @@ func (d *Dispatcher) selectByIPNetwork() {
 		d.ActiveClientBundle = d.AlternativeClientBundle
 		return
 	}
-
+	if d.PrimaryClientBundle.GetResponseMessage()==nil{
+		log.Debug("d.PrimaryClientBundle.GetResponseMessage() is nil")
+		d.ActiveClientBundle = d.AlternativeClientBundle
+		return
+	}
 	for _, a := range d.PrimaryClientBundle.GetResponseMessage().Answer {
 		log.Debug("Try to match response ip address with IP network")
 		if a.Header().Rrtype == dns.TypeA {
