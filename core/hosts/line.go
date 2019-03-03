@@ -14,9 +14,9 @@ import (
 )
 
 type hostsLine struct {
-	domain   string
-	ip       net.IP
-	ipv6     bool
+	domain string
+	ip     net.IP
+	ipv6   bool
 }
 
 type hostsLines []*hostsLine
@@ -48,8 +48,8 @@ func (hl *hostsLines) FindHosts(name string) (ipv4List []net.IP, ipv6List []net.
 		if common.IsDomainMatchRule(h.domain, name) {
 			log.WithFields(log.Fields{
 				"question": name,
-				"domain": h.domain,
-				"ip": h.ip,
+				"domain":   h.domain,
+				"ip":       h.ip,
 			}).Debug("Matched")
 			if h.ip.To4() != nil {
 				ipv4List = append(ipv4List, h.ip)

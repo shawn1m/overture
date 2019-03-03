@@ -7,8 +7,8 @@ package common
 
 import (
 	"net"
-	"strings"
 	"regexp"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
@@ -38,7 +38,7 @@ func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool, name string) bool {
 func IsDomainMatchRule(pattern string, domain string) bool {
 	matched, err := regexp.MatchString(pattern, domain)
 	if err != nil {
-		log.Warn("Domain:" + domain + " Pattern:" + pattern + " error!", err)
+		log.Warn("Domain:"+domain+" Pattern:"+pattern+" error!", err)
 	}
 	return matched
 }

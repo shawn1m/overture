@@ -86,11 +86,11 @@ func (d *Dispatcher) isSelectDomain(rcb *clients.RemoteClientBundle, dl []string
 
 	for _, domain := range dl {
 
-		if common.IsDomainMatchRule(domain, qn){
+		if common.IsDomainMatchRule(domain, qn) {
 			log.WithFields(log.Fields{
-				"DNS": rcb.Name,
+				"DNS":      rcb.Name,
 				"question": qn,
-				"domain": domain,
+				"domain":   domain,
 			}).Debug("Matched")
 			d.ActiveClientBundle = rcb
 			log.Debug("Finally use " + rcb.Name + " DNS")
@@ -113,7 +113,7 @@ func (d *Dispatcher) selectByIPNetwork() {
 		d.ActiveClientBundle = d.AlternativeClientBundle
 		return
 	}
-	if d.PrimaryClientBundle.GetResponseMessage()==nil{
+	if d.PrimaryClientBundle.GetResponseMessage() == nil {
 		log.Debug("d.PrimaryClientBundle.GetResponseMessage() is nil")
 		d.ActiveClientBundle = d.AlternativeClientBundle
 		return

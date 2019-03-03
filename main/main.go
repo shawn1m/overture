@@ -32,10 +32,11 @@ func main() {
 	flag.StringVar(&logPath, "l", "", "log file path")
 	flag.BoolVar(&isLogVerbose, "v", false, "verbose mode")
 	flag.IntVar(&processorNumber, "p", runtime.NumCPU(), "number of processor to use")
+	flag.StringVar(&version, "V", "dev, ", "current version of overture")
 	flag.Parse()
 
 	log.SetFormatter(&log.TextFormatter{
-		FullTimestamp: true,
+		FullTimestamp:   true,
 		TimestampFormat: "2006-01-02 15:04:05",
 	})
 
