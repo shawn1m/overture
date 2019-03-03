@@ -34,6 +34,11 @@ func main() {
 	flag.IntVar(&processorNumber, "p", runtime.NumCPU(), "number of processor to use")
 	flag.Parse()
 
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp: true,
+		TimestampFormat: "2006-01-02 15:04:05",
+	})
+
 	if isLogVerbose {
 		log.SetLevel(log.DebugLevel)
 	} else {

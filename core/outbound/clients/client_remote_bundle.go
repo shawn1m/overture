@@ -23,11 +23,12 @@ type RemoteClientBundle struct {
 	minimumTTL   int
 
 	cache *cache.Cache
+	Name string
 }
 
-func NewClientBundle(q *dns.Msg, ul []*common.DNSUpstream, ip string, minimumTTL int, cache *cache.Cache) *RemoteClientBundle {
+func NewClientBundle(q *dns.Msg, ul []*common.DNSUpstream, ip string, minimumTTL int, cache *cache.Cache, name string) *RemoteClientBundle {
 
-	cb := &RemoteClientBundle{questionMessage: q.Copy(), dnsUpstreams: ul, inboundIP: ip, minimumTTL: minimumTTL, cache: cache}
+	cb := &RemoteClientBundle{questionMessage: q.Copy(), dnsUpstreams: ul, inboundIP: ip, minimumTTL: minimumTTL, cache: cache, Name:name}
 
 	for _, u := range ul {
 

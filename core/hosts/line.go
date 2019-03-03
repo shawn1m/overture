@@ -17,23 +17,9 @@ type hostsLine struct {
 	domain   string
 	ip       net.IP
 	ipv6     bool
-	wildcard bool
 }
 
 type hostsLines []*hostsLine
-
-func (h *hostsLine) Equal(he *hostsLine) bool {
-	if h.wildcard != he.wildcard || h.ipv6 != he.ipv6 {
-		return false
-	}
-	if !h.ip.Equal(he.ip) {
-		return false
-	}
-	if h.domain != he.domain {
-		return false
-	}
-	return true
-}
 
 func newHostsLineList(data []byte) *hostsLines {
 
@@ -59,8 +45,12 @@ func newHostsLineList(data []byte) *hostsLines {
 func (hl *hostsLines) FindHosts(name string) (ipv4List []net.IP, ipv6List []net.IP) {
 
 	for _, h := range *hl {
-		if (h.wildcard == false && h.domain == name) ||
-			(h.wildcard == true && common.HasSubDomain(h.domain, name)) {
+		if common.IsDomainMatchRule(h.domain, name) {
+			log.WithFields(log.Fields{
+				"question": name,
+				"domain": h.domain,
+				"ip": h.ip,
+			}).Debug("Matched")
 			if h.ip.To4() != nil {
 				ipv4List = append(ipv4List, h.ip)
 			} else {
@@ -130,10 +120,5 @@ func parseLine(line string) *hostsLine {
 		return nil
 	}
 
-	isWildcard := false
-	if h[0:2] == "*." {
-		h = h[2:]
-		isWildcard = true
-	}
-	return &hostsLine{h, ip, isIPv6, isWildcard}
+	return &hostsLine{h, ip, isIPv6}
 }

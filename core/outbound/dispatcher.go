@@ -2,7 +2,6 @@ package outbound
 
 import (
 	"net"
-	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
@@ -40,8 +39,8 @@ type Dispatcher struct {
 
 func (d *Dispatcher) Exchange() *dns.Msg {
 
-	d.PrimaryClientBundle = clients.NewClientBundle(d.QuestionMessage, d.PrimaryDNS, d.InboundIP, d.MinimumTTL, d.Cache)
-	d.AlternativeClientBundle = clients.NewClientBundle(d.QuestionMessage, d.AlternativeDNS, d.InboundIP, d.MinimumTTL, d.Cache)
+	d.PrimaryClientBundle = clients.NewClientBundle(d.QuestionMessage, d.PrimaryDNS, d.InboundIP, d.MinimumTTL, d.Cache, "Primary")
+	d.AlternativeClientBundle = clients.NewClientBundle(d.QuestionMessage, d.AlternativeDNS, d.InboundIP, d.MinimumTTL, d.Cache, "Alternative")
 
 	localClient := clients.NewLocalClient(d.QuestionMessage, d.Hosts)
 	d.ResponseMessage = localClient.Exchange()
@@ -49,17 +48,18 @@ func (d *Dispatcher) Exchange() *dns.Msg {
 		return d.ResponseMessage
 	}
 
-	if d.OnlyPrimaryDNS || d.isSelectPrimaryDomain() {
+	if d.OnlyPrimaryDNS || d.isSelectDomain(d.PrimaryClientBundle, d.DomainPrimaryList) {
 		d.ActiveClientBundle = d.PrimaryClientBundle
 		return d.ActiveClientBundle.Exchange(true, true)
 	}
 
-	if ok := d.isExchangeForIPv6() || d.isSelectAlternativeDomain(); ok {
+	if ok := d.isExchangeForIPv6() || d.isSelectDomain(d.AlternativeClientBundle, d.DomainAlternativeList); ok {
 		d.ActiveClientBundle = d.AlternativeClientBundle
 		return d.ActiveClientBundle.Exchange(true, true)
 	}
 
 	d.selectByIPNetwork()
+
 	if d.ActiveClientBundle == d.AlternativeClientBundle {
 		d.ResponseMessage = d.ActiveClientBundle.Exchange(false, true)
 		d.ActiveClientBundle.CacheResult()
@@ -80,40 +80,25 @@ func (d *Dispatcher) isExchangeForIPv6() bool {
 	return false
 }
 
-func (d *Dispatcher) isSelectAlternativeDomain() bool {
+func (d *Dispatcher) isSelectDomain(rcb *clients.RemoteClientBundle, dl []string) bool {
 
 	qn := d.PrimaryClientBundle.GetFirstQuestionDomain()
 
-	for _, domain := range d.DomainAlternativeList {
+	for _, domain := range dl {
 
-		if qn == domain || strings.HasSuffix(qn, "."+domain) {
-			log.Debug("Matched: Domain alternative " + qn + " " + domain)
-			d.ActiveClientBundle = d.AlternativeClientBundle
-			log.Debug("Finally use alternative DNS")
+		if common.IsDomainMatchRule(domain, qn){
+			log.WithFields(log.Fields{
+				"DNS": rcb.Name,
+				"question": qn,
+				"domain": domain,
+			}).Debug("Matched")
+			d.ActiveClientBundle = rcb
+			log.Debug("Finally use " + rcb.Name + " DNS")
 			return true
 		}
 	}
 
-	log.Debug("Domain alternative match fail")
-
-	return false
-}
-
-func (d *Dispatcher) isSelectPrimaryDomain() bool {
-
-	qn := d.PrimaryClientBundle.GetFirstQuestionDomain()
-
-	for _, domain := range d.DomainPrimaryList {
-
-		if qn == domain || strings.HasSuffix(qn, "."+domain) {
-			log.Debug("Matched: Domain primary " + qn + " " + domain)
-			d.ActiveClientBundle = d.PrimaryClientBundle
-			log.Debug("Finally use primary DNS")
-			return true
-		}
-	}
-
-	log.Debug("Domain primary match fail")
+	log.Debug("Domain " + rcb.Name + " match fail")
 
 	return false
 }
