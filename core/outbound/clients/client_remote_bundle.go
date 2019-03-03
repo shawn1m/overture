@@ -46,18 +46,26 @@ func (cb *RemoteClientBundle) Exchange(isCache bool, isLog bool) *dns.Msg {
 	for _, o := range cb.clients {
 		go func(c *RemoteClient, ch chan *RemoteClient) {
 			c.Exchange(isLog)
-			ch <- c
+			if common.HasAnswer(c.responseMessage) {
+				ch <- c
+			}
+			ch <- nil
 		}(o, ch)
 	}
 
 	var ec *RemoteClient
 
 	for i := 0; i < len(cb.clients); i++ {
-		if c := <-ch; c.responseMessage != nil {
-			ec = c
-			if common.HasAnswer(c.responseMessage) {
+		select {
+		case c := <-ch:
+			if c != nil {
+				ec = c
 				break
 			}
+			//case <-time.After(3 * time.Second):
+			//	log.WithField("timeout", 6).Debug("Force stop exchange go routine because of timeout!")
+			//	ch <- nil
+			//	break
 		}
 	}
 

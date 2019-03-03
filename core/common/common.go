@@ -43,7 +43,7 @@ func IsDomainMatchRule(pattern string, domain string) bool {
 	return matched
 }
 
-func HasAnswer(m *dns.Msg) bool { return len(m.Answer) != 0 }
+func HasAnswer(m *dns.Msg) bool { return m != nil && len(m.Answer) != 0 }
 
 func HasSubDomain(s string, sub string) bool {
 
