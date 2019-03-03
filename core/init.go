@@ -33,7 +33,7 @@ func InitServer(configFilePath string) {
 		Cache: conf.Cache,
 	}
 
-	s := inbound.NewServer(conf.BindAddress, conf.HTTPAddress, dispatcher, conf.RejectQtype)
+	s := inbound.NewServer(conf.BindAddress, conf.DebugHTTPAddress, dispatcher, conf.RejectQtype)
 
 	s.Run()
 }

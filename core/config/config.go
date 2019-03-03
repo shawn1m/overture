@@ -21,7 +21,7 @@ import (
 
 type Config struct {
 	BindAddress           string `json:"BindAddress"`
-	HTTPAddress           string `json:"HTTPAddress"`
+	DebugHTTPAddress      string `json:"DebugHTTPAddress"`
 	PrimaryDNS            []*common.DNSUpstream
 	AlternativeDNS        []*common.DNSUpstream
 	OnlyPrimaryDNS        bool

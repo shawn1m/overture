@@ -1,6 +1,6 @@
 {
   "BindAddress": ":53",
-  "HTTPAddress": ":5555",
+  "DebugHTTPAddress": "127.0.0.1:5555",
   "PrimaryDNS": [
     {
       "Name": "DNSPod",

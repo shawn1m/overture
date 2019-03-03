@@ -76,7 +76,7 @@ Configuration file is "config.json" by default:
 ```json
 {
   "BindAddress": ":53",
-  "HTTPAddress": ":5555",
+  "DebugHTTPAddress": "127.0.0.1:5555",
   "PrimaryDNS": [
     {
       "Name": "DNSPod",
@@ -126,7 +126,7 @@ Tips:
 
 + BindAddress: Specifying only port (e.g. `:53`) will have overture listen on all available addresses (both IPv4 and
 IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses are enclosed in square brackets (e.g. `[2001:4860:4860::8888]:53`)
-+ HTTPAddress: Specifying an HTTP port for debugging, currently used to dump DNS cache, and the request url is `/cache`, available query argument is `nobody`(boolean)
++ DebugHTTPAddress: Specifying an HTTP port for debugging, currently used to dump DNS cache, and the request url is `/cache`, available query argument is `nobody`(boolean)
 
     * true(default): only get the cache size;
 
