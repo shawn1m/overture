@@ -66,7 +66,7 @@ func (d *Dispatcher) Exchange() *dns.Msg {
 		return d.ResponseMessage
 	}
 
-	return nil
+	return d.PrimaryClientBundle.GetResponseMessage()
 }
 
 func (d *Dispatcher) isExchangeForIPv6() bool {
