@@ -199,22 +199,22 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
 + CacheSize: The number of query record to cache, use `0` to disable.
 + RejectQtype: Reject inbound query with specific DNS record types, check [List of DNS record types](https://en.wikipedia.org/wiki/List_of_DNS_record_types) for details.
 
-#### Domain file example (Suffix match)
+#### Domain file example (regex match)
 
     example.com
-    xxx.xx
+    ^xxx.xx
 
-#### IP network file example
+#### IP network file example (CIDR match)
 
     1.0.1.0/24
     10.8.0.0/16
     ::1/128
 
-#### Hosts file example
+#### Hosts file example (regex match)
 
     127.0.0.1 localhost
     ::1 localhost
-    10.8.0.1 example.com
+    10.8.0.1 example.com$
 
 #### DNS servers with ECS support
 
@@ -283,7 +283,7 @@ www.qq.com.     43  IN  A   14.17.42.40
 + Code reference:
     + [skydns](https://github.com/skynetservices/skydns): MIT
     + [go-dnsmasq](https://github.com/janeczku/go-dnsmasq):  MIT
-+ Contributors: @V-E-O, @sh1r0, @maddie, @hexchain, @everfly, @simonsmh, @jemyzhang, @hexchain, @sh1r0, @yujinqiu, @qyb
++ Contributors: @V-E-O, @sh1r0, @maddie, @hexchain, @everfly, @simonsmh, @jemyzhang, @hexchain, @sh1r0, @yujinqiu, @qyb, @jsvisa, @Love4Taylor, @godla
 
 ## License
 
