@@ -75,3 +75,29 @@ func FindRecordByType(msg *dns.Msg, t uint16) string {
 
 	return ""
 }
+
+func SetMinimumTTL(msg *dns.Msg, minimumTTL uint32) {
+
+	if minimumTTL == 0 {
+		return
+	}
+	for _, a := range msg.Answer {
+		if a.Header().Ttl < minimumTTL {
+			a.Header().Ttl = minimumTTL
+		}
+	}
+}
+
+func SetTTLByMap(msg *dns.Msg, domainTTLMap map[string]uint32) {
+	if len(domainTTLMap) == 0 {
+		return
+	}
+	for _, a := range msg.Answer {
+		name := a.Header().Name[:len(a.Header().Name)-1]
+		for k, v := range domainTTLMap {
+			if IsDomainMatchRule(k, name) {
+				a.Header().Ttl = v
+			}
+		}
+	}
+}

@@ -21,14 +21,15 @@ type RemoteClientBundle struct {
 	dnsUpstreams []*common.DNSUpstream
 	inboundIP    string
 	minimumTTL   int
+	domainTTLMap map[string]uint32
 
 	cache *cache.Cache
 	Name  string
 }
 
-func NewClientBundle(q *dns.Msg, ul []*common.DNSUpstream, ip string, minimumTTL int, cache *cache.Cache, name string) *RemoteClientBundle {
+func NewClientBundle(q *dns.Msg, ul []*common.DNSUpstream, ip string, minimumTTL int, cache *cache.Cache, name string, domainTTLMap map[string]uint32) *RemoteClientBundle {
 
-	cb := &RemoteClientBundle{questionMessage: q.Copy(), dnsUpstreams: ul, inboundIP: ip, minimumTTL: minimumTTL, cache: cache, Name: name}
+	cb := &RemoteClientBundle{questionMessage: q.Copy(), dnsUpstreams: ul, inboundIP: ip, minimumTTL: minimumTTL, cache: cache, Name: name, domainTTLMap: domainTTLMap}
 
 	for _, u := range ul {
 
@@ -73,6 +74,9 @@ func (cb *RemoteClientBundle) Exchange(isCache bool, isLog bool) *dns.Msg {
 		cb.responseMessage = ec.responseMessage
 		cb.questionMessage = ec.questionMessage
 
+		common.SetMinimumTTL(cb.responseMessage, uint32(cb.minimumTTL))
+		common.SetTTLByMap(cb.responseMessage, cb.domainTTLMap)
+
 		if isCache {
 			cb.CacheResult()
 		}
@@ -81,23 +85,20 @@ func (cb *RemoteClientBundle) Exchange(isCache bool, isLog bool) *dns.Msg {
 	return cb.responseMessage
 }
 
+func (cb *RemoteClientBundle) ExchangeFromCache() *dns.Msg {
+	for _, o := range cb.clients {
+		cb.responseMessage = o.ExchangeFromCache()
+		if cb.responseMessage != nil {
+			return cb.responseMessage
+		}
+	}
+	return cb.responseMessage
+}
+
 func (cb *RemoteClientBundle) CacheResult() {
 
 	if cb.cache != nil {
 		cb.cache.InsertMessage(cache.Key(cb.questionMessage.Question[0], common.GetEDNSClientSubnetIP(cb.questionMessage)), cb.responseMessage)
-	}
-}
-
-func (cb *RemoteClientBundle) setMinimumTTL() {
-
-	minimumTTL := uint32(cb.minimumTTL)
-	if minimumTTL == 0 {
-		return
-	}
-	for _, a := range cb.responseMessage.Answer {
-		if a.Header().Ttl < minimumTTL {
-			a.Header().Ttl = minimumTTL
-		}
 	}
 }
 

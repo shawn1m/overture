@@ -36,6 +36,7 @@ def go_build_zip():
                                                                                     "ip_network_alternative_sample "
                                                                                     "domain_primary_sample "
                                                                                     "domain_alternative_sample "
+                                                                                    "domain_ttl_sample "
                                                                                     "config.json", shell=True)
         except subprocess.CalledProcessError:
             print(o + " " + a + " " + (p[0] if p else "") + " failed.")
@@ -52,6 +53,8 @@ def create_sample_file():
         f.write("primary.example")
     with open("./domain_alternative_sample", "w") as f:
         f.write("alternative.example")
+    with open("./domain_ttl_sample", "w") as f:
+        f.write("ttl.example 1000")
 
 
 if __name__ == "__main__":

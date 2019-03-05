@@ -118,6 +118,9 @@ func (c *Cache) Hit(key string, msgid uint16) *dns.Msg {
 			m.Compress = true
 			// Even if something ended up with the TC bit *in* the cache, set it to off
 			m.Truncated = false
+			for _, a := range m.Answer {
+				a.Header().Ttl = uint32(time.Since(exp).Seconds() * -1)
+			}
 			return m
 		}
 		// Expired! /o\

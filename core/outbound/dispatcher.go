@@ -30,8 +30,9 @@ type Dispatcher struct {
 	DomainAlternativeList    []string
 	RedirectIPv6Record       bool
 
-	InboundIP  string
-	MinimumTTL int
+	InboundIP    string
+	MinimumTTL   int
+	DomainTTLMap map[string]uint32
 
 	Hosts *hosts.Hosts
 	Cache *cache.Cache
@@ -39,11 +40,22 @@ type Dispatcher struct {
 
 func (d *Dispatcher) Exchange() *dns.Msg {
 
-	d.PrimaryClientBundle = clients.NewClientBundle(d.QuestionMessage, d.PrimaryDNS, d.InboundIP, d.MinimumTTL, d.Cache, "Primary")
-	d.AlternativeClientBundle = clients.NewClientBundle(d.QuestionMessage, d.AlternativeDNS, d.InboundIP, d.MinimumTTL, d.Cache, "Alternative")
+	d.PrimaryClientBundle = clients.NewClientBundle(d.QuestionMessage, d.PrimaryDNS, d.InboundIP, d.MinimumTTL, d.Cache, "Primary", d.DomainTTLMap)
+	d.AlternativeClientBundle = clients.NewClientBundle(d.QuestionMessage, d.AlternativeDNS, d.InboundIP, d.MinimumTTL, d.Cache, "Alternative", d.DomainTTLMap)
 
-	localClient := clients.NewLocalClient(d.QuestionMessage, d.Hosts)
+	localClient := clients.NewLocalClient(d.QuestionMessage, d.Hosts, d.MinimumTTL, d.DomainTTLMap)
 	d.ResponseMessage = localClient.Exchange()
+	if d.ResponseMessage != nil {
+		return d.ResponseMessage
+	}
+
+	for _, cb := range []*clients.RemoteClientBundle{d.PrimaryClientBundle, d.AlternativeClientBundle} {
+		d.ResponseMessage = cb.ExchangeFromCache()
+		if d.ResponseMessage != nil {
+			return d.ResponseMessage
+		}
+	}
+
 	if d.ResponseMessage != nil {
 		return d.ResponseMessage
 	}
@@ -61,12 +73,12 @@ func (d *Dispatcher) Exchange() *dns.Msg {
 	d.selectByIPNetwork()
 
 	if d.ActiveClientBundle == d.AlternativeClientBundle {
-		d.ResponseMessage = d.ActiveClientBundle.Exchange(false, true)
-		d.ActiveClientBundle.CacheResult()
+		d.ResponseMessage = d.ActiveClientBundle.Exchange(true, true)
 		return d.ResponseMessage
+	} else {
+		d.ActiveClientBundle.CacheResult()
+		return d.PrimaryClientBundle.GetResponseMessage()
 	}
-
-	return d.PrimaryClientBundle.GetResponseMessage()
 }
 
 func (d *Dispatcher) isExchangeForIPv6() bool {

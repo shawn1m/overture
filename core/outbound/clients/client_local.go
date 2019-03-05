@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
+	"github.com/shawn1m/overture/core/common"
 	"github.com/shawn1m/overture/core/hosts"
 )
 
@@ -20,13 +21,16 @@ type LocalClient struct {
 	responseMessage *dns.Msg
 	questionMessage *dns.Msg
 
+	minimumTTL   int
+	domainTTLMap map[string]uint32
+
 	hosts   *hosts.Hosts
 	rawName string
 }
 
-func NewLocalClient(q *dns.Msg, h *hosts.Hosts) *LocalClient {
+func NewLocalClient(q *dns.Msg, h *hosts.Hosts, minimumTTL int, domainTTLMap map[string]uint32) *LocalClient {
 
-	c := &LocalClient{questionMessage: q.Copy(), hosts: h}
+	c := &LocalClient{questionMessage: q.Copy(), hosts: h, minimumTTL: minimumTTL, domainTTLMap: domainTTLMap}
 	c.rawName = c.questionMessage.Question[0].Name
 	return c
 }
@@ -34,6 +38,10 @@ func NewLocalClient(q *dns.Msg, h *hosts.Hosts) *LocalClient {
 func (c *LocalClient) Exchange() *dns.Msg {
 
 	if c.exchangeFromHosts() || c.exchangeFromIP() {
+		if c.responseMessage != nil {
+			common.SetMinimumTTL(c.responseMessage, uint32(c.minimumTTL))
+			common.SetTTLByMap(c.responseMessage, c.domainTTLMap)
+		}
 		return c.responseMessage
 	}
 

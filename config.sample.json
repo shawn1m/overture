@@ -41,6 +41,7 @@
   },
   "HostsFile": "./hosts_sample",
   "MinimumTTL": 0,
+  "DomainTTLFile" : "./domain_ttl_sample",
   "CacheSize" : 0,
-  "RejectQtype": [255]
+  "RejectQType": [255]
 }

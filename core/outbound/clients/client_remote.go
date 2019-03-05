@@ -58,13 +58,20 @@ func (c *RemoteClient) getEDNSClientSubnetIP() {
 	}
 }
 
+func (c *RemoteClient) ExchangeFromCache() *dns.Msg {
+	cacheClient := NewCacheClient(c.questionMessage, c.ednsClientSubnetIP, c.cache)
+	c.responseMessage = cacheClient.Exchange()
+	if c.responseMessage != nil {
+		return c.responseMessage
+	}
+	return nil
+}
+
 func (c *RemoteClient) Exchange(isLog bool) *dns.Msg {
 
 	common.SetEDNSClientSubnet(c.questionMessage, c.ednsClientSubnetIP, c.dnsUpstream.EDNSClientSubnet.NoCookie)
 	c.ednsClientSubnetIP = common.GetEDNSClientSubnetIP(c.questionMessage)
 
-	cacheClient := NewCacheClient(c.questionMessage, c.ednsClientSubnetIP, c.cache)
-	c.responseMessage = cacheClient.Exchange()
 	if c.responseMessage != nil {
 		return c.responseMessage
 	}

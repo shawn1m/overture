@@ -117,8 +117,9 @@ Configuration file is "config.json" by default:
   },
   "HostsFile": "./hosts_sample",
   "MinimumTTL": 0,
+  "DomainTTLFile" : "./domain_ttl_sample",
   "CacheSize" : 0,
-  "RejectQtype": [255]
+  "RejectQType": [255]
 }
 ```
 
@@ -197,7 +198,7 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
   `C:\\path\\to\\file.txt` in the configuration.
 + MinimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
 + CacheSize: The number of query record to cache, use `0` to disable.
-+ RejectQtype: Reject inbound query with specific DNS record types, check [List of DNS record types](https://en.wikipedia.org/wiki/List_of_DNS_record_types) for details.
++ RejectQType: Reject inbound query with specific DNS record types, check [List of DNS record types](https://en.wikipedia.org/wiki/List_of_DNS_record_types) for details.
 
 #### Domain file example (regex match)
 
@@ -209,6 +210,10 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
     1.0.1.0/24
     10.8.0.0/16
     ::1/128
+    
+ #### Domain TTL file example (regex match)
+ 
+     example.com$ 100
 
 #### Hosts file example (regex match)
 

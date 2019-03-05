@@ -20,7 +20,7 @@ type Server struct {
 	bindAddress      string
 	debugHttpAddress string
 	dispatcher       outbound.Dispatcher
-	rejectQtype      []uint16
+	rejectQType      []uint16
 }
 
 func NewServer(bindAddress string, debugHTTPAddress string, dispatcher outbound.Dispatcher, rejectQType []uint16) *Server {
@@ -28,7 +28,7 @@ func NewServer(bindAddress string, debugHTTPAddress string, dispatcher outbound.
 		bindAddress:      bindAddress,
 		debugHttpAddress: debugHTTPAddress,
 		dispatcher:       dispatcher,
-		rejectQtype:      rejectQType,
+		rejectQType:      rejectQType,
 	}
 }
 
@@ -128,7 +128,7 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 
 	log.Debug("Question from " + inboundIP + ": " + q.Question[0].String())
 
-	for _, qt := range s.rejectQtype {
+	for _, qt := range s.rejectQType {
 		if isQuestionType(q, qt) {
 			return
 		}

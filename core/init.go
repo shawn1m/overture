@@ -28,12 +28,13 @@ func InitServer(configFilePath string) {
 
 		RedirectIPv6Record: conf.IPv6UseAlternativeDNS,
 		MinimumTTL:         conf.MinimumTTL,
+		DomainTTLMap:       conf.DomainTTLMap,
 
 		Hosts: conf.Hosts,
 		Cache: conf.Cache,
 	}
 
-	s := inbound.NewServer(conf.BindAddress, conf.DebugHTTPAddress, dispatcher, conf.RejectQtype)
+	s := inbound.NewServer(conf.BindAddress, conf.DebugHTTPAddress, dispatcher, conf.RejectQType)
 
 	s.Run()
 }
