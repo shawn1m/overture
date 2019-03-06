@@ -123,8 +123,9 @@ func (s *Server) Run() {
 func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 
 	inboundIP, _, _ := net.SplitHostPort(w.RemoteAddr().String())
-	s.dispatcher.InboundIP = inboundIP
-	s.dispatcher.QuestionMessage = q
+	currentDispatcher := s.dispatcher
+	currentDispatcher.InboundIP = inboundIP
+	currentDispatcher.QuestionMessage = q
 
 	log.Debug("Question from " + inboundIP + ": " + q.Question[0].String())
 
@@ -134,7 +135,7 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 		}
 	}
 
-	responseMessage := s.dispatcher.Exchange()
+	responseMessage := currentDispatcher.Exchange()
 
 	if responseMessage == nil {
 		return
