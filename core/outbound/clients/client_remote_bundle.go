@@ -78,7 +78,7 @@ func (cb *RemoteClientBundle) Exchange(isCache bool, isLog bool) *dns.Msg {
 		common.SetTTLByMap(cb.responseMessage, cb.domainTTLMap)
 
 		if isCache {
-			cb.CacheResult()
+			cb.CacheResultIfNeeded()
 		}
 	}
 
@@ -95,7 +95,7 @@ func (cb *RemoteClientBundle) ExchangeFromCache() *dns.Msg {
 	return cb.responseMessage
 }
 
-func (cb *RemoteClientBundle) CacheResult() {
+func (cb *RemoteClientBundle) CacheResultIfNeeded() {
 
 	if cb.cache != nil {
 		cb.cache.InsertMessage(cache.Key(cb.questionMessage.Question[0], common.GetEDNSClientSubnetIP(cb.questionMessage)), cb.responseMessage)

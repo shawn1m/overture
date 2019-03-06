@@ -76,8 +76,9 @@ func (d *Dispatcher) Exchange() *dns.Msg {
 		d.ResponseMessage = d.ActiveClientBundle.Exchange(true, true)
 		return d.ResponseMessage
 	} else {
-		d.ActiveClientBundle.CacheResult()
-		return d.PrimaryClientBundle.GetResponseMessage()
+		// Only try to Cache result before return
+		d.ActiveClientBundle.CacheResultIfNeeded()
+		return d.ActiveClientBundle.GetResponseMessage()
 	}
 }
 
