@@ -56,7 +56,7 @@ func (c *Cache) Remove(s string) {
 // Must be called under a write lock.
 func (c *Cache) EvictRandom() {
 	cacheLength := len(c.table)
-	if cacheLength < c.capacity {
+	if cacheLength <= c.capacity {
 		return
 	}
 	i := c.capacity - cacheLength
