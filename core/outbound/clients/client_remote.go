@@ -131,11 +131,11 @@ func (c *RemoteClient) Exchange(isLog bool) *dns.Msg {
 	temp, err := dc.ReadMsg()
 
 	if err != nil {
-		log.Warn(c.dnsUpstream.Name+" Fail: ", err)
+		log.Debug(c.dnsUpstream.Name+" Fail: ", err)
 		return nil
 	}
 	if temp == nil {
-		log.Warn(c.dnsUpstream.Name + " Fail: Response message is nil, maybe timeout, please check your query or dns configuration")
+		log.Debug(c.dnsUpstream.Name + " Fail: Response message is nil, maybe timeout, please check your query or dns configuration")
 		return nil
 	}
 

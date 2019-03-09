@@ -288,7 +288,7 @@ www.qq.com.     43  IN  A   14.17.42.40
 + Code reference:
     + [skydns](https://github.com/skynetservices/skydns): MIT
     + [go-dnsmasq](https://github.com/janeczku/go-dnsmasq):  MIT
-+ Contributors: @V-E-O, @sh1r0, @maddie, @hexchain, @everfly, @simonsmh, @jemyzhang, @hexchain, @sh1r0, @yujinqiu, @qyb, @jsvisa, @Love4Taylor, @godla
++ Contributors: @V-E-O, @sh1r0, @maddie, @hexchain, @everfly, @simonsmh, @jemyzhang, @hexchain, @sh1r0, @yujinqiu, @qyb, @jsvisa, @Love4Taylor, @godla, @comzyh
 
 ## License
 
