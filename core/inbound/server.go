@@ -134,6 +134,7 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 	responseMessage := s.dispatcher.Exchange(q, inboundIP)
 
 	if responseMessage == nil {
+		dns.HandleFailed(w, q)
 		return
 	}
 
