@@ -18,13 +18,14 @@ func InitServer(configFilePath string) {
 
 	// New dispatcher without RemoteClientBundle, RemoteClientBundle must be initiated when server is running
 	dispatcher := outbound.Dispatcher{
-		PrimaryDNS:               conf.PrimaryDNS,
-		AlternativeDNS:           conf.AlternativeDNS,
-		OnlyPrimaryDNS:           conf.OnlyPrimaryDNS,
-		IPNetworkPrimaryList:     conf.IPNetworkPrimaryList,
-		IPNetworkAlternativeList: conf.IPNetworkAlternativeList,
-		DomainPrimaryList:        conf.DomainPrimaryList,
-		DomainAlternativeList:    conf.DomainAlternativeList,
+		PrimaryDNS:                  conf.PrimaryDNS,
+		AlternativeDNS:              conf.AlternativeDNS,
+		OnlyPrimaryDNS:              conf.OnlyPrimaryDNS,
+		WhenPrimaryDNSAnswerNoneUse: conf.WhenPrimaryDNSAnswerNoneUse,
+		IPNetworkPrimaryList:        conf.IPNetworkPrimaryList,
+		IPNetworkAlternativeList:    conf.IPNetworkAlternativeList,
+		DomainPrimaryList:           conf.DomainPrimaryList,
+		DomainAlternativeList:       conf.DomainAlternativeList,
 
 		RedirectIPv6Record: conf.IPv6UseAlternativeDNS,
 		MinimumTTL:         conf.MinimumTTL,

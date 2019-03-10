@@ -17,11 +17,12 @@ type Dispatcher struct {
 	AlternativeDNS []*common.DNSUpstream
 	OnlyPrimaryDNS bool
 
-	IPNetworkPrimaryList     []*net.IPNet
-	IPNetworkAlternativeList []*net.IPNet
-	DomainPrimaryList        []string
-	DomainAlternativeList    []string
-	RedirectIPv6Record       bool
+	WhenPrimaryDNSAnswerNoneUse string
+	IPNetworkPrimaryList        []*net.IPNet
+	IPNetworkAlternativeList    []*net.IPNet
+	DomainPrimaryList           []string
+	DomainAlternativeList       []string
+	RedirectIPv6Record          bool
 
 	MinimumTTL   int
 	DomainTTLMap map[string]uint32
@@ -111,14 +112,21 @@ func (d *Dispatcher) selectByIPNetwork(PrimaryClientBundle, AlternativeClientBun
 
 	primaryResponse := PrimaryClientBundle.Exchange(false, true)
 
-	if primaryResponse == nil || !common.HasAnswer(primaryResponse) {
-		log.Debug("Primary DNS answer is empty, finally use alternative DNS")
+	if primaryResponse == nil {
+		log.Debug("Primary DNS return nil, finally use alternative DNS")
 		return AlternativeClientBundle
 	}
-	if PrimaryClientBundle.GetResponseMessage() == nil { // FIXME: is this necessary ?
-		log.Debug("PrimaryClientBundle.GetResponseMessage() is nil")
-		return AlternativeClientBundle
+
+	if primaryResponse.Answer == nil {
+		if d.WhenPrimaryDNSAnswerNoneUse == "AlternativeDNS" {
+			log.Debug("Primary DNS response has no answer section but exist, finally use AlternativeDNS")
+			return AlternativeClientBundle
+		} else {
+			log.Debug("Primary DNS response has no answer section but exist, finally use PrimaryDNS")
+			return PrimaryClientBundle
+		}
 	}
+
 	for _, a := range PrimaryClientBundle.GetResponseMessage().Answer {
 		log.Debug("Try to match response ip address with IP network")
 		var ip net.IP

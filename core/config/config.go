@@ -40,13 +40,14 @@ type Config struct {
 	CacheSize     int
 	RejectQType   []uint16
 
-	DomainTTLMap             map[string]uint32
-	DomainPrimaryList        []string
-	DomainAlternativeList    []string
-	IPNetworkPrimaryList     []*net.IPNet
-	IPNetworkAlternativeList []*net.IPNet
-	Hosts                    *hosts.Hosts
-	Cache                    *cache.Cache
+	DomainTTLMap                map[string]uint32
+	DomainPrimaryList           []string
+	DomainAlternativeList       []string
+	WhenPrimaryDNSAnswerNoneUse string
+	IPNetworkPrimaryList        []*net.IPNet
+	IPNetworkAlternativeList    []*net.IPNet
+	Hosts                       *hosts.Hosts
+	Cache                       *cache.Cache
 }
 
 // New config with json file and do some other initiate works
