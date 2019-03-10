@@ -89,7 +89,7 @@ func (cb *RemoteClientBundle) ExchangeFromCache() *dns.Msg {
 func (cb *RemoteClientBundle) CacheResultIfNeeded() {
 
 	if cb.cache != nil {
-		cb.cache.InsertMessage(cache.Key(cb.questionMessage.Question[0], common.GetEDNSClientSubnetIP(cb.questionMessage)), cb.responseMessage)
+		cb.cache.InsertMessage(cache.Key(cb.questionMessage.Question[0], common.GetEDNSClientSubnetIP(cb.questionMessage)), cb.responseMessage, uint32(cb.minimumTTL))
 	}
 }
 

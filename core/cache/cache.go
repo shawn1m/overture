@@ -71,15 +71,21 @@ func (c *Cache) EvictRandom() {
 
 // InsertMessage inserts a message in the Cache. We will cache it for ttl seconds, which
 // should be a small (60...300) integer.
-func (c *Cache) InsertMessage(s string, m *dns.Msg) {
-	if c.capacity <= 0 || m == nil || len(m.Answer) == 0 {
+func (c *Cache) InsertMessage(s string, m *dns.Msg, mTTL uint32) {
+	if c.capacity <= 0 || m == nil {
 		return
 	}
 
 	c.Lock()
-	ttl := time.Duration(m.Answer[0].Header().Ttl) * time.Second
+	var ttl uint32
+	if len(m.Answer) == 0 {
+		ttl = mTTL
+	} else {
+		ttl = m.Answer[0].Header().Ttl
+	}
+	ttlDuration := time.Duration(ttl) * time.Second
 	if _, ok := c.table[s]; !ok {
-		c.table[s] = &elem{time.Now().UTC().Add(ttl), m.Copy()}
+		c.table[s] = &elem{time.Now().UTC().Add(ttlDuration), m.Copy()}
 	}
 	log.Debug("Cached: " + s)
 	c.EvictRandom()
