@@ -7,6 +7,7 @@ package config
 import (
 	"bufio"
 	"encoding/json"
+	"github.com/shawn1m/overture/core/domain"
 	"io/ioutil"
 	"net"
 	"os"
@@ -41,8 +42,8 @@ type Config struct {
 	RejectQType   []uint16
 
 	DomainTTLMap                map[string]uint32
-	DomainPrimaryList           []string
-	DomainAlternativeList       []string
+	DomainPrimaryList           *domain.Tree
+	DomainAlternativeList       *domain.Tree
 	WhenPrimaryDNSAnswerNoneUse string
 	IPNetworkPrimaryList        []*net.IPNet
 	IPNetworkAlternativeList    []*net.IPNet
@@ -151,10 +152,12 @@ func getDomainTTLMap(file string) map[string]uint32 {
 	return dtl
 }
 
-func getDomainList(file string) []string {
+func getDomainList(file string) (dt *domain.Tree) {
+
+	dt = domain.DefaultDomainTree()
 
 	if file == "" {
-		return []string{}
+		return
 	}
 
 	f, err := ioutil.ReadFile(file)
@@ -165,24 +168,23 @@ func getDomainList(file string) []string {
 
 	lines := 0
 	s := string(f)
-	dl := []string{}
 
 	for _, line := range strings.Split(s, "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
 		}
-		dl = append(dl, line)
+		_ = dt.Insert(line)
 		lines++
 	}
 
-	if len(dl) > 0 {
+	if lines > 0 {
 		log.Infof("Load domain "+file+" successful with %d records ", lines)
 	} else {
 		log.Warn("There is no element in this domain file: " + file)
 	}
 
-	return dl
+	return
 }
 
 func getIPNetworkList(file string) []*net.IPNet {

@@ -72,11 +72,12 @@ func (c *Cache) EvictRandom() {
 // InsertMessage inserts a message in the Cache. We will cache it for ttl seconds, which
 // should be a small (60...300) integer.
 func (c *Cache) InsertMessage(s string, m *dns.Msg, mTTL uint32) {
-	if c.capacity <= 0 || m == nil {
+	if c.capacity <= 0 || m == nil || m.Answer == nil {
 		return
 	}
 
 	c.Lock()
+	defer c.Unlock()
 	var ttl uint32
 	if len(m.Answer) == 0 {
 		ttl = mTTL
@@ -89,7 +90,6 @@ func (c *Cache) InsertMessage(s string, m *dns.Msg, mTTL uint32) {
 	}
 	log.Debug("Cached: " + s)
 	c.EvictRandom()
-	c.Unlock()
 }
 
 // Search returns a dns.Msg, the expiration time and a boolean indicating if we found something

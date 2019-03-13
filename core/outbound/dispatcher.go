@@ -1,6 +1,7 @@
 package outbound
 
 import (
+	"github.com/shawn1m/overture/core/domain"
 	"net"
 
 	log "github.com/Sirupsen/logrus"
@@ -20,8 +21,8 @@ type Dispatcher struct {
 	WhenPrimaryDNSAnswerNoneUse string
 	IPNetworkPrimaryList        []*net.IPNet
 	IPNetworkAlternativeList    []*net.IPNet
-	DomainPrimaryList           []string
-	DomainAlternativeList       []string
+	DomainPrimaryList           *domain.Tree
+	DomainAlternativeList       *domain.Tree
 	RedirectIPv6Record          bool
 
 	MinimumTTL   int
@@ -86,21 +87,18 @@ func (d *Dispatcher) isExchangeForIPv6(query *dns.Msg) bool {
 	return false
 }
 
-func (d *Dispatcher) isSelectDomain(rcb *clients.RemoteClientBundle, dl []string) bool {
+func (d *Dispatcher) isSelectDomain(rcb *clients.RemoteClientBundle, dt *domain.Tree) bool {
 
 	qn := rcb.GetFirstQuestionDomain()
 
-	for _, domain := range dl {
-
-		if common.IsDomainMatchRule(domain, qn) {
-			log.WithFields(log.Fields{
-				"DNS":      rcb.Name,
-				"question": qn,
-				"domain":   domain,
-			}).Debug("Matched")
-			log.Debug("Finally use " + rcb.Name + " DNS")
-			return true
-		}
+	if dt.Has(domain.Domain(qn)) {
+		log.WithFields(log.Fields{
+			"DNS":      rcb.Name,
+			"question": qn,
+			"domain":   qn,
+		}).Debug("Matched")
+		log.Debug("Finally use " + rcb.Name + " DNS")
+		return true
 	}
 
 	log.Debug("Domain " + rcb.Name + " match fail")
