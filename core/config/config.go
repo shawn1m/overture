@@ -13,7 +13,8 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/shawn1m/overture/core/cache"
 	"github.com/shawn1m/overture/core/common"
 	"github.com/shawn1m/overture/core/hosts"

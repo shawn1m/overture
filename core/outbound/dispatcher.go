@@ -3,8 +3,8 @@ package outbound
 import (
 	"net"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/shawn1m/overture/core/cache"
 	"github.com/shawn1m/overture/core/common"

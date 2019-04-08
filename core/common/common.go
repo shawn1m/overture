@@ -10,8 +10,8 @@ import (
 	"regexp"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
+	log "github.com/sirupsen/logrus"
 )
 
 var ReservedIPNetworkList []*net.IPNet
