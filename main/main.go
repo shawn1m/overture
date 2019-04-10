@@ -7,6 +7,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"os"
 	"runtime"
@@ -37,7 +38,7 @@ func main() {
 	flag.Parse()
 
 	if isShowVersion {
-		println(version)
+		fmt.Println(version)
 		return
 	}
 
