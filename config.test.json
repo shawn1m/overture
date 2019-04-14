@@ -38,7 +38,8 @@
   },
   "DomainFile": {
     "Primary": "./domain_primary_sample",
-    "Alternative": "./domain_alternative_sample"
+    "Alternative": "./domain_alternative_sample",
+    "Matcher":  "regex-list"
   },
   "HostsFile": "./hosts_sample",
   "MinimumTTL": 0,

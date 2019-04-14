@@ -1,7 +1,7 @@
 package outbound
 
 import (
-	"github.com/shawn1m/overture/core/domain"
+	"github.com/shawn1m/overture/core/matcher"
 	"net"
 
 	"github.com/miekg/dns"
@@ -21,8 +21,8 @@ type Dispatcher struct {
 	WhenPrimaryDNSAnswerNoneUse string
 	IPNetworkPrimaryList        []*net.IPNet
 	IPNetworkAlternativeList    []*net.IPNet
-	DomainPrimaryList           *domain.Tree
-	DomainAlternativeList       *domain.Tree
+	DomainPrimaryList           matcher.Matcher
+	DomainAlternativeList       matcher.Matcher
 	RedirectIPv6Record          bool
 
 	MinimumTTL   int
@@ -87,11 +87,11 @@ func (d *Dispatcher) isExchangeForIPv6(query *dns.Msg) bool {
 	return false
 }
 
-func (d *Dispatcher) isSelectDomain(rcb *clients.RemoteClientBundle, dt *domain.Tree) bool {
+func (d *Dispatcher) isSelectDomain(rcb *clients.RemoteClientBundle, dt matcher.Matcher) bool {
 
 	qn := rcb.GetFirstQuestionDomain()
 
-	if dt.Has(domain.Domain(qn)) {
+	if dt.Has(qn) {
 		log.WithFields(log.Fields{
 			"DNS":      rcb.Name,
 			"question": qn,

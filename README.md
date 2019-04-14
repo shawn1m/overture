@@ -114,7 +114,8 @@ Configuration file is "config.json" by default:
   },
   "DomainFile": {
     "Primary": "./domain_primary_sample",
-    "Alternative": "./domain_alternative_sample"
+    "Alternative": "./domain_alternative_sample",
+    "Matcher":  "regex-list"
   },
   "HostsFile": "./hosts_sample",
   "MinimumTTL": 0,
@@ -198,6 +199,7 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
 + WhenPrimaryDNSAnswerNoneUse: If the response of PrimaryDNS exists and there is no `ANSWER SECTION` in it, the final DNS should be defined. (There is no `AAAA` record for most domains right now) 
 + File: Absolute path like `/path/to/file` is allowed. For Windows users, please use properly escaped path like
   `C:\\path\\to\\file.txt` in the configuration.
++ DomainFile.Matcher: Matching policy and implementation, including "full-list", "full-map", "regex-list" and "suffix-tree". Default value is "regex-list".
 + MinimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
 + CacheSize: The number of query record to cache, use `0` to disable.
 + RejectQType: Reject inbound query with specific DNS record types, check [List of DNS record types](https://en.wikipedia.org/wiki/List_of_DNS_record_types) for details.
@@ -290,7 +292,7 @@ www.qq.com.     43  IN  A   14.17.42.40
 + Code reference:
     + [skydns](https://github.com/skynetservices/skydns): MIT
     + [go-dnsmasq](https://github.com/janeczku/go-dnsmasq):  MIT
-+ Contributors: @V-E-O, @sh1r0, @maddie, @hexchain, @everfly, @simonsmh, @jemyzhang, @hexchain, @sh1r0, @yujinqiu, @qyb, @jsvisa, @Love4Taylor, @godla, @comzyh
++ Contributors: https://github.com/shawn1m/overture/graphs/contributors
 
 ## License
 

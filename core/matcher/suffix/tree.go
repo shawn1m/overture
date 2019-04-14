@@ -1,4 +1,10 @@
-package domain
+/*
+ * Copyright (c) 2019 shawn1m. All rights reserved.
+ * Use of this source code is governed by The MIT License (MIT) that can be
+ * found in the LICENSE file..
+ */
+
+package suffix
 
 import (
 	"errors"
@@ -10,6 +16,10 @@ type Domain string
 type Tree struct {
 	mark uint8
 	sub  domainMap
+}
+
+func (t *Tree) Name() string {
+	return "suffix-tree"
 }
 
 type domainMap map[Domain]*Tree
@@ -40,15 +50,19 @@ func NewDomainTree() (dt *Tree) {
 	return
 }
 
-func (dt *Tree) Has(d Domain) bool {
+func (dt *Tree) has(d Domain) bool {
 	if len(dt.sub) == 0 {
 		return true
 	}
 
 	if sub, ok := dt.sub[d.topLevel()]; ok {
-		return sub.Has(d.nextLevel())
+		return sub.has(d.nextLevel())
 	}
 	return false
+}
+
+func (dt *Tree) Has(d string) bool {
+	return dt.has(Domain(d))
 }
 
 func (dt *Tree) insert(sections []Domain) {
@@ -57,7 +71,7 @@ func (dt *Tree) insert(sections []Domain) {
 		return
 	}
 
-	var lastIndex, lastSec = len(sections)-1, sections[len(sections)-1]
+	var lastIndex, lastSec = len(sections) - 1, sections[len(sections)-1]
 
 	if sec, ok := dt.sub[lastSec]; ok {
 		sec.insert(sections[:lastIndex])
