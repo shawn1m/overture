@@ -9,7 +9,8 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/shawn1m/overture/core/common"
 )
 
@@ -63,11 +64,11 @@ func (hl *hostsLines) FindHosts(name string) (ipv4List []net.IP, ipv6List []net.
 
 func (hl *hostsLines) add(h *hostsLine) error {
 	// Use too much CPU time when hosts file is big
-	//for _, found := range *hl {
-	//	if found.Equal(h) {
-	//		return fmt.Errorf("Duplicate hostname entry for %#v", h)
-	//	}
-	//}
+	// for _, found := range *hl {
+	// 	if found.Equal(h) {
+	// 		return fmt.Errorf("Duplicate hostname entry for %#v", h)
+	// 	}
+	// }
 	*hl = append(*hl, h)
 	return nil
 }

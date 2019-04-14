@@ -8,6 +8,7 @@ package clients
 
 import (
 	"github.com/miekg/dns"
+
 	"github.com/shawn1m/overture/core/cache"
 	"github.com/shawn1m/overture/core/common"
 )

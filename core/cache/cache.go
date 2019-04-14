@@ -8,13 +8,12 @@ package cache
 // Cache that holds RRs.
 
 import (
+	"strconv"
 	"sync"
 	"time"
 
-	"strconv"
-
-	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
+	log "github.com/sirupsen/logrus"
 )
 
 // Elem hold an answer and additional section that returned from the cache.

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
+
 	"github.com/shawn1m/overture/core/common"
 	"github.com/shawn1m/overture/core/config"
 )

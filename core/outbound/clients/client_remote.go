@@ -13,11 +13,12 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
+	log "github.com/sirupsen/logrus"
+	"golang.org/x/net/proxy"
+
 	"github.com/shawn1m/overture/core/cache"
 	"github.com/shawn1m/overture/core/common"
-	"golang.org/x/net/proxy"
 )
 
 type RemoteClient struct {
