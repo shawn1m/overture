@@ -93,6 +93,7 @@ func (c *Cache) InsertMessage(s string, m *dns.Msg, mTTL uint32) {
 
 // Search returns a dns.Msg, the expiration time and a boolean indicating if we found something
 // in the cache.
+// todo: use finder implementation
 func (c *Cache) Search(s string) (*dns.Msg, time.Time, bool) {
 	if c.capacity <= 0 {
 		return nil, time.Time{}, false
