@@ -12,6 +12,7 @@ import (
 	"github.com/shawn1m/overture/core/matcher/full"
 	"github.com/shawn1m/overture/core/matcher/regex"
 	"github.com/shawn1m/overture/core/matcher/suffix"
+	"github.com/shawn1m/overture/core/matcher/mix"
 
 	"io/ioutil"
 	"net"
@@ -170,6 +171,8 @@ func getDomainMatcher(name string) (m matcher.Matcher) {
 		return &full.List{DataList: []string{}}
 	case "regex-list":
 		return &regex.List{RegexList: []string{}}
+	case "mix-list":
+		return &mix.List{DataList: make([]mix.Data, 0)}
 	default:
 		log.Warn("There is no such matcher: "+name, ", use regex-list matcher as default")
 		return &regex.List{RegexList: []string{}}
