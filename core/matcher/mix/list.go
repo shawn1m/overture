@@ -23,20 +23,20 @@ type List struct {
 
 func (s *List) Insert(str string) error {
 	kv := strings.Split(str, ":")
-	if len(kv) > 2 {
-		return fmt.Errorf("invalid format: %s", str)
-	}
-	if len(kv) == 1 {
+
+	switch len(kv) {
+	case 1:
 		s.DataList = append(s.DataList,
 			Data{
 				Type:    "domain",
 				Content: strings.ToLower(kv[0])})
-	}
-	if len(kv) == 2 {
+	case 2:
 		s.DataList = append(s.DataList,
 			Data{
 				Type:    strings.ToLower(kv[0]),
 				Content: strings.ToLower(kv[1])})
+	default:
+		return fmt.Errorf("invalid format: %s", str)
 	}
 
 	return nil
