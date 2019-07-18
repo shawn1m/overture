@@ -10,9 +10,9 @@ import (
 
 	"github.com/shawn1m/overture/core/matcher"
 	"github.com/shawn1m/overture/core/matcher/full"
+	"github.com/shawn1m/overture/core/matcher/mix"
 	"github.com/shawn1m/overture/core/matcher/regex"
 	"github.com/shawn1m/overture/core/matcher/suffix"
-	"github.com/shawn1m/overture/core/matcher/mix"
 
 	"io/ioutil"
 	"net"
@@ -61,7 +61,6 @@ type Config struct {
 
 // New config with json file and do some other initiate works
 func NewConfig(configFile string) *Config {
-
 	config := parseJson(configFile)
 
 	config.DomainTTLMap = getDomainTTLMap(config.DomainTTLFile)
@@ -73,24 +72,24 @@ func NewConfig(configFile string) *Config {
 	config.IPNetworkAlternativeList = getIPNetworkList(config.IPNetworkFile.Alternative)
 
 	if config.MinimumTTL > 0 {
-		log.Info("Minimum TTL is " + strconv.Itoa(config.MinimumTTL))
+		log.Infof("Minimum TTL has been set to %d", config.MinimumTTL)
 	} else {
 		log.Info("Minimum TTL is disabled")
 	}
 
 	config.Cache = cache.New(config.CacheSize)
 	if config.CacheSize > 0 {
-		log.Info("CacheSize is " + strconv.Itoa(config.CacheSize))
+		log.Infof("CacheSize is %d", config.CacheSize)
 	} else {
 		log.Info("Cache is disabled")
 	}
 
 	h, err := hosts.New(config.HostsFile)
 	if err != nil {
-		log.Info("Load hosts file failed: ", err)
+		log.Warnf("Failed to load hosts file: %s", err)
 	} else {
 		config.Hosts = h
-		log.Info("Load hosts file successful")
+		log.Info("Hosts file has been loaded successfully")
 	}
 
 	return config
@@ -100,21 +99,21 @@ func parseJson(path string) *Config {
 
 	f, err := os.Open(path)
 	if err != nil {
-		log.Fatal("Open config file failed: ", err)
+		log.Fatalf("Failed to open config file: %s", err)
 		os.Exit(1)
 	}
 	defer f.Close()
 
 	b, err := ioutil.ReadAll(f)
 	if err != nil {
-		log.Fatal("Read config file failed: ", err)
+		log.Fatalf("Failed to read config file: %s", err)
 		os.Exit(1)
 	}
 
 	j := new(Config)
 	err = json.Unmarshal(b, j)
 	if err != nil {
-		log.Fatal("Json syntex error: ", err)
+		log.Fatalf("Failed to parse config file: %s", err)
 		os.Exit(1)
 	}
 
@@ -122,14 +121,13 @@ func parseJson(path string) *Config {
 }
 
 func getDomainTTLMap(file string) map[string]uint32 {
-
 	if file == "" {
 		return map[string]uint32{}
 	}
 
 	f, err := ioutil.ReadFile(file)
 	if err != nil {
-		log.Error("Open file "+file+" failed: ", err)
+		log.Errorf("Failed to read file %s: %s", file, err)
 		return nil
 	}
 
@@ -146,22 +144,21 @@ func getDomainTTLMap(file string) map[string]uint32 {
 		tempInt64, err := strconv.ParseUint(words[1], 10, 32)
 		dtl[words[0]] = uint32(tempInt64)
 		if err != nil {
-			log.WithFields(log.Fields{"domain": words[0], "ttl": words[1]}).Warn("This TTL is not a number!")
+			log.WithFields(log.Fields{"domain": words[0], "ttl": words[1]}).Warnf("Invalid TTL for domain %s: %s", words[0], words[1])
 		}
 		lines++
 	}
 
 	if len(dtl) > 0 {
-		log.Infof("Load domain TTL "+file+" successful with %d records ", lines)
+		log.Infof("Domain TTL file %s has been loaded with %d records", file, lines)
 	} else {
-		log.Warn("There is no element in domain TTL file")
+		log.Warnf("There is no element in domain TTL file: %s", file)
 	}
 
 	return dtl
 }
 
 func getDomainMatcher(name string) (m matcher.Matcher) {
-
 	switch name {
 	case "suffix-tree":
 		return suffix.DefaultDomainTree()
@@ -174,13 +171,12 @@ func getDomainMatcher(name string) (m matcher.Matcher) {
 	case "mix-list":
 		return &mix.List{DataList: make([]mix.Data, 0)}
 	default:
-		log.Warn("There is no such matcher: "+name, ", use regex-list matcher as default")
+		log.Warnf("Matcher %s does not exist, using regex-list matcher as default", name)
 		return &regex.List{RegexList: []string{}}
 	}
 }
 
 func initDomainMatcher(file string, name string) (m matcher.Matcher) {
-
 	m = getDomainMatcher(name)
 
 	if file == "" {
@@ -189,7 +185,7 @@ func initDomainMatcher(file string, name string) (m matcher.Matcher) {
 
 	f, err := ioutil.ReadFile(file)
 	if err != nil {
-		log.Error("Open file "+file+" failed: ", err)
+		log.Errorf("Failed to read file %s: %s", file, err)
 		return nil
 	}
 
@@ -206,20 +202,21 @@ func initDomainMatcher(file string, name string) (m matcher.Matcher) {
 	}
 
 	if lines > 0 {
-		log.Infof("Load domain "+file+" successful with %d records ("+m.Name()+")", lines)
+		log.Infof("Domain file %s has been loaded with %d records (%s)", file, lines, m.Name())
 	} else {
-		log.Warn("There is no element in this domain file: " + file)
+		log.Warnf("There is no element in domain file: %s" + file)
 	}
 
 	return
 }
 
 func getIPNetworkList(file string) []*net.IPNet {
-
 	ipnl := make([]*net.IPNet, 0)
+
+	// FIXME: why use different file reading mechanism for DomainTTL/Domain and this?
 	f, err := os.Open(file)
 	if err != nil {
-		log.Error("Open IP network file failed: ", err)
+		log.Errorf("Failed to open IP network file: %s", err)
 		return nil
 	}
 	defer f.Close()
@@ -233,9 +230,9 @@ func getIPNetworkList(file string) []*net.IPNet {
 	}
 
 	if len(ipnl) > 0 {
-		log.Info("Load " + file + " successful")
+		log.Infof("IP network file %s has been successfully loaded", file)
 	} else {
-		log.Warn("There is no element in " + file)
+		log.Warnf("There is no element in IP network file: %s", file)
 	}
 
 	return ipnl

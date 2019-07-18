@@ -100,7 +100,7 @@ func (s *Server) Run() {
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
 
-	log.Info("Start overture on " + s.bindAddress)
+	log.Infof("Overture is listening on %s", s.bindAddress)
 
 	for _, p := range [2]string{"tcp", "udp"} {
 		go func(p string) {
@@ -124,7 +124,7 @@ func (s *Server) Run() {
 func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 	inboundIP, _, _ := net.SplitHostPort(w.RemoteAddr().String())
 
-	log.Debug("Question from " + inboundIP + ": " + q.Question[0].String())
+	log.Debugf("Question from %s: %s", inboundIP, q.Question[0].String())
 
 	for _, qt := range s.rejectQType {
 		if isQuestionType(q, qt) {
@@ -141,7 +141,7 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 
 	err := w.WriteMsg(responseMessage)
 	if err != nil {
-		log.Warn("Write message fail:", responseMessage)
+		log.Warnf("Write message failed, message: %s, error: %s", responseMessage, err)
 		return
 	}
 }

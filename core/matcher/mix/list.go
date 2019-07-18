@@ -7,7 +7,7 @@
 package mix
 
 import (
-	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -24,7 +24,7 @@ type List struct {
 func (s *List) Insert(str string) error {
 	kv := strings.Split(str, ":")
 	if len(kv) > 2 {
-		return errors.New("Invalid format: " + str)
+		return fmt.Errorf("invalid format: %s", str)
 	}
 	if len(kv) == 1 {
 		s.DataList = append(s.DataList,

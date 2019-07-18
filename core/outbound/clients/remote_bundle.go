@@ -29,7 +29,6 @@ type RemoteClientBundle struct {
 }
 
 func NewClientBundle(q *dns.Msg, ul []*common.DNSUpstream, ip string, minimumTTL int, cache *cache.Cache, name string, domainTTLMap map[string]uint32) *RemoteClientBundle {
-
 	cb := &RemoteClientBundle{questionMessage: q.Copy(), dnsUpstreams: ul, inboundIP: ip, minimumTTL: minimumTTL, cache: cache, Name: name, domainTTLMap: domainTTLMap}
 
 	for _, u := range ul {
@@ -42,7 +41,6 @@ func NewClientBundle(q *dns.Msg, ul []*common.DNSUpstream, ip string, minimumTTL
 }
 
 func (cb *RemoteClientBundle) Exchange(isCache bool, isLog bool) *dns.Msg {
-
 	ch := make(chan *RemoteClient, len(cb.clients))
 
 	for _, o := range cb.clients {
@@ -88,7 +86,6 @@ func (cb *RemoteClientBundle) ExchangeFromCache() *dns.Msg {
 }
 
 func (cb *RemoteClientBundle) CacheResultIfNeeded() {
-
 	if cb.cache != nil {
 		cb.cache.InsertMessage(cache.Key(cb.questionMessage.Question[0], common.GetEDNSClientSubnetIP(cb.questionMessage)), cb.responseMessage, uint32(cb.minimumTTL))
 	}

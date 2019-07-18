@@ -22,11 +22,10 @@ func init() {
 }
 
 func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool, name string) bool {
-
 	for _, ip_net := range ipnl {
 		if ip_net.Contains(ip) {
 			if isLog {
-				log.Debug("Matched: IP network " + name + " " + ip.String() + " " + ip_net.String())
+				log.Debugf("Matched: IP network %s %s %s", name, ip.String(), ip_net.String())
 			}
 			return true
 		}
@@ -38,7 +37,7 @@ func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool, name string) bool {
 func IsDomainMatchRule(pattern string, domain string) bool {
 	matched, err := regexp.MatchString(pattern, domain)
 	if err != nil {
-		log.Warn("Domain:"+domain+" Pattern:"+pattern+" error!", err)
+		log.Warnf("Error matching domain %s with pattern %s: %s", domain, pattern, err)
 	}
 	return matched
 }
@@ -51,7 +50,6 @@ func HasSubDomain(s string, sub string) bool {
 }
 
 func getReservedIPNetworkList() []*net.IPNet {
-
 	ipnl := make([]*net.IPNet, 0)
 	localCIDR := []string{"127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "100.64.0.0/10"}
 	for _, c := range localCIDR {
@@ -77,7 +75,6 @@ func FindRecordByType(msg *dns.Msg, t uint16) string {
 }
 
 func SetMinimumTTL(msg *dns.Msg, minimumTTL uint32) {
-
 	if minimumTTL == 0 {
 		return
 	}

@@ -24,13 +24,10 @@ type CacheClient struct {
 }
 
 func NewCacheClient(q *dns.Msg, ip string, cache *cache.Cache) *CacheClient {
-
-	c := &CacheClient{questionMessage: q.Copy(), ednsClientSubnetIP: ip, cache: cache}
-	return c
+	return &CacheClient{questionMessage: q.Copy(), ednsClientSubnetIP: ip, cache: cache}
 }
 
 func (c *CacheClient) Exchange() *dns.Msg {
-
 	if c.exchangeFromCache() {
 		return c.responseMessage
 	}
@@ -39,14 +36,13 @@ func (c *CacheClient) Exchange() *dns.Msg {
 }
 
 func (c *CacheClient) exchangeFromCache() bool {
-
 	if c.cache == nil {
 		return false
 	}
 
 	m := c.cache.Hit(cache.Key(c.questionMessage.Question[0], c.ednsClientSubnetIP), c.questionMessage.Id)
 	if m != nil {
-		log.Debug("Cache Hit: " + cache.Key(c.questionMessage.Question[0], c.ednsClientSubnetIP))
+		log.Debugf("Cache hit: %s", cache.Key(c.questionMessage.Question[0], c.ednsClientSubnetIP))
 		c.responseMessage = m
 		return true
 	}

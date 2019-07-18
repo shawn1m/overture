@@ -1,8 +1,9 @@
 package outbound
 
 import (
-	"github.com/shawn1m/overture/core/matcher"
 	"net"
+
+	"github.com/shawn1m/overture/core/matcher"
 
 	"github.com/miekg/dns"
 	log "github.com/sirupsen/logrus"
@@ -33,7 +34,6 @@ type Dispatcher struct {
 }
 
 func (d *Dispatcher) Exchange(query *dns.Msg, inboundIP string) *dns.Msg {
-
 	PrimaryClientBundle := clients.NewClientBundle(query, d.PrimaryDNS, inboundIP, d.MinimumTTL, d.Cache, "Primary", d.DomainTTLMap)
 	AlternativeClientBundle := clients.NewClientBundle(query, d.AlternativeDNS, inboundIP, d.MinimumTTL, d.Cache, "Alternative", d.DomainTTLMap)
 	var ActiveClientBundle *clients.RemoteClientBundle
@@ -49,10 +49,6 @@ func (d *Dispatcher) Exchange(query *dns.Msg, inboundIP string) *dns.Msg {
 		if resp != nil {
 			return resp
 		}
-	}
-
-	if resp != nil {
-		return resp
 	}
 
 	if d.OnlyPrimaryDNS || d.isSelectDomain(PrimaryClientBundle, d.DomainPrimaryList) {
@@ -78,7 +74,6 @@ func (d *Dispatcher) Exchange(query *dns.Msg, inboundIP string) *dns.Msg {
 }
 
 func (d *Dispatcher) isExchangeForIPv6(query *dns.Msg) bool {
-
 	if query.Question[0].Qtype == dns.TypeAAAA && d.RedirectIPv6Record {
 		log.Debug("Finally use alternative DNS")
 		return true
@@ -88,7 +83,6 @@ func (d *Dispatcher) isExchangeForIPv6(query *dns.Msg) bool {
 }
 
 func (d *Dispatcher) isSelectDomain(rcb *clients.RemoteClientBundle, dt matcher.Matcher) bool {
-
 	qn := rcb.GetFirstQuestionDomain()
 
 	if dt.Has(qn) {
@@ -101,7 +95,7 @@ func (d *Dispatcher) isSelectDomain(rcb *clients.RemoteClientBundle, dt matcher.
 		return true
 	}
 
-	log.Debug("Domain " + rcb.Name + " match fail")
+	log.Debugf("Domain %s match fail", rcb.Name)
 
 	return false
 }
