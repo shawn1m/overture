@@ -43,7 +43,6 @@ func newHostsLineList(data []byte) *hostsLines {
 }
 
 func (hl *hostsLines) FindHosts(name string) (ipv4List []net.IP, ipv6List []net.IP) {
-
 	for _, h := range *hl {
 		if common.IsDomainMatchRule(h.domain, name) {
 			log.WithFields(log.Fields{

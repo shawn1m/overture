@@ -14,12 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var ReservedIPNetworkList []*net.IPNet
-
-func init() {
-
-	ReservedIPNetworkList = getReservedIPNetworkList()
-}
+var ReservedIPNetworkList = getReservedIPNetworkList()
 
 func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool, name string) bool {
 	for _, ip_net := range ipnl {
@@ -45,21 +40,20 @@ func IsDomainMatchRule(pattern string, domain string) bool {
 func HasAnswer(m *dns.Msg) bool { return m != nil && len(m.Answer) != 0 }
 
 func HasSubDomain(s string, sub string) bool {
-
 	return strings.HasSuffix(sub, "."+s) || s == sub
 }
 
 func getReservedIPNetworkList() []*net.IPNet {
-	ipnl := make([]*net.IPNet, 0)
+	var ipNetList []*net.IPNet
 	localCIDR := []string{"127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "100.64.0.0/10"}
 	for _, c := range localCIDR {
-		_, ip_net, err := net.ParseCIDR(c)
+		_, ipNet, err := net.ParseCIDR(c)
 		if err != nil {
 			break
 		}
-		ipnl = append(ipnl, ip_net)
+		ipNetList = append(ipNetList, ipNet)
 	}
-	return ipnl
+	return ipNetList
 }
 
 func FindRecordByType(msg *dns.Msg, t uint16) string {

@@ -62,7 +62,7 @@ func (s *Server) DumpCache(w http.ResponseWriter, req *http.Request) {
 	body := make(map[string][]*answer)
 
 	for k, es := range rs {
-		answers := []*answer{}
+		var answers []*answer
 		for _, e := range es {
 			ts := strings.Split(e, "\t")
 			ttl, _ := strconv.Atoi(ts[1])

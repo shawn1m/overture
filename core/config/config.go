@@ -28,8 +28,8 @@ import (
 )
 
 type Config struct {
-	BindAddress           string `json:"BindAddress"`
-	DebugHTTPAddress      string `json:"DebugHTTPAddress"`
+	BindAddress           string
+	DebugHTTPAddress      string
 	PrimaryDNS            []*common.DNSUpstream
 	AlternativeDNS        []*common.DNSUpstream
 	OnlyPrimaryDNS        bool
@@ -96,7 +96,6 @@ func NewConfig(configFile string) *Config {
 }
 
 func parseJson(path string) *Config {
-
 	f, err := os.Open(path)
 	if err != nil {
 		log.Fatalf("Failed to open config file: %s", err)
@@ -165,14 +164,14 @@ func getDomainMatcher(name string) (m matcher.Matcher) {
 	case "full-map":
 		return &full.Map{DataMap: make(map[string]struct{}, 100)}
 	case "full-list":
-		return &full.List{DataList: []string{}}
+		return &full.List{}
 	case "regex-list":
-		return &regex.List{RegexList: []string{}}
+		return &regex.List{}
 	case "mix-list":
-		return &mix.List{DataList: make([]mix.Data, 0)}
+		return &mix.List{}
 	default:
 		log.Warnf("Matcher %s does not exist, using regex-list matcher as default", name)
-		return &regex.List{RegexList: []string{}}
+		return &regex.List{}
 	}
 }
 
@@ -211,7 +210,7 @@ func initDomainMatcher(file string, name string) (m matcher.Matcher) {
 }
 
 func getIPNetworkList(file string) []*net.IPNet {
-	ipnl := make([]*net.IPNet, 0)
+	var ipNetList []*net.IPNet
 
 	// FIXME: why use different file reading mechanism for DomainTTL/Domain and this?
 	f, err := os.Open(file)
@@ -226,14 +225,14 @@ func getIPNetworkList(file string) []*net.IPNet {
 		if err != nil {
 			break
 		}
-		ipnl = append(ipnl, ip_net)
+		ipNetList = append(ipNetList, ip_net)
 	}
 
-	if len(ipnl) > 0 {
+	if len(ipNetList) > 0 {
 		log.Infof("IP network file %s has been successfully loaded", file)
 	} else {
 		log.Warnf("There is no element in IP network file: %s", file)
 	}
 
-	return ipnl
+	return ipNetList
 }

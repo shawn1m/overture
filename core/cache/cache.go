@@ -153,7 +153,7 @@ func (c *Cache) Dump(nobody bool) (rs map[string][]string, l int) {
 	defer c.RUnlock()
 
 	for k, e := range c.table {
-		vs := []string{}
+		var vs []string
 
 		for _, a := range e.msg.Answer {
 			vs = append(vs, a.String())

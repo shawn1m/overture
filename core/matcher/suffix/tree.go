@@ -18,7 +18,7 @@ type Tree struct {
 	sub  domainMap
 }
 
-func (t *Tree) Name() string {
+func (dt *Tree) Name() string {
 	return "suffix-tree"
 }
 
