@@ -82,19 +82,23 @@ func (d *Dispatcher) isExchangeForIPv6(query *dns.Msg) bool {
 }
 
 func (d *Dispatcher) isSelectDomain(rcb *clients.RemoteClientBundle, dt matcher.Matcher) bool {
-	qn := rcb.GetFirstQuestionDomain()
+	if dt != nil {
+		qn := rcb.GetFirstQuestionDomain()
 
-	if dt.Has(qn) {
-		log.WithFields(log.Fields{
-			"DNS":      rcb.Name,
-			"question": qn,
-			"domain":   qn,
-		}).Debug("Matched")
-		log.Debug("Finally use " + rcb.Name + " DNS")
-		return true
+		if dt.Has(qn) {
+			log.WithFields(log.Fields{
+				"DNS":      rcb.Name,
+				"question": qn,
+				"domain":   qn,
+			}).Debug("Matched")
+			log.Debug("Finally use " + rcb.Name + " DNS")
+			return true
+		}
+
+		log.Debugf("Domain %s match fail", rcb.Name)
+	} else {
+		log.Debug("Domain matcher is nil, not checking")
 	}
-
-	log.Debugf("Domain %s match fail", rcb.Name)
 
 	return false
 }

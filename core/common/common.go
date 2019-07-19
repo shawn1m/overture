@@ -17,13 +17,17 @@ import (
 var ReservedIPNetworkList = getReservedIPNetworkList()
 
 func IsIPMatchList(ip net.IP, ipNetList []*net.IPNet, isLog bool, name string) bool {
-	for _, ipNet := range ipNetList {
-		if ipNet.Contains(ip) {
-			if isLog {
-				log.Debugf("Matched: IP network %s %s %s", name, ip.String(), ipNet.String())
+	if ipNetList != nil {
+		for _, ipNet := range ipNetList {
+			if ipNet.Contains(ip) {
+				if isLog {
+					log.Debugf("Matched: IP network %s %s %s", name, ip.String(), ipNet.String())
+				}
+				return true
 			}
-			return true
 		}
+	} else {
+		log.Debug("IP network list is nil, not checking")
 	}
 
 	return false
