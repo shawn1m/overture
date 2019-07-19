@@ -16,11 +16,11 @@ import (
 
 var ReservedIPNetworkList = getReservedIPNetworkList()
 
-func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool, name string) bool {
-	for _, ip_net := range ipnl {
-		if ip_net.Contains(ip) {
+func IsIPMatchList(ip net.IP, ipNetList []*net.IPNet, isLog bool, name string) bool {
+	for _, ipNet := range ipNetList {
+		if ipNet.Contains(ip) {
 			if isLog {
-				log.Debugf("Matched: IP network %s %s %s", name, ip.String(), ip_net.String())
+				log.Debugf("Matched: IP network %s %s %s", name, ip.String(), ipNet.String())
 			}
 			return true
 		}
@@ -57,7 +57,6 @@ func getReservedIPNetworkList() []*net.IPNet {
 }
 
 func FindRecordByType(msg *dns.Msg, t uint16) string {
-
 	for _, rr := range msg.Answer {
 		if rr.Header().Rrtype == t {
 			items := strings.SplitN(rr.String(), "\t", 5)

@@ -7,13 +7,6 @@ package config
 import (
 	"bufio"
 	"encoding/json"
-
-	"github.com/shawn1m/overture/core/matcher"
-	"github.com/shawn1m/overture/core/matcher/full"
-	"github.com/shawn1m/overture/core/matcher/mix"
-	"github.com/shawn1m/overture/core/matcher/regex"
-	"github.com/shawn1m/overture/core/matcher/suffix"
-
 	"io/ioutil"
 	"net"
 	"os"
@@ -25,6 +18,11 @@ import (
 	"github.com/shawn1m/overture/core/cache"
 	"github.com/shawn1m/overture/core/common"
 	"github.com/shawn1m/overture/core/hosts"
+	"github.com/shawn1m/overture/core/matcher"
+	"github.com/shawn1m/overture/core/matcher/full"
+	"github.com/shawn1m/overture/core/matcher/mix"
+	"github.com/shawn1m/overture/core/matcher/regex"
+	"github.com/shawn1m/overture/core/matcher/suffix"
 )
 
 type Config struct {

@@ -3,14 +3,13 @@ package outbound
 import (
 	"net"
 
-	"github.com/shawn1m/overture/core/matcher"
-
 	"github.com/miekg/dns"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/shawn1m/overture/core/cache"
 	"github.com/shawn1m/overture/core/common"
 	"github.com/shawn1m/overture/core/hosts"
+	"github.com/shawn1m/overture/core/matcher"
 	"github.com/shawn1m/overture/core/outbound/clients"
 )
 

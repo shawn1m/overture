@@ -57,7 +57,7 @@ func main() {
 		}
 	}
 
-	log.Info("Overture " + version)
+	log.Infof("Overture %s", version)
 	log.Info("If you need any help, please visit the project repository: https://github.com/shawn1m/overture")
 
 	runtime.GOMAXPROCS(*processorNumber)
