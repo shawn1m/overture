@@ -23,7 +23,8 @@ deploy:
     - overture-linux-arm64.zip
     - overture-linux-mips-softfloat.zip
     - overture-linux-mips-hardfloat.zip
-    - overture-linux-mipsle.zip
+    - overture-linux-mipsle-softfloat.zip
+    - overture-linux-mipsle-hardfloat.zip
     - overture-linux-mips64.zip
     - overture-linux-mips64le.zip
     - overture-freebsd-386.zip
