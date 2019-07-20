@@ -30,14 +30,12 @@ type LocalClient struct {
 }
 
 func NewLocalClient(q *dns.Msg, h *hosts.Hosts, minimumTTL int, domainTTLMap map[string]uint32) *LocalClient {
-
 	c := &LocalClient{questionMessage: q.Copy(), hosts: h, minimumTTL: minimumTTL, domainTTLMap: domainTTLMap}
 	c.rawName = c.questionMessage.Question[0].Name
 	return c
 }
 
 func (c *LocalClient) Exchange() *dns.Msg {
-
 	if c.exchangeFromHosts() || c.exchangeFromIP() {
 		if c.responseMessage != nil {
 			common.SetMinimumTTL(c.responseMessage, uint32(c.minimumTTL))
@@ -50,7 +48,6 @@ func (c *LocalClient) Exchange() *dns.Msg {
 }
 
 func (c *LocalClient) exchangeFromHosts() bool {
-
 	if c.hosts == nil {
 		return false
 	}
@@ -84,7 +81,6 @@ func (c *LocalClient) exchangeFromHosts() bool {
 }
 
 func (c *LocalClient) exchangeFromIP() bool {
-
 	name := c.rawName[:len(c.rawName)-1]
 	ip := net.ParseIP(name)
 	if ip == nil {
@@ -104,7 +100,6 @@ func (c *LocalClient) exchangeFromIP() bool {
 }
 
 func (c *LocalClient) setLocalResponseMessage(rrl []dns.RR) {
-
 	shuffleRRList := func(rrl []dns.RR) {
 		rand.Seed(time.Now().UnixNano())
 		for i := range rrl {

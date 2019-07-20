@@ -23,7 +23,6 @@ type hostsLine struct {
 type hostsLines []*hostsLine
 
 func newHostsLineList(data []byte) *hostsLines {
-
 	resultLines := new(hostsLines)
 
 	defer log.Debugf("%s took %s", "Load hosts", time.Since(time.Now()))
@@ -44,7 +43,6 @@ func newHostsLineList(data []byte) *hostsLines {
 }
 
 func (hl *hostsLines) FindHosts(name string) (ipv4List []net.IP, ipv6List []net.IP) {
-
 	for _, h := range *hl {
 		if common.IsDomainMatchRule(h.domain, name) {
 			log.WithFields(log.Fields{
@@ -74,7 +72,6 @@ func (hl *hostsLines) add(h *hostsLine) error {
 }
 
 func parseLine(line string) *hostsLine {
-
 	if len(line) == 0 {
 		return nil
 	}
@@ -117,7 +114,7 @@ func parseLine(line string) *hostsLine {
 	case ip.To16() != nil:
 		isIPv6 = true
 	default:
-		log.Warnf("Invalid IP address found in hostsfile: %s", a)
+		log.Warnf("Invalid IP address found in hosts file: %s", a)
 		return nil
 	}
 

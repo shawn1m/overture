@@ -13,7 +13,6 @@ import (
 
 // Initiate the server with config file
 func InitServer(configFilePath string) {
-
 	conf := config.NewConfig(configFilePath)
 
 	// New dispatcher without RemoteClientBundle, RemoteClientBundle must be initiated when server is running

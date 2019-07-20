@@ -18,7 +18,6 @@ type Hosts struct {
 }
 
 func New(path string) (*Hosts, error) {
-
 	if path == "" {
 		return nil, nil
 	}

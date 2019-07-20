@@ -1,7 +1,6 @@
 package outbound
 
 import (
-	"github.com/shawn1m/overture/core/matcher"
 	"net"
 
 	"github.com/miekg/dns"
@@ -10,6 +9,7 @@ import (
 	"github.com/shawn1m/overture/core/cache"
 	"github.com/shawn1m/overture/core/common"
 	"github.com/shawn1m/overture/core/hosts"
+	"github.com/shawn1m/overture/core/matcher"
 	"github.com/shawn1m/overture/core/outbound/clients"
 )
 
@@ -33,7 +33,6 @@ type Dispatcher struct {
 }
 
 func (d *Dispatcher) Exchange(query *dns.Msg, inboundIP string) *dns.Msg {
-
 	PrimaryClientBundle := clients.NewClientBundle(query, d.PrimaryDNS, inboundIP, d.MinimumTTL, d.Cache, "Primary", d.DomainTTLMap)
 	AlternativeClientBundle := clients.NewClientBundle(query, d.AlternativeDNS, inboundIP, d.MinimumTTL, d.Cache, "Alternative", d.DomainTTLMap)
 	var ActiveClientBundle *clients.RemoteClientBundle
@@ -49,10 +48,6 @@ func (d *Dispatcher) Exchange(query *dns.Msg, inboundIP string) *dns.Msg {
 		if resp != nil {
 			return resp
 		}
-	}
-
-	if resp != nil {
-		return resp
 	}
 
 	if d.OnlyPrimaryDNS || d.isSelectDomain(PrimaryClientBundle, d.DomainPrimaryList) {
@@ -78,7 +73,6 @@ func (d *Dispatcher) Exchange(query *dns.Msg, inboundIP string) *dns.Msg {
 }
 
 func (d *Dispatcher) isExchangeForIPv6(query *dns.Msg) bool {
-
 	if query.Question[0].Qtype == dns.TypeAAAA && d.RedirectIPv6Record {
 		log.Debug("Finally use alternative DNS")
 		return true
@@ -88,20 +82,23 @@ func (d *Dispatcher) isExchangeForIPv6(query *dns.Msg) bool {
 }
 
 func (d *Dispatcher) isSelectDomain(rcb *clients.RemoteClientBundle, dt matcher.Matcher) bool {
+	if dt != nil {
+		qn := rcb.GetFirstQuestionDomain()
 
-	qn := rcb.GetFirstQuestionDomain()
+		if dt.Has(qn) {
+			log.WithFields(log.Fields{
+				"DNS":      rcb.Name,
+				"question": qn,
+				"domain":   qn,
+			}).Debug("Matched")
+			log.Debug("Finally use " + rcb.Name + " DNS")
+			return true
+		}
 
-	if dt.Has(qn) {
-		log.WithFields(log.Fields{
-			"DNS":      rcb.Name,
-			"question": qn,
-			"domain":   qn,
-		}).Debug("Matched")
-		log.Debug("Finally use " + rcb.Name + " DNS")
-		return true
+		log.Debugf("Domain %s match fail", rcb.Name)
+	} else {
+		log.Debug("Domain matcher is nil, not checking")
 	}
-
-	log.Debug("Domain " + rcb.Name + " match fail")
 
 	return false
 }

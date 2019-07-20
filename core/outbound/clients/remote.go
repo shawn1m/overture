@@ -33,7 +33,6 @@ type RemoteClient struct {
 }
 
 func NewClient(q *dns.Msg, u *common.DNSUpstream, ip string, cache *cache.Cache) *RemoteClient {
-
 	c := &RemoteClient{questionMessage: q.Copy(), dnsUpstream: u, inboundIP: ip, cache: cache}
 	c.getEDNSClientSubnetIP()
 
@@ -41,7 +40,6 @@ func NewClient(q *dns.Msg, u *common.DNSUpstream, ip string, cache *cache.Cache)
 }
 
 func (c *RemoteClient) getEDNSClientSubnetIP() {
-
 	switch c.dnsUpstream.EDNSClientSubnet.Policy {
 	case "auto":
 		if !common.IsIPMatchList(net.ParseIP(c.inboundIP), common.ReservedIPNetworkList, false, "") {
@@ -69,7 +67,6 @@ func (c *RemoteClient) ExchangeFromCache() *dns.Msg {
 }
 
 func (c *RemoteClient) Exchange(isLog bool) *dns.Msg {
-
 	common.SetEDNSClientSubnet(c.questionMessage, c.ednsClientSubnetIP, c.dnsUpstream.EDNSClientSubnet.NoCookie)
 	c.ednsClientSubnetIP = common.GetEDNSClientSubnetIP(c.questionMessage)
 
@@ -81,12 +78,12 @@ func (c *RemoteClient) Exchange(isLog bool) *dns.Msg {
 	if c.dnsUpstream.SOCKS5Address != "" {
 		s, err := proxy.SOCKS5(c.dnsUpstream.Protocol, c.dnsUpstream.SOCKS5Address, nil, proxy.Direct)
 		if err != nil {
-			log.Warn("Get socks5 proxy dialer failed: ", err)
+			log.Warnf("Failed to connect to SOCKS5 proxy: %s", err)
 			return nil
 		}
 		conn, err = s.Dial(c.dnsUpstream.Protocol, c.dnsUpstream.Address)
 		if err != nil {
-			log.Warn("Dial DNS upstream with SOCKS5 proxy failed: ", err)
+			log.Warnf("Failed to connect to upstream via SOCKS5 proxy: %s", err)
 			return nil
 		}
 	} else if c.dnsUpstream.Protocol == "tcp-tls" {
@@ -98,20 +95,20 @@ func (c *RemoteClient) Exchange(isLog bool) *dns.Msg {
 		if len(s) == 2 {
 			var servername, port string
 			if servername, port, err = net.SplitHostPort(s[0]); err != nil {
-				log.Warn("DNS-over-TLS servername:port@serverAddress config failed: ", err)
+				log.Warnf("Failed to parse DNS-over-TLS upstream address: %s", err)
 				return nil
 			}
 			conf.ServerName = servername
 			c.dnsUpstream.Address = s[1] + ":" + port
 		}
 		if conn, err = tls.Dial("tcp", c.dnsUpstream.Address, conf); err != nil {
-			log.Warn("Dial DNS-over-TLS upstream failed: ", err)
+			log.Warnf("Failed to connect to DNS-over-TLS upstream: %s", err)
 			return nil
 		}
 	} else {
 		var err error
 		if conn, err = net.Dial(c.dnsUpstream.Protocol, c.dnsUpstream.Address); err != nil {
-			log.Warn("Dial DNS upstream failed: ", err)
+			log.Warnf("Failed to connect to DNS upstream: %s", err)
 			return nil
 		}
 	}
@@ -126,17 +123,17 @@ func (c *RemoteClient) Exchange(isLog bool) *dns.Msg {
 	defer dc.Close()
 	err := dc.WriteMsg(c.questionMessage)
 	if err != nil {
-		log.Warn(c.dnsUpstream.Name + " Fail: Send question message failed")
+		log.Warnf("%s Fail: Send question message failed", c.dnsUpstream.Name)
 		return nil
 	}
 	temp, err := dc.ReadMsg()
 
 	if err != nil {
-		log.Debug(c.dnsUpstream.Name+" Fail: ", err)
+		log.Debugf("%s Fail: %s", c.dnsUpstream.Name, err)
 		return nil
 	}
 	if temp == nil {
-		log.Debug(c.dnsUpstream.Name + " Fail: Response message is nil, maybe timeout, please check your query or dns configuration")
+		log.Debugf("%s Fail: Response message returned nil, maybe timeout? Please check your query or DNS configuration")
 		return nil
 	}
 
@@ -158,6 +155,6 @@ func (c *RemoteClient) logAnswer(indicator string) {
 		} else {
 			name = c.dnsUpstream.Name
 		}
-		log.Debug("Answer from " + name + ": " + a.String())
+		log.Debugf("Answer from %s: %s", name, a.String())
 	}
 }

@@ -14,22 +14,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var ReservedIPNetworkList []*net.IPNet
+var ReservedIPNetworkList = getReservedIPNetworkList()
 
-func init() {
-
-	ReservedIPNetworkList = getReservedIPNetworkList()
-}
-
-func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool, name string) bool {
-
-	for _, ip_net := range ipnl {
-		if ip_net.Contains(ip) {
-			if isLog {
-				log.Debug("Matched: IP network " + name + " " + ip.String() + " " + ip_net.String())
+func IsIPMatchList(ip net.IP, ipNetList []*net.IPNet, isLog bool, name string) bool {
+	if ipNetList != nil {
+		for _, ipNet := range ipNetList {
+			if ipNet.Contains(ip) {
+				if isLog {
+					log.Debugf("Matched: IP network %s %s %s", name, ip.String(), ipNet.String())
+				}
+				return true
 			}
-			return true
 		}
+	} else {
+		log.Debug("IP network list is nil, not checking")
 	}
 
 	return false
@@ -38,7 +36,7 @@ func IsIPMatchList(ip net.IP, ipnl []*net.IPNet, isLog bool, name string) bool {
 func IsDomainMatchRule(pattern string, domain string) bool {
 	matched, err := regexp.MatchString(pattern, domain)
 	if err != nil {
-		log.Warn("Domain:"+domain+" Pattern:"+pattern+" error!", err)
+		log.Warnf("Error matching domain %s with pattern %s: %s", domain, pattern, err)
 	}
 	return matched
 }
@@ -46,26 +44,23 @@ func IsDomainMatchRule(pattern string, domain string) bool {
 func HasAnswer(m *dns.Msg) bool { return m != nil && len(m.Answer) != 0 }
 
 func HasSubDomain(s string, sub string) bool {
-
 	return strings.HasSuffix(sub, "."+s) || s == sub
 }
 
 func getReservedIPNetworkList() []*net.IPNet {
-
-	ipnl := make([]*net.IPNet, 0)
+	var ipNetList []*net.IPNet
 	localCIDR := []string{"127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "100.64.0.0/10"}
 	for _, c := range localCIDR {
-		_, ip_net, err := net.ParseCIDR(c)
+		_, ipNet, err := net.ParseCIDR(c)
 		if err != nil {
 			break
 		}
-		ipnl = append(ipnl, ip_net)
+		ipNetList = append(ipNetList, ipNet)
 	}
-	return ipnl
+	return ipNetList
 }
 
 func FindRecordByType(msg *dns.Msg, t uint16) string {
-
 	for _, rr := range msg.Answer {
 		if rr.Header().Rrtype == t {
 			items := strings.SplitN(rr.String(), "\t", 5)
@@ -77,7 +72,6 @@ func FindRecordByType(msg *dns.Msg, t uint16) string {
 }
 
 func SetMinimumTTL(msg *dns.Msg, minimumTTL uint32) {
-
 	if minimumTTL == 0 {
 		return
 	}
