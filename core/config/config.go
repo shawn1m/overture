@@ -201,7 +201,7 @@ func initDomainMatcher(file string, name string) (m matcher.Matcher) {
 	if lines > 0 {
 		log.Infof("Domain file %s has been loaded with %d records (%s)", file, lines, m.Name())
 	} else {
-		log.Warnf("There is no element in domain file: %s" + file)
+		log.Warnf("There is no element in domain file: %s", file)
 	}
 
 	return
