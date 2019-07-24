@@ -22,10 +22,14 @@ type hostsLine struct {
 	ipv6   bool
 }
 
-type hostsLines []*hostsLine
+type hostsLines struct {
+	data []*hostsLine
+	hash map[string]struct{}
+}
 
 func newHostsLineList(r io.Reader) *hostsLines {
 	resultLines := new(hostsLines)
+	resultLines.hash = make(map[string]struct{})
 
 	defer log.Debugf("%s took %s", "Load hosts", time.Since(time.Now()))
 
@@ -52,7 +56,7 @@ func newHostsLineList(r io.Reader) *hostsLines {
 }
 
 func (hl *hostsLines) FindHosts(name string) (ipv4List []net.IP, ipv6List []net.IP) {
-	for _, h := range *hl {
+	for _, h := range hl.data {
 		if common.IsDomainMatchRule(h.domain, name) {
 			log.WithFields(log.Fields{
 				"question": name,
@@ -70,13 +74,12 @@ func (hl *hostsLines) FindHosts(name string) (ipv4List []net.IP, ipv6List []net.
 }
 
 func (hl *hostsLines) add(h *hostsLine) error {
-	// FIXME: Use too much CPU time when hosts file is big
-	// for _, found := range *hl {
-	// 	if found.Equal(h) {
-	// 		return fmt.Errorf("Duplicate hostname entry for %#v", h)
-	// 	}
-	// }
-	*hl = append(*hl, h)
+	if _, ok := hl.hash[h.domain]; !ok {
+		hl.data = append(hl.data, h)
+		hl.hash[h.domain] = struct{}{}
+	} else {
+		log.Warnf("Duplicate entry for host %s in hosts file, ignored value: %s", h.domain, h.ip.String())
+	}
 	return nil
 }
 
