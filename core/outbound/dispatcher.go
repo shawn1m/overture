@@ -91,7 +91,7 @@ func (d *Dispatcher) isSelectDomain(rcb *clients.RemoteClientBundle, dt matcher.
 				"question": qn,
 				"domain":   qn,
 			}).Debug("Matched")
-			log.Debug("Finally use " + rcb.Name + " DNS")
+			log.Debugf("Finally use %s DNS", rcb.Name)
 			return true
 		}
 

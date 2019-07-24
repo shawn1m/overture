@@ -7,6 +7,7 @@ package config
 import (
 	"bufio"
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"net"
 	"os"
@@ -94,14 +95,7 @@ func NewConfig(configFile string) *Config {
 }
 
 func parseJson(path string) *Config {
-	f, err := os.Open(path)
-	if err != nil {
-		log.Fatalf("Failed to open config file: %s", err)
-		os.Exit(1)
-	}
-	defer f.Close()
-
-	b, err := ioutil.ReadAll(f)
+	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatalf("Failed to read config file: %s", err)
 		os.Exit(1)
@@ -122,34 +116,66 @@ func getDomainTTLMap(file string) map[string]uint32 {
 		return map[string]uint32{}
 	}
 
-	f, err := ioutil.ReadFile(file)
+	f, err := os.Open(file)
 	if err != nil {
-		log.Errorf("Failed to read file %s: %s", file, err)
+		log.Errorf("Failed to open domain TTL file %s: %s", file, err)
 		return nil
 	}
+	defer f.Close()
 
-	lines := 0
-	s := string(f)
+	successes := 0
+	failures := 0
+	var failedLines []string
+
 	dtl := map[string]uint32{}
 
-	for _, line := range strings.Split(s, "\n") {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-		words := strings.Fields(line)
-		tempInt64, err := strconv.ParseUint(words[1], 10, 32)
-		dtl[words[0]] = uint32(tempInt64)
+	reader := bufio.NewReader(f)
+
+	for {
+		line, err := reader.ReadString('\n')
 		if err != nil {
-			log.WithFields(log.Fields{"domain": words[0], "ttl": words[1]}).Warnf("Invalid TTL for domain %s: %s", words[0], words[1])
+			if err != io.EOF {
+				log.Errorf("Failed to read domain TTL file %s: %s", file, err)
+			} else {
+				log.Debugf("Reading domain TTL file %s reached EOF", file)
+			}
+			break
 		}
-		lines++
+
+		if line != "" {
+			words := strings.Fields(line)
+			if len(words) > 1 {
+				tempInt64, err := strconv.ParseUint(words[1], 10, 32)
+				dtl[words[0]] = uint32(tempInt64)
+				if err != nil {
+					log.WithFields(log.Fields{"domain": words[0], "ttl": words[1]}).Warnf("Invalid TTL for domain %s: %s", words[0], words[1])
+					failures++
+					failedLines = append(failedLines, line)
+				}
+				successes++
+			} else {
+				failedLines = append(failedLines, line)
+				failures++
+			}
+		}
 	}
 
 	if len(dtl) > 0 {
-		log.Infof("Domain TTL file %s has been loaded with %d records", file, lines)
+		log.Infof("Domain TTL file %s has been loaded with %d records (%d failed)", file, successes, failures)
+		if len(failedLines) > 0 {
+			log.Debugf("Failed lines (%s):", file)
+			for _, line := range failedLines {
+				log.Debug(line)
+			}
+		}
 	} else {
-		log.Warnf("There is no element in domain TTL file: %s", file)
+		log.Warnf("No element has been loaded from domain TTL file: %s", file)
+		if len(failedLines) > 0 {
+			log.Debugf("Failed lines (%s):", file)
+			for _, line := range failedLines {
+				log.Debug(line)
+			}
+		}
 	}
 
 	return dtl
@@ -180,56 +206,98 @@ func initDomainMatcher(file string, name string) (m matcher.Matcher) {
 		return
 	}
 
-	f, err := ioutil.ReadFile(file)
+	f, err := os.Open(file)
 	if err != nil {
-		log.Errorf("Failed to read file %s: %s", file, err)
+		log.Errorf("Failed to open domain file %s: %s", file, err)
 		return nil
 	}
+	defer f.Close()
 
 	lines := 0
-	s := string(f)
+	reader := bufio.NewReader(f)
 
-	for _, line := range strings.Split(s, "\n") {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			if err != io.EOF {
+				log.Errorf("Failed to read domain file %s: %s", file, err)
+			} else {
+				log.Debugf("Reading domain file %s reached EOF", file)
+			}
+			break
 		}
-		_ = m.Insert(line)
-		lines++
+
+		line = strings.TrimSpace(line)
+		if line != "" {
+			_ = m.Insert(line)
+			lines++
+		}
 	}
 
 	if lines > 0 {
 		log.Infof("Domain file %s has been loaded with %d records (%s)", file, lines, m.Name())
 	} else {
-		log.Warnf("There is no element in domain file: %s", file)
+		log.Warnf("No element has been loaded from domain file: %s", file)
 	}
 
 	return
 }
 
 func getIPNetworkList(file string) []*net.IPNet {
-	var ipNetList []*net.IPNet
+	ipNetList := make([]*net.IPNet, 0)
 
-	// FIXME: why use different file reading mechanism for DomainTTL/Domain and this?
 	f, err := os.Open(file)
 	if err != nil {
 		log.Errorf("Failed to open IP network file: %s", err)
 		return nil
 	}
 	defer f.Close()
-	s := bufio.NewScanner(f)
-	for s.Scan() {
-		_, ip_net, err := net.ParseCIDR(s.Text())
+
+	successes := 0
+	failures := 0
+	var failedLines []string
+
+	reader := bufio.NewReader(f)
+	for {
+		line, err := reader.ReadString('\n')
 		if err != nil {
+			if err != io.EOF {
+				log.Errorf("Failed to read IP network file %s: %s", file, err)
+			} else {
+				log.Debugf("Reading IP network file %s has reached EOF", file)
+			}
 			break
 		}
-		ipNetList = append(ipNetList, ip_net)
+
+		if line != "" {
+			_, ipNet, err := net.ParseCIDR(line)
+			if err != nil {
+				log.Errorf("Error parsing IP network CIDR %s: %s", line, err)
+				failures++
+				failedLines = append(failedLines, line)
+				continue
+			}
+			ipNetList = append(ipNetList, ipNet)
+			successes++
+		}
 	}
 
 	if len(ipNetList) > 0 {
-		log.Infof("IP network file %s has been successfully loaded", file)
+		log.Infof("IP network file %s has been loaded with %d records", file, successes)
+		if failures > 0 {
+			log.Debugf("Failed lines (%s):", file)
+			for _, line := range failedLines {
+				log.Debug(line)
+			}
+		}
 	} else {
-		log.Warnf("There is no element in IP network file: %s", file)
+		log.Warnf("No element has been loaded from IP network file: %s", file)
+		if failures > 0 {
+			log.Debugf("Failed lines (%s):", file)
+			for _, line := range failedLines {
+				log.Debug(line)
+			}
+		}
 	}
 
 	return ipNetList

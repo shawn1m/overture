@@ -106,7 +106,7 @@ func (s *Server) Run() {
 		go func(p string) {
 			err := dns.ListenAndServe(s.bindAddress, p, mux)
 			if err != nil {
-				log.Fatal("Listen "+p+" failed: ", err)
+				log.Fatalf("Listening on port %s failed: %s", p, err)
 				os.Exit(1)
 			}
 		}(p)

@@ -99,7 +99,7 @@ func (c *RemoteClient) Exchange(isLog bool) *dns.Msg {
 				return nil
 			}
 			conf.ServerName = servername
-			c.dnsUpstream.Address = s[1] + ":" + port
+			c.dnsUpstream.Address = net.JoinHostPort(s[1], port)
 		}
 		if conn, err = tls.Dial("tcp", c.dnsUpstream.Address, conf); err != nil {
 			log.Warnf("Failed to connect to DNS-over-TLS upstream: %s", err)
