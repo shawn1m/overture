@@ -20,6 +20,7 @@ import (
 	"github.com/shawn1m/overture/core/hosts"
 	"github.com/shawn1m/overture/core/matcher"
 	"github.com/shawn1m/overture/core/matcher/full"
+	"github.com/shawn1m/overture/core/matcher/gfwlist"
 	"github.com/shawn1m/overture/core/matcher/mix"
 	"github.com/shawn1m/overture/core/matcher/regex"
 	"github.com/shawn1m/overture/core/matcher/suffix"
@@ -167,6 +168,8 @@ func getDomainMatcher(name string) (m matcher.Matcher) {
 		return &regex.List{}
 	case "mix-list":
 		return &mix.List{}
+	case "gfwlist":
+		return &gfwlist.List{}
 	default:
 		log.Warnf("Matcher %s does not exist, using regex-list matcher as default", name)
 		return &regex.List{}
