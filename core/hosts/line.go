@@ -5,6 +5,8 @@
 package hosts
 
 import (
+	"bufio"
+	"io"
 	"net"
 	"strings"
 	"time"
@@ -20,30 +22,41 @@ type hostsLine struct {
 	ipv6   bool
 }
 
-type hostsLines []*hostsLine
+type hostsLines struct {
+	data []*hostsLine
+	hash map[string]struct{}
+}
 
-func newHostsLineList(data []byte) *hostsLines {
+func newHostsLineList(r io.Reader) *hostsLines {
 	resultLines := new(hostsLines)
+	resultLines.hash = make(map[string]struct{})
 
 	defer log.Debugf("%s took %s", "Load hosts", time.Since(time.Now()))
-	lines := strings.Split(string(data), "\n")
 
-	for _, line := range lines {
-		func(l string) {
-			if h := parseLine(l); h != nil {
-				err := resultLines.add(h)
-				if err != nil {
-					log.Warnf("Bad formatted hosts file line: %s", err)
-				}
+	reader := bufio.NewReader(r)
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			if err != io.EOF {
+				log.Errorf("Error reading hosts file: %s", err)
+			} else {
+				log.Debug("Reading hosts file reached EOF")
 			}
-		}(line)
+			break
+		}
+
+		if host := parseLine(line); host != nil {
+			if err := resultLines.add(host); err != nil {
+				log.Warnf("Bad formatted hosts file line: %s", err)
+			}
+		}
 	}
 
 	return resultLines
 }
 
 func (hl *hostsLines) FindHosts(name string) (ipv4List []net.IP, ipv6List []net.IP) {
-	for _, h := range *hl {
+	for _, h := range hl.data {
 		if common.IsDomainMatchRule(h.domain, name) {
 			log.WithFields(log.Fields{
 				"question": name,
@@ -61,13 +74,12 @@ func (hl *hostsLines) FindHosts(name string) (ipv4List []net.IP, ipv6List []net.
 }
 
 func (hl *hostsLines) add(h *hostsLine) error {
-	// Use too much CPU time when hosts file is big
-	// for _, found := range *hl {
-	// 	if found.Equal(h) {
-	// 		return fmt.Errorf("Duplicate hostname entry for %#v", h)
-	// 	}
-	// }
-	*hl = append(*hl, h)
+	if _, ok := hl.hash[h.domain]; !ok {
+		hl.data = append(hl.data, h)
+		hl.hash[h.domain] = struct{}{}
+	} else {
+		log.Warnf("Duplicate entry for host %s in hosts file, ignored value: %s", h.domain, h.ip.String())
+	}
 	return nil
 }
 

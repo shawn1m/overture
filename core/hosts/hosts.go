@@ -6,8 +6,8 @@
 package hosts
 
 import (
-	"io/ioutil"
 	"net"
+	"os"
 	"strings"
 )
 
@@ -37,12 +37,13 @@ func (h *Hosts) Find(name string) (ipv4List []net.IP, ipv6List []net.IP) {
 }
 
 func (h *Hosts) loadHostEntries() error {
-	data, err := ioutil.ReadFile(h.filePath)
+	f, err := os.Open(h.filePath)
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 
-	h.hl = newHostsLineList(data)
+	h.hl = newHostsLineList(f)
 
 	return nil
 }

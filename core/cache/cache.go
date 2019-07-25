@@ -8,7 +8,7 @@ package cache
 // Cache that holds RRs.
 
 import (
-	"strconv"
+	"fmt"
 	"sync"
 	"time"
 
@@ -86,7 +86,7 @@ func (c *Cache) InsertMessage(s string, m *dns.Msg, mTTL uint32) {
 	if _, ok := c.table[s]; !ok {
 		c.table[s] = &elem{time.Now().UTC().Add(ttlDuration), m.Copy()}
 	}
-	log.Debug("Cached: " + s)
+	log.Debugf("Cached: %s", s)
 	c.EvictRandom()
 	c.Unlock()
 }
@@ -110,7 +110,7 @@ func (c *Cache) Search(s string) (*dns.Msg, time.Time, bool) {
 
 // Key creates a hash key from a question section.
 func Key(q dns.Question, ednsIP string) string {
-	return q.Name + " " + strconv.Itoa(int(q.Qtype)) + " " + ednsIP
+	return fmt.Sprintf("%s %d %s", q.Name, q.Qtype, ednsIP)
 }
 
 // Hit returns a dns message from the cache. If the message's TTL is expired nil
