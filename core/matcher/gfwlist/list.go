@@ -50,6 +50,7 @@ func convertLine(line string) string {
 		return line
 	}
 
+	// wildcards
 	line = strings.ReplaceAll(line, "*", ".+")
 
 	// escaping characters for regex
@@ -58,13 +59,9 @@ func convertLine(line string) string {
 	line = strings.ReplaceAll(line, ".", `\.`)
 
 	// we don't need schemes in domains
-	line = strings.ReplaceAll(line, "http://", "")
-	line = strings.ReplaceAll(line, "https://", "")
-
-	// trim line starts with two forward slashes
-	if strings.HasPrefix(line, "//") {
-		line = strings.TrimPrefix(line, "//")
-	}
+	line = strings.TrimPrefix(line, "http://")
+	line = strings.TrimPrefix(line, "https://")
+	line = strings.TrimPrefix(line, "//")
 
 	// process line into regex
 	switch {
