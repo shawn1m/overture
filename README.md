@@ -115,7 +115,8 @@ Configuration file is "config.json" by default:
   "DomainFile": {
     "Primary": "./domain_primary_sample",
     "Alternative": "./domain_alternative_sample",
-    "Matcher":  "regex-list"
+    "PrimaryMatcher":  "regex-list",
+    "AlternativeMatcher": "gfwlist"
   },
   "HostsFile": "./hosts_sample",
   "MinimumTTL": 0,
@@ -199,8 +200,9 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
 + WhenPrimaryDNSAnswerNoneUse: If the response of PrimaryDNS exists and there is no `ANSWER SECTION` in it, the final DNS should be defined. (There is no `AAAA` record for most domains right now) 
 + File: Absolute path like `/path/to/file` is allowed. For Windows users, please use properly escaped path like
   `C:\\path\\to\\file.txt` in the configuration.
-+ DomainFile.Matcher: Matching policy and implementation, including "full-list", "full-map", "regex-list", "suffix-tree"
- and "gfwlist". Default value is "regex-list". In order to use `gfwlist` matcher, you have to use a **decoded** `gfwlist`
++ DomainFile.PrimaryMatcher/AlternativeMatcher: Matching policy and implementation for Primary domain file and Alternative
+ domain file, including "full-list", "full-map", "regex-list", "suffix-tree" and "gfwlist". Default value is "regex-list".
+ In order to use `gfwlist` matcher, you have to use a **decoded** `gfwlist`
  as domain file.
 + MinimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
 + CacheSize: The number of query record to cache, use `0` to disable.

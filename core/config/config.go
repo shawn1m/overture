@@ -38,9 +38,11 @@ type Config struct {
 		Alternative string
 	}
 	DomainFile struct {
-		Primary     string
-		Alternative string
-		Matcher     string
+		Primary            string
+		Alternative        string
+		Matcher            string // this should be deprecated in future versions
+		PrimaryMatcher     string
+		AlternativeMatcher string
 	}
 	HostsFile     string
 	MinimumTTL    int
@@ -64,8 +66,17 @@ func NewConfig(configFile string) *Config {
 
 	config.DomainTTLMap = getDomainTTLMap(config.DomainTTLFile)
 
-	config.DomainPrimaryList = initDomainMatcher(config.DomainFile.Primary, config.DomainFile.Matcher)
-	config.DomainAlternativeList = initDomainMatcher(config.DomainFile.Alternative, config.DomainFile.Matcher)
+	// make backwards compatible with old style configs
+	if config.DomainFile.PrimaryMatcher == "" {
+		config.DomainFile.PrimaryMatcher = config.DomainFile.Matcher
+	}
+
+	if config.DomainFile.AlternativeMatcher == "" {
+		config.DomainFile.AlternativeMatcher = config.DomainFile.Matcher
+	}
+
+	config.DomainPrimaryList = initDomainMatcher(config.DomainFile.Primary, config.DomainFile.PrimaryMatcher)
+	config.DomainAlternativeList = initDomainMatcher(config.DomainFile.Alternative, config.DomainFile.AlternativeMatcher)
 
 	config.IPNetworkPrimaryList = getIPNetworkList(config.IPNetworkFile.Primary)
 	config.IPNetworkAlternativeList = getIPNetworkList(config.IPNetworkFile.Alternative)
