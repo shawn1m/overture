@@ -270,7 +270,7 @@ func getIPNetworkList(file string) []*net.IPNet {
 		}
 
 		if line != "" {
-			_, ipNet, err := net.ParseCIDR(line)
+			_, ipNet, err := net.ParseCIDR(strings.TrimSuffix(line, "\n"))
 			if err != nil {
 				log.Errorf("Error parsing IP network CIDR %s: %s", line, err)
 				failures++
