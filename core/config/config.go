@@ -132,13 +132,10 @@ func getDomainTTLMap(file string) map[string]uint32 {
 	reader := bufio.NewReader(f)
 
 	for {
+		// The last line may not contains an '\n'
 		line, err := reader.ReadString('\n')
-		if err != nil {
-			if err != io.EOF {
-				log.Errorf("Failed to read domain TTL file %s: %s", file, err)
-			} else {
-				log.Debugf("Reading domain TTL file %s reached EOF", file)
-			}
+		if err != nil && err != io.EOF {
+			log.Errorf("Failed to read domain TTL file %s: %s", file, err)
 			break
 		}
 
@@ -157,6 +154,10 @@ func getDomainTTLMap(file string) map[string]uint32 {
 				failedLines = append(failedLines, line)
 				failures++
 			}
+		}
+		if line == "" && err == io.EOF {
+			log.Debugf("Reading domain TTL file %s reached EOF", file)
+			break
 		}
 	}
 
@@ -218,12 +219,8 @@ func initDomainMatcher(file string, name string) (m matcher.Matcher) {
 
 	for {
 		line, err := reader.ReadString('\n')
-		if err != nil {
-			if err != io.EOF {
-				log.Errorf("Failed to read domain file %s: %s", file, err)
-			} else {
-				log.Debugf("Reading domain file %s reached EOF", file)
-			}
+		if err != nil && err != io.EOF {
+			log.Errorf("Failed to read domain file %s: %s", file, err)
 			break
 		}
 
@@ -231,6 +228,10 @@ func initDomainMatcher(file string, name string) (m matcher.Matcher) {
 		if line != "" {
 			_ = m.Insert(line)
 			lines++
+		}
+		if line == "" && err == io.EOF {
+			log.Debugf("Reading domain file %s reached EOF", file)
+			break
 		}
 	}
 
