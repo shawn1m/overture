@@ -119,7 +119,7 @@ func (c *RemoteClient) Exchange(isLog bool) *dns.Msg {
 	conn.SetReadDeadline(time.Now().Add(dnsTimeout))
 	conn.SetWriteDeadline(time.Now().Add(dnsTimeout))
 
-	dc := &dns.Conn{Conn: conn}
+	dc := &dns.Conn{Conn: conn,UDPSize:65535}
 	defer dc.Close()
 	err := dc.WriteMsg(c.questionMessage)
 	if err != nil {
