@@ -62,6 +62,9 @@ func (dt *Tree) has(d Domain) bool {
 }
 
 func (dt *Tree) Has(d string) bool {
+	if len(dt.sub) == 0 {
+		return false
+	}
 	return dt.has(Domain(d))
 }
 
