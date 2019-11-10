@@ -128,6 +128,8 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {
 
 	for _, qt := range s.rejectQType {
 		if isQuestionType(q, qt) {
+			log.Debugf("Reject %s: %s", inboundIP, q.Question[0].String())
+			dns.HandleFailed(w, q)
 			return
 		}
 	}
