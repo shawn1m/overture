@@ -78,11 +78,9 @@ func (hl *hostsLines) add(h *hostsLine) error {
 		hl.data = append(hl.data, h)
 		hl.hash[h.domain] = struct{}{}
 	} else {
-		for _, line := range hl.data {
-			if h.ipv6 == line.ipv6 {
-				log.Warnf("Duplicate entry for host %s in hosts file, ignored value: %s", h.domain, h.ip.String())
-				return nil
-			}
+		if h.ipv6 == hl.data[0].ipv6 {
+			log.Warnf("Duplicate entry for host %s in hosts file, ignored value: %s", h.domain, h.ip.String())
+			return nil
 		}
 		hl.data = append(hl.data, h)
 	}
