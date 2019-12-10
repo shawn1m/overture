@@ -55,7 +55,7 @@ func newHostsLineList(r io.Reader) *hostsLines {
 	return resultLines
 }
 
-func (hl *hostsLines) FindHosts(name string) (ipv4List []net.IP, ipv6List []net.IP) {
+func (hl *hostsLines)  FindHosts(name string) (ipv4List []net.IP, ipv6List []net.IP) {
 	for _, h := range hl.data {
 		if common.IsDomainMatchRule(h.domain, name) {
 			log.WithFields(log.Fields{
@@ -78,7 +78,11 @@ func (hl *hostsLines) add(h *hostsLine) error {
 		hl.data = append(hl.data, h)
 		hl.hash[h.domain] = struct{}{}
 	} else {
-		log.Warnf("Duplicate entry for host %s in hosts file, ignored value: %s", h.domain, h.ip.String())
+		if h.ipv6 == hl.data[0].ipv6 {
+			log.Warnf("Duplicate entry for host %s in hosts file, ignored value: %s", h.domain, h.ip.String())
+			return nil
+		}
+		hl.data = append(hl.data, h)
 	}
 	return nil
 }
