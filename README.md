@@ -24,7 +24,7 @@ corresponding git version tag. The README in master branch are subject to change
     + Custom domain
     + Custom IP network
 + Minimum TTL modification
-+ Hosts (Random order if there are multiple answers)
++ Hosts (**Regex match** for now and will return ip in random order if necessary)
 + Cache with ECS
 
 ### Dispatch process
