@@ -72,7 +72,9 @@ func ExtractTLSDNSAddress(rawAddress string) (host string, port string, ip strin
 	}
 	items := strings.Split(s[0], ":")
 	host = items[0]
-	if len(items) == 2 {
+	if len(items) == 1 {
+		port = getDefaultPort("tcp-tls")
+	} else {
 		port = items[1]
 	}
 	return host, port, ip
@@ -95,7 +97,7 @@ func ExtractNormalDNSAddress(rawAddress string, protocol string) (host string, p
 
 }
 
-// ExtractHTTPSAddress parse https format: https://dns.google/resolve
+// ExtractHTTPSAddress parse https format: https://dns.google/dns-query
 func ExtractHTTPSAddress(rawAddress string) (host string, port string, err error) {
 	uri, err := url.Parse(rawAddress)
 	if err != nil {
