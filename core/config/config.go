@@ -20,11 +20,11 @@ import (
 	"github.com/shawn1m/overture/core/common"
 	"github.com/shawn1m/overture/core/hosts"
 	"github.com/shawn1m/overture/core/matcher"
+	"github.com/shawn1m/overture/core/matcher/final"
 	"github.com/shawn1m/overture/core/matcher/full"
 	"github.com/shawn1m/overture/core/matcher/mix"
 	"github.com/shawn1m/overture/core/matcher/regex"
 	"github.com/shawn1m/overture/core/matcher/suffix"
-	"github.com/shawn1m/overture/core/matcher/final"
 )
 
 type Config struct {
@@ -39,9 +39,10 @@ type Config struct {
 		Alternative string
 	}
 	DomainFile struct {
-		Primary     string
-		Alternative string
-		Matcher     string
+		Primary            string
+		Alternative        string
+		PrimaryMatcher     string
+		AlternativeMatcher string
 	}
 	HostsFile     string
 	MinimumTTL    int
@@ -65,8 +66,8 @@ func NewConfig(configFile string) *Config {
 
 	config.DomainTTLMap = getDomainTTLMap(config.DomainTTLFile)
 
-	config.DomainPrimaryList = initDomainMatcher(config.DomainFile.Primary, config.DomainFile.Matcher)
-	config.DomainAlternativeList = initDomainMatcher(config.DomainFile.Alternative, config.DomainFile.Matcher)
+	config.DomainPrimaryList = initDomainMatcher(config.DomainFile.Primary, config.DomainFile.PrimaryMatcher)
+	config.DomainAlternativeList = initDomainMatcher(config.DomainFile.Alternative, config.DomainFile.AlternativeMatcher)
 
 	config.IPNetworkPrimaryList = getIPNetworkList(config.IPNetworkFile.Primary)
 	config.IPNetworkAlternativeList = getIPNetworkList(config.IPNetworkFile.Alternative)
@@ -205,7 +206,9 @@ func getDomainMatcher(name string) (m matcher.Matcher) {
 
 func initDomainMatcher(file string, name string) (m matcher.Matcher) {
 	m = getDomainMatcher(name)
-
+	if name == "final" {
+		return m
+	}
 	if file == "" {
 		return
 	}
