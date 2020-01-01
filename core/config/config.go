@@ -24,6 +24,7 @@ import (
 	"github.com/shawn1m/overture/core/matcher/mix"
 	"github.com/shawn1m/overture/core/matcher/regex"
 	"github.com/shawn1m/overture/core/matcher/suffix"
+	"github.com/shawn1m/overture/core/matcher/final"
 )
 
 type Config struct {
@@ -194,6 +195,8 @@ func getDomainMatcher(name string) (m matcher.Matcher) {
 		return &regex.List{}
 	case "mix-list":
 		return &mix.List{}
+	case "final":
+		return &final.Default{}
 	default:
 		log.Warnf("Matcher %s does not exist, using regex-list matcher as default", name)
 		return &regex.List{}
