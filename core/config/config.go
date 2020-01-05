@@ -43,6 +43,7 @@ type Config struct {
 		Alternative        string
 		PrimaryMatcher     string
 		AlternativeMatcher string
+		Matcher            string
 	}
 	HostsFile     string
 	MinimumTTL    int
@@ -66,8 +67,8 @@ func NewConfig(configFile string) *Config {
 
 	config.DomainTTLMap = getDomainTTLMap(config.DomainTTLFile)
 
-	config.DomainPrimaryList = initDomainMatcher(config.DomainFile.Primary, config.DomainFile.PrimaryMatcher)
-	config.DomainAlternativeList = initDomainMatcher(config.DomainFile.Alternative, config.DomainFile.AlternativeMatcher)
+	config.DomainPrimaryList = initDomainMatcher(config.DomainFile.Primary, config.DomainFile.PrimaryMatcher, config.DomainFile.Matcher)
+	config.DomainAlternativeList = initDomainMatcher(config.DomainFile.Alternative, config.DomainFile.AlternativeMatcher, config.DomainFile.Matcher)
 
 	config.IPNetworkPrimaryList = getIPNetworkList(config.IPNetworkFile.Primary)
 	config.IPNetworkAlternativeList = getIPNetworkList(config.IPNetworkFile.Alternative)
@@ -204,7 +205,10 @@ func getDomainMatcher(name string) (m matcher.Matcher) {
 	}
 }
 
-func initDomainMatcher(file string, name string) (m matcher.Matcher) {
+func initDomainMatcher(file string, name string, defaultName string) (m matcher.Matcher) {
+	if name == "" {
+		name = defaultName
+	}
 	m = getDomainMatcher(name)
 	if name == "final" {
 		return m
