@@ -118,7 +118,7 @@ func ExtractDNSAddress(rawAddress string, protocol string) (host string, port st
 	case "https":
 		host, port, err = ExtractHTTPSAddress(rawAddress)
 	case "tcp-tls":
-		host, port, _ = ExtractTLSDNSAddress(rawAddress)
+		_, port, host = ExtractTLSDNSAddress(rawAddress)
 	default:
 		host, port, err = ExtractNormalDNSAddress(rawAddress, protocol)
 	}
