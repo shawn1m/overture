@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"github.com/miekg/dns"
 	"github.com/silenceper/pool"
-	log "github.com/sirupsen/logrus"
 	"net"
 )
 
@@ -16,7 +15,6 @@ type TCPTLSResolver struct {
 
 func (r *TCPTLSResolver) Exchange(q *dns.Msg) (*dns.Msg, error) {
 	_conn, err := r.connpool.Get()
-	log.Debugf("_conn: %v", _conn)
 	if err != nil {
 		return nil, err
 	}

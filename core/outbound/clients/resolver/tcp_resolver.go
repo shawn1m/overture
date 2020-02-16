@@ -3,7 +3,6 @@ package resolver
 import (
 	"github.com/miekg/dns"
 	"github.com/silenceper/pool"
-	log "github.com/sirupsen/logrus"
 	"net"
 )
 
@@ -14,7 +13,6 @@ type TCPResolver struct {
 
 func (r *TCPResolver) Exchange(q *dns.Msg) (*dns.Msg, error) {
 	_conn, err := r.connpool.Get()
-	log.Debugf("_conn: %v", _conn)
 	if err != nil {
 		return nil, err
 	}
