@@ -1,6 +1,7 @@
 package outbound
 
 import (
+	"net"
 	"os"
 	"testing"
 	"time"
@@ -12,7 +13,7 @@ import (
 )
 
 var dispatcher Dispatcher
-var questionDomain = "en.wikipedia.org."
+var questionDomain = "www.yahoo.com."
 
 func init() {
 	os.Chdir("../..")
@@ -39,17 +40,26 @@ func init() {
 
 func TestDispatcher(t *testing.T) {
 
+	testA(t)
+	testAAAA(t)
 	testHosts(t)
 	testIPResponse(t)
-	testAAAA(t)
 	testCache(t)
+}
+
+func testA(t *testing.T) {
+
+	resp := exchange(questionDomain, dns.TypeA)
+	if net.ParseIP(common.FindRecordByType(resp, dns.TypeA)).To4() == nil {
+		t.Error(questionDomain + " should have A record")
+	}
 }
 
 func testAAAA(t *testing.T) {
 
 	resp := exchange(questionDomain, dns.TypeAAAA)
-	if common.FindRecordByType(resp, dns.TypeAAAA) != "" {
-		t.Error("twitter.com should not have AAAA record")
+	if net.ParseIP(common.FindRecordByType(resp, dns.TypeAAAA)).To16() == nil {
+		t.Error(questionDomain + " should have AAAA record")
 	}
 }
 
