@@ -8,6 +8,7 @@ package clients
 
 import (
 	"github.com/miekg/dns"
+	"github.com/shawn1m/overture/core/outbound/clients/resolver"
 
 	"github.com/shawn1m/overture/core/cache"
 	"github.com/shawn1m/overture/core/common"
@@ -26,14 +27,15 @@ type RemoteClientBundle struct {
 
 	cache *cache.Cache
 	Name  string
+
+	dnsResolvers []resolver.Resolver
 }
 
-func NewClientBundle(q *dns.Msg, ul []*common.DNSUpstream, ip string, minimumTTL int, cache *cache.Cache, name string, domainTTLMap map[string]uint32) *RemoteClientBundle {
-	cb := &RemoteClientBundle{questionMessage: q.Copy(), dnsUpstreams: ul, inboundIP: ip, minimumTTL: minimumTTL, cache: cache, Name: name, domainTTLMap: domainTTLMap}
+func NewClientBundle(q *dns.Msg, ul []*common.DNSUpstream, resolvers []resolver.Resolver, ip string, minimumTTL int, cache *cache.Cache, name string, domainTTLMap map[string]uint32) *RemoteClientBundle {
+	cb := &RemoteClientBundle{questionMessage: q.Copy(), dnsUpstreams: ul, dnsResolvers: resolvers, inboundIP: ip, minimumTTL: minimumTTL, cache: cache, Name: name, domainTTLMap: domainTTLMap}
 
-	for _, u := range ul {
-
-		c := NewClient(cb.questionMessage, u, cb.inboundIP, cb.cache)
+	for i, u := range ul {
+		c := NewClient(cb.questionMessage, u, cb.dnsResolvers[i], cb.inboundIP, cb.cache)
 		cb.clients = append(cb.clients, c)
 	}
 

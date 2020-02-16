@@ -34,6 +34,7 @@ func InitServer(configFilePath string) {
 		Hosts: conf.Hosts,
 		Cache: conf.Cache,
 	}
+	dispatcher.Init()
 
 	s := inbound.NewServer(conf.BindAddress, conf.DebugHTTPAddress, dispatcher, conf.RejectQType)
 
