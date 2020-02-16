@@ -136,7 +136,7 @@ Tips:
 
 + BindAddress: Specifying only port (e.g. `:53`) will have overture listen on all available addresses (both IPv4 and
 IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses are enclosed in square brackets (e.g. `[2001:4860:4860::8888]:53`)
-+ DebugHTTPAddress: Specifying an HTTP port for debugging, currently used to dump DNS cache, and the request url is `/cache`, available query argument is `nobody`(boolean)
++ DebugHTTPAddress: Specifying an HTTP port for debugging (**`5555` is the default port but it is also acknowledged as the android wifi adb listener port**), currently used to dump DNS cache, and the request url is `/cache`, available query argument is `nobody`(boolean)
 
     * true(default): only get the cache size;
 
