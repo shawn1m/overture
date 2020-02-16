@@ -25,6 +25,7 @@ func init() {
 		DomainAlternativeList: c.DomainAlternativeList,
 		DomainPrimaryList:     c.DomainPrimaryList,
 		RedirectIPv6Record:    c.IPv6UseAlternativeDNS,
+    AlternativeDNSConcurrent:c.AlternativeDNSConcurrent,
 		Hosts:                 c.Hosts,
 		Cache:                 c.Cache,
 	}
