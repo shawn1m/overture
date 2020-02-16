@@ -102,7 +102,7 @@ func (c *RemoteClient) Exchange(isLog bool) *dns.Msg {
 		return nil
 	}
 	if temp == nil {
-		log.Debugf("%s Fail: Response message returned nil, maybe timeout? Please check your query or DNS configuration")
+		log.Debugf("%s Fail: Response message returned nil, maybe timeout? Please check your query or DNS configuration", c.dnsUpstream.Name)
 		return nil
 	}
 
