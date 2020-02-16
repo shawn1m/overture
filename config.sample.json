@@ -17,9 +17,9 @@
   ],
   "AlternativeDNS": [
     {
-      "Name": "OpenDNS",
-      "Address": "208.67.222.222:443",
-      "Protocol": "tcp",
+      "Name": "CloudFlareDNS",
+      "Address": "1.1.1.1:53",
+      "Protocol": "udp",
       "SOCKS5Address": "",
       "Timeout": 6,
       "EDNSClientSubnet": {
@@ -40,9 +40,12 @@
   "DomainFile": {
     "Primary": "./domain_primary_sample",
     "Alternative": "./domain_alternative_sample",
-    "Matcher":  "regex-list"
+    "Matcher":  "full-map"
   },
-  "HostsFile": "./hosts_sample",
+  "HostsFile": {
+    "HostsFile": "./hosts_sample",
+    "Finder": "full-map"
+  },
   "MinimumTTL": 0,
   "DomainTTLFile" : "./domain_ttl_sample",
   "CacheSize" : 0,

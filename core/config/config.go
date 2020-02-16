@@ -207,8 +207,8 @@ func getDomainMatcher(name string) (m matcher.Matcher) {
 	case "final":
 		return &matcherfinal.Default{}
 	default:
-		log.Warnf("Matcher %s does not exist, using regex-list matcher as default", name)
-		return &matcherregex.List{}
+		log.Warnf("Matcher %s does not exist, using full-map matcher as default", name)
+		return &matcherfull.Map{DataMap: make(map[string]struct{}, 100)}
 	}
 }
 
@@ -219,8 +219,8 @@ func getFinder(name string) (f finder.Finder) {
 	case "full-map":
 		return &finderfull.Map{DataMap: make(map[string][]string, 100)}
 	default:
-		log.Warnf("Matcher %s does not exist, using regex-list matcher as default", name)
-		return &finderregex.List{}
+		log.Warnf("Matcher %s does not exist, using full-map matcher as default", name)
+		return &finderfull.Map{DataMap: make(map[string][]string, 100)}
 	}
 }
 

@@ -8,6 +8,9 @@ Overture is a DNS server/forwarder/dispatcher written in Go.
 Overture means an orchestral piece at the beginning of a classical music composition, just like DNS which is nearly the
 first step of surfing the Internet.
 
+**Please note: Read the entire README document is necessary if you want to use overture safe and sound. 
+Production usage is not recommended and there is no guarantee or warranty of it.**
+
 **Please note: If you are using the binary releases, please follow the instructions in the README file with
 corresponding git version tag. The README in master branch are subject to change and does not always reflect the correct
  instructions to your binary release version.**
@@ -24,7 +27,7 @@ corresponding git version tag. The README in master branch are subject to change
     + Custom domain
     + Custom IP network
 + Minimum TTL modification
-+ Hosts (**Regex match** for now and will return ip in random order if necessary)
++ Hosts (Both IPv4 and IPv6 is supported. IPs will be returned in random order, if you want to use regex match, please understand regex first)
 + Cache with ECS
 
 ### Dispatch process
@@ -93,9 +96,9 @@ Configuration file is "config.json" by default:
   ],
   "AlternativeDNS": [
     {
-      "Name": "OpenDNS",
-      "Address": "208.67.222.222:443",
-      "Protocol": "tcp",
+      "Name": "CloudFlareDNS",
+      "Address": "1.1.1.1:53",
+      "Protocol": "udp",
       "SOCKS5Address": "",
       "Timeout": 6,
       "EDNSClientSubnet": {
@@ -116,9 +119,12 @@ Configuration file is "config.json" by default:
   "DomainFile": {
     "Primary": "./domain_primary_sample",
     "Alternative": "./domain_alternative_sample",
-    "Matcher":  "regex-list"
+    "Matcher":  "full-map"
   },
-  "HostsFile": "./hosts_sample",
+  "HostsFile": {
+    "HostsFile": "./hosts_sample",
+    "Finder": "full-map"
+  },
   "MinimumTTL": 0,
   "DomainTTLFile" : "./domain_ttl_sample",
   "CacheSize" : 0,
@@ -201,30 +207,37 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
 + WhenPrimaryDNSAnswerNoneUse: If the response of PrimaryDNS exists and there is no `ANSWER SECTION` in it, the final DNS should be defined. (There is no `AAAA` record for most domains right now) 
 + File: Absolute path like `/path/to/file` is allowed. For Windows users, please use properly escaped path like
   `C:\\path\\to\\file.txt` in the configuration.
-+ DomainFile.Matcher: Matching policy and implementation, including "full-list", "full-map", "regex-list" and "suffix-tree". Default value is "regex-list".
++ DomainFile.Matcher: Matching policy and implementation, including "full-list", "full-map", "regex-list", "mix-list", "suffix-tree" and "final". Default value is "full-map".
++ HostsFile.Finder: Finder policy and implementation, including "full-map", "regex-list". Default value is "full-map".
++ DomainTTLFile: Regex match only for now;
 + MinimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
 + CacheSize: The number of query record to cache, use `0` to disable.
 + RejectQType: Reject inbound query with specific DNS record types, check [List of DNS record types](https://en.wikipedia.org/wiki/List_of_DNS_record_types) for details.
 
-#### Domain file example (regex match)
+#### Domain file example (full match)
 
     example.com
-    ^xxx.xx
 
+#### Domain file example (regex match)
+
+    ^xxx.xx
+    
 #### IP network file example (CIDR match)
 
     1.0.1.0/24
-    10.8.0.0/16
     ::1/128
     
- #### Domain TTL file example (regex match)
+#### Domain TTL file example (regex match)
  
      example.com$ 100
 
-#### Hosts file example (regex match)
+#### Hosts file example (full match)
 
     127.0.0.1 localhost
     ::1 localhost
+    
+#### Hosts file example (regex match)
+
     10.8.0.1 example.com$
 
 #### DNS servers with ECS support
