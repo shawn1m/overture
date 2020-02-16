@@ -8,6 +8,6 @@ package finder
 
 type Finder interface {
 	Insert(k string, v string) error
-	Get(k string) string
+	Get(k string) []string
 	Name() string
 }

@@ -7,15 +7,19 @@
 package full
 
 type Map struct {
-	DataMap map[string]string
+	DataMap map[string][]string
 }
 
 func (m *Map) Insert(k string, v string) error {
-	m.DataMap[k] = v
+	if m.DataMap[k] == nil {
+		m.DataMap[k] = []string{v}
+	} else {
+		m.DataMap[k] = append(m.DataMap[k], v)
+	}
 	return nil
 }
 
-func (m *Map) Get(k string) string {
+func (m *Map) Get(k string) []string {
 	return m.DataMap[k]
 }
 

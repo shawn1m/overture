@@ -14,28 +14,31 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/shawn1m/overture/core/finder"
+	finderfull "github.com/shawn1m/overture/core/finder/full"
+	finderregex "github.com/shawn1m/overture/core/finder/regex"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/shawn1m/overture/core/cache"
 	"github.com/shawn1m/overture/core/common"
 	"github.com/shawn1m/overture/core/hosts"
 	"github.com/shawn1m/overture/core/matcher"
-	"github.com/shawn1m/overture/core/matcher/final"
-	"github.com/shawn1m/overture/core/matcher/full"
-	"github.com/shawn1m/overture/core/matcher/mix"
-	"github.com/shawn1m/overture/core/matcher/regex"
-	"github.com/shawn1m/overture/core/matcher/suffix"
+	matcherfinal "github.com/shawn1m/overture/core/matcher/final"
+	matcherfull "github.com/shawn1m/overture/core/matcher/full"
+	matchermix "github.com/shawn1m/overture/core/matcher/mix"
+	matcherregex "github.com/shawn1m/overture/core/matcher/regex"
+	matchersuffix "github.com/shawn1m/overture/core/matcher/suffix"
 )
 
 type Config struct {
-	BindAddress           string
-	DebugHTTPAddress      string
-	PrimaryDNS            []*common.DNSUpstream
-	AlternativeDNS        []*common.DNSUpstream
-	OnlyPrimaryDNS        bool
-	IPv6UseAlternativeDNS bool
+	BindAddress              string
+	DebugHTTPAddress         string
+	PrimaryDNS               []*common.DNSUpstream
+	AlternativeDNS           []*common.DNSUpstream
+	OnlyPrimaryDNS           bool
+	IPv6UseAlternativeDNS    bool
 	AlternativeDNSConcurrent bool
- 	IPNetworkFile         struct {
+	IPNetworkFile            struct {
 		Primary     string
 		Alternative string
 	}
@@ -46,7 +49,10 @@ type Config struct {
 		AlternativeMatcher string
 		Matcher            string
 	}
-	HostsFile     string
+	HostsFile struct {
+		HostsFile string
+		Finder    string
+	}
 	MinimumTTL    int
 	DomainTTLFile string
 	CacheSize     int
@@ -87,7 +93,7 @@ func NewConfig(configFile string) *Config {
 		log.Info("Cache is disabled")
 	}
 
-	h, err := hosts.New(config.HostsFile)
+	h, err := hosts.New(config.HostsFile.HostsFile, getFinder(config.HostsFile.Finder))
 	if err != nil {
 		log.Warnf("Failed to load hosts file: %s", err)
 	} else {
@@ -189,20 +195,32 @@ func getDomainTTLMap(file string) map[string]uint32 {
 func getDomainMatcher(name string) (m matcher.Matcher) {
 	switch name {
 	case "suffix-tree":
-		return suffix.DefaultDomainTree()
+		return matchersuffix.DefaultDomainTree()
 	case "full-map":
-		return &full.Map{DataMap: make(map[string]struct{}, 100)}
+		return &matcherfull.Map{DataMap: make(map[string]struct{}, 100)}
 	case "full-list":
-		return &full.List{}
+		return &matcherfull.List{}
 	case "regex-list":
-		return &regex.List{}
+		return &matcherregex.List{}
 	case "mix-list":
-		return &mix.List{}
+		return &matchermix.List{}
 	case "final":
-		return &final.Default{}
+		return &matcherfinal.Default{}
 	default:
 		log.Warnf("Matcher %s does not exist, using regex-list matcher as default", name)
-		return &regex.List{}
+		return &matcherregex.List{}
+	}
+}
+
+func getFinder(name string) (f finder.Finder) {
+	switch name {
+	case "regex-list":
+		return &finderregex.List{RegexMap: make(map[string][]string, 100)}
+	case "full-map":
+		return &finderfull.Map{DataMap: make(map[string][]string, 100)}
+	default:
+		log.Warnf("Matcher %s does not exist, using regex-list matcher as default", name)
+		return &finderregex.List{}
 	}
 }
 
