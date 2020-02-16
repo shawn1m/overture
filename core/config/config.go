@@ -38,6 +38,7 @@ type Config struct {
 	OnlyPrimaryDNS           bool
 	IPv6UseAlternativeDNS    bool
 	AlternativeDNSConcurrent bool
+	PoolIdleTimeout          int
 	IPNetworkFile            struct {
 		Primary     string
 		Alternative string

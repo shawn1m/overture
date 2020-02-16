@@ -111,6 +111,7 @@ Configuration file is "config.json" by default:
   "OnlyPrimaryDNS": false,
   "IPv6UseAlternativeDNS": false,
   "AlternativeDNSConcurrent": false,
+  "PoolIdleTimeout": 15,
   "WhenPrimaryDNSAnswerNoneUse": "PrimaryDNS",
   "IPNetworkFile": {
     "Primary": "./ip_network_primary_sample",
@@ -204,6 +205,7 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
 + OnlyPrimaryDNS: Disable dispatcher feature, use primary DNS only.
 + IPv6UseAlternativeDNS: Redirect IPv6 DNS queries to alternative DNS servers.
 + AlternativeDNSConcurrent: Query the PrimaryDNS and AlternativeDNS at the same time
++ PoolIdleTimeout: Specify idle timeout for connection in pool
 + WhenPrimaryDNSAnswerNoneUse: If the response of PrimaryDNS exists and there is no `ANSWER SECTION` in it, the final DNS should be defined. (There is no `AAAA` record for most domains right now) 
 + File: Absolute path like `/path/to/file` is allowed. For Windows users, please use properly escaped path like
   `C:\\path\\to\\file.txt` in the configuration.

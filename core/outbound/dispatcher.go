@@ -3,6 +3,7 @@ package outbound
 import (
 	"github.com/shawn1m/overture/core/outbound/clients/resolver"
 	"net"
+	"time"
 
 	"github.com/miekg/dns"
 	log "github.com/sirupsen/logrus"
@@ -26,6 +27,7 @@ type Dispatcher struct {
 	DomainAlternativeList       matcher.Matcher
 	RedirectIPv6Record          bool
 	AlternativeDNSConcurrent    bool
+	PoolIdleTimeout          int
 
 	MinimumTTL   int
 	DomainTTLMap map[string]uint32
@@ -46,6 +48,8 @@ func createResolver(ul []*common.DNSUpstream) (resolvers []resolver.Resolver) {
 }
 
 func (d *Dispatcher) Init() {
+	resolver.IdleTimeout = time.Duration(d.PoolIdleTimeout) * time.Second
+	log.Debugf("Set pool's IdleTimeout to %d", d.PoolIdleTimeout)
 	d.primaryResolvers = createResolver(d.PrimaryDNS)
 	d.alternativeResolvers = createResolver(d.AlternativeDNS)
 }
