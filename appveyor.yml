@@ -1,0 +1,23 @@
+# appveyor.yml
+image: Ubuntu
+
+clone_folder: /usr/go/src/github.com/shawn1m/overture
+
+environment:
+  GOPATH: /usr/go/
+
+stack: go 1.13
+
+before_build:
+  - "go version"
+  - "ls -al"
+  - "python3 ./build.py -build"
+
+before_test:
+  - go vet ./...
+
+test_script:
+  - go test ./...
+
+artifacts:
+  - path: 'overture-*.zip'
