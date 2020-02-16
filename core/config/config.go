@@ -33,7 +33,8 @@ type Config struct {
 	AlternativeDNS        []*common.DNSUpstream
 	OnlyPrimaryDNS        bool
 	IPv6UseAlternativeDNS bool
-	IPNetworkFile         struct {
+	AlternativeDNSConcurrent bool
+ 	IPNetworkFile         struct {
 		Primary     string
 		Alternative string
 	}

@@ -27,6 +27,7 @@ func InitServer(configFilePath string) {
 		DomainAlternativeList:       conf.DomainAlternativeList,
 
 		RedirectIPv6Record: conf.IPv6UseAlternativeDNS,
+    AlternativeDNSConcurrent: conf.AlternativeDNSConcurrent,
 		MinimumTTL:         conf.MinimumTTL,
 		DomainTTLMap:       conf.DomainTTLMap,
 
