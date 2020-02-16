@@ -224,6 +224,7 @@ func (c *RemoteClient) ExchangeByHTTPS(conn net.Conn) (*dns.Msg, error) {
 		conn, err = net.Dial("tcp", address)
 		if err != nil {
 			log.Warnf("Fail connect to dns server %s", address)
+			return nil, err
 		}
 	}
 	c.setTimeout(conn)
