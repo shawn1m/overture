@@ -8,13 +8,13 @@ Overture is a DNS server/forwarder/dispatcher written in Go.
 Overture means an orchestral piece at the beginning of a classical music composition, just like DNS which is nearly the
 first step of surfing the Internet.
 
-**Please note: Read the entire README document is necessary if you want to use overture safe and sound. 
-Production usage is not recommended and there is no guarantee or warranty of it.**
-
-**Please note: If you are using the binary releases, please follow the instructions in the README file with
-corresponding git version tag. The README in master branch are subject to change and does not always reflect the correct
- instructions to your binary release version.**
-
+**Please note:** 
+- **Read the entire README document is necessary if you want to use overture safe and sound.** 
+- **Production usage is not recommended and there is no guarantee or warranty of it.**
+- **If you are using the binary releases, please follow the instructions in the README file with
+  corresponding git version tag. The README in master branch are subject to change and does not always reflect the correct
+   instructions to your binary release version.**
+   
 ## Features
 
 + Full IPv6 support
@@ -96,8 +96,8 @@ Configuration file is "config.json" by default:
   ],
   "AlternativeDNS": [
     {
-      "Name": "CloudFlareDNS",
-      "Address": "1.1.1.1:53",
+      "Name": "114DNS",
+      "Address": "114.114.114.114:53",
       "Protocol": "udp",
       "SOCKS5Address": "",
       "Timeout": 6,

@@ -17,8 +17,8 @@
   ],
   "AlternativeDNS": [
     {
-      "Name": "CloudFlareDNS",
-      "Address": "1.1.1.1:53",
+      "Name": "114DNS",
+      "Address": "114.114.114.114:53",
       "Protocol": "udp",
       "SOCKS5Address": "",
       "Timeout": 6,
@@ -40,14 +40,14 @@
   "DomainFile": {
     "Primary": "./domain_primary_sample",
     "Alternative": "./domain_alternative_sample",
-    "Matcher":  "regex-list"
+    "Matcher":  "full-map"
   },
   "HostsFile": {
     "HostsFile": "./hosts_sample",
-    "Finder": "regex-list"
+    "Finder": "full-map"
   },
-  "MinimumTTL": 0,
+  "MinimumTTL": 86400,
   "DomainTTLFile" : "./domain_ttl_sample",
-  "CacheSize" : 1,
+  "CacheSize" : 10000,
   "RejectQType": [255]
 }

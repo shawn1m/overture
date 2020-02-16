@@ -84,7 +84,7 @@ func (c *Cache) InsertMessage(s string, m *dns.Msg, mTTL uint32) {
 	}
 	ttlDuration := time.Duration(ttl) * time.Second
 	if _, ok := c.table[s]; !ok {
-		c.table[s] = &elem{time.Now().UTC().Add(ttlDuration), m.Copy()}
+		c.table[s] = &elem{time.Now().Add(ttlDuration), m.Copy()}
 	}
 	log.Debugf("Cached: %s", s)
 	c.EvictRandom()

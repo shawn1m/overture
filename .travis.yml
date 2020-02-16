@@ -1,11 +1,12 @@
 language: go
 go:
-  - 1.12.x
+  - 1.13.x
 addons:
   apt:
     packages:
       - python3
 script:
+  - "go test -cover ./..."
   - "python3 ./build.py -create-sample"
 before_deploy:
   - "go version"

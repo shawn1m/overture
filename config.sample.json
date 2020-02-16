@@ -17,8 +17,8 @@
   ],
   "AlternativeDNS": [
     {
-      "Name": "CloudFlareDNS",
-      "Address": "1.1.1.1:53",
+      "Name": "114DNS",
+      "Address": "114.114.114.114:53",
       "Protocol": "udp",
       "SOCKS5Address": "",
       "Timeout": 6,
