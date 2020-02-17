@@ -41,7 +41,7 @@ func (r *TCPTLSResolver) createTlsConn() (conn net.Conn, err error) {
 		ServerName:         host,
 	}
 	conn = tls.Client(conn, conf)
-	//r.setTimeout(conn)
+
 	return conn, nil
 }
 
