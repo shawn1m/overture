@@ -9,8 +9,7 @@ environment:
 stack: go 1.13
 
 before_build:
-  - "go version"
-  - "ls -al"
+  - "python3 ./build.py -create-sample"
   - "python3 ./build.py -build"
 
 before_test:
