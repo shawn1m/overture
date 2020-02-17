@@ -3,6 +3,14 @@ image: Ubuntu
 
 clone_folder: /usr/go/src/github.com/shawn1m/overture
 
+branches:
+  only:
+    - master
+
+skip_tags: true
+
+skip_branch_with_pr: true
+
 environment:
   GOPATH: /usr/go/
 
