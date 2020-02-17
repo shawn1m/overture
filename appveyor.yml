@@ -3,14 +3,21 @@ image: Ubuntu
 
 clone_folder: /usr/go/src/github.com/shawn1m/overture
 
+branches:
+  only:
+    - master
+
+skip_tags: true
+
+skip_branch_with_pr: true
+
 environment:
   GOPATH: /usr/go/
 
 stack: go 1.13
 
 before_build:
-  - "go version"
-  - "ls -al"
+  - "python3 ./build.py -create-sample"
   - "python3 ./build.py -build"
 
 before_test:

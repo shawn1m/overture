@@ -6,11 +6,11 @@ addons:
     packages:
       - python3
 script:
-  - "go test -cover ./..."
+  - "go test -cover ./... -race -coverprofile=coverage.txt -covermode=atomic"
   - "python3 ./build.py -create-sample"
+after_success:
+  - "bash <(curl -s https://codecov.io/bash)"
 before_deploy:
-  - "go version"
-  - "ls -al"
   - "python3 ./build.py -build"
 deploy:
   provider: releases
