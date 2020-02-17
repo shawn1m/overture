@@ -9,6 +9,7 @@ package clients
 import (
 	"github.com/miekg/dns"
 	"github.com/shawn1m/overture/core/outbound/clients/resolver"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/shawn1m/overture/core/cache"
 	"github.com/shawn1m/overture/core/common"
@@ -58,7 +59,10 @@ func (cb *RemoteClientBundle) Exchange(isCache bool, isLog bool) *dns.Msg {
 		c := <-ch
 		if c != nil {
 			ec = c
-			break
+			if ec.responseMessage != nil && ec.responseMessage.Answer != nil {
+				break
+			}
+			log.Debugf("DNSUpstream %s returned None answer, dropping it and wait the next one", ec.dnsUpstream.Address)
 		}
 	}
 
