@@ -28,6 +28,7 @@ type Dispatcher struct {
 	RedirectIPv6Record          bool
 	AlternativeDNSConcurrent    bool
 	PoolIdleTimeout          int
+	PoolMaxCapacity          int
 
 	MinimumTTL   int
 	DomainTTLMap map[string]uint32
@@ -49,7 +50,8 @@ func createResolver(ul []*common.DNSUpstream) (resolvers []resolver.Resolver) {
 
 func (d *Dispatcher) Init() {
 	resolver.IdleTimeout = time.Duration(d.PoolIdleTimeout) * time.Second
-	log.Debugf("Set pool's IdleTimeout to %d", d.PoolIdleTimeout)
+	resolver.PoolMaxCapacity = d.PoolMaxCapacity
+	log.Debugf("Set pool's IdleTimeout to %d, MaxCapacity to %d", d.PoolIdleTimeout, d.PoolMaxCapacity)
 	d.primaryResolvers = createResolver(d.PrimaryDNS)
 	d.alternativeResolvers = createResolver(d.AlternativeDNS)
 }

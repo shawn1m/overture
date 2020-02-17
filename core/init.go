@@ -29,6 +29,7 @@ func InitServer(configFilePath string) {
 		RedirectIPv6Record:       conf.IPv6UseAlternativeDNS,
 		AlternativeDNSConcurrent: conf.AlternativeDNSConcurrent,
 		PoolIdleTimeout:          conf.PoolIdleTimeout,
+		PoolMaxCapacity:          conf.PoolMaxCapacity,
 		MinimumTTL:               conf.MinimumTTL,
 		DomainTTLMap:             conf.DomainTTLMap,
 

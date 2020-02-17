@@ -30,6 +30,7 @@
   "RedirectIPv6Record": false,
   "AlternativeDNSConcurrent": false,
   "PoolIdleTimeout": 15,
+  "PoolMaxCapacity": 15,
   "DomainBase64Decode": true,
   "MinimumTTL": 0,
   "CacheSize" : 0,

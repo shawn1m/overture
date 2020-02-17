@@ -33,6 +33,7 @@
   "IPv6UseAlternativeDNS": false,
   "AlternativeDNSConcurrent": false,
   "PoolIdleTimeout": 15,
+  "PoolMaxCapacity": 15,
   "WhenPrimaryDNSAnswerNoneUse": "PrimaryDNS",
   "IPNetworkFile": {
     "Primary": "./ip_network_primary_sample",

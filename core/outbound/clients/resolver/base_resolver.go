@@ -86,6 +86,7 @@ func (c *BaseResolver) CreateBaseConn() (conn net.Conn, err error) {
 }
 
 var IdleTimeout time.Duration = 30 * time.Second
+var PoolMaxCapacity int = 15
 
 func (c *BaseResolver) setTimeout(conn net.Conn) {
 	dnsTimeout := time.Duration(c.dnsUpstream.Timeout) * time.Second / 3
@@ -103,7 +104,7 @@ func (c *BaseResolver) setIdleTimeout(conn net.Conn) {
 func (c *BaseResolver) createConnectionPool(connCreate func() (interface{}, error), connClose func(interface{}) error) pool.Pool {
 	poolConfig := &pool.Config{
 		InitialCap: 0,
-		MaxCap:     15,
+		MaxCap:     PoolMaxCapacity,
 		Factory:    connCreate,
 		Close:      connClose,
 		//Ping:       ping,
