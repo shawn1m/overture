@@ -67,6 +67,7 @@ func (c *BaseResolver) CreateBaseConn() (conn net.Conn, err error) {
 		}
 		dialer = s.Dial
 	}
+
 	network := ToNetwork(c.dnsUpstream.Protocol)
 	host, port, err := ExtractDNSAddress(c.dnsUpstream.Address, c.dnsUpstream.Protocol)
 	if err != nil {
@@ -78,7 +79,9 @@ func (c *BaseResolver) CreateBaseConn() (conn net.Conn, err error) {
 		log.Warnf("Failed to connect to DNS upstream: %s", err)
 		return nil, err
 	}
-	//c.setTimeout(conn)
+
+	// the Timeout setting is now moved to each resolver to support pool's idle timeout
+	// c.setTimeout(conn)
 	return conn, err
 }
 

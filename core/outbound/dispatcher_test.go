@@ -91,7 +91,7 @@ func testCache(t *testing.T) {
 	exchange(questionDomain, dns.TypeA)
 	now := time.Now()
 	exchange(questionDomain, dns.TypeA)
-	if time.Since(now) > 10*time.Millisecond {
+	if time.Since(now) > 10 * time.Millisecond {
 		t.Error(time.Since(now).String() + " " + "Cache response slower than 10ms")
 	}
 }
