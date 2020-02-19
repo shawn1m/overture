@@ -144,31 +144,26 @@ func getDomainTTLMap(file string) map[string]uint32 {
 
 	dtl := map[string]uint32{}
 
-	reader := bufio.NewReader(f)
+	scanner := bufio.NewScanner(f)
 
-	for {
-		// The last line may not contains an '\n'
-		line, err := reader.ReadString('\n')
-		if err != nil && err != io.EOF {
-			log.Errorf("Failed to read domain TTL file %s: %s", file, err)
-			break
+	for scanner.Scan() {
+		line := scanner.Text()
+		if len(line) == 0 {
+			continue
 		}
-
-		if line != "" {
-			words := strings.Fields(line)
-			if len(words) > 1 {
-				tempInt64, err := strconv.ParseUint(words[1], 10, 32)
-				dtl[words[0]] = uint32(tempInt64)
-				if err != nil {
-					log.WithFields(log.Fields{"domain": words[0], "ttl": words[1]}).Warnf("Invalid TTL for domain %s: %s", words[0], words[1])
-					failures++
-					failedLines = append(failedLines, line)
-				}
-				successes++
-			} else {
-				failedLines = append(failedLines, line)
+		words := strings.Fields(line)
+		if len(words) > 1 {
+			tempInt64, err := strconv.ParseUint(words[1], 10, 32)
+			dtl[words[0]] = uint32(tempInt64)
+			if err != nil {
+				log.WithFields(log.Fields{"domain": words[0], "ttl": words[1]}).Warnf("Invalid TTL for domain %s: %s", words[0], words[1])
 				failures++
+				failedLines = append(failedLines, line)
 			}
+			successes++
+		} else {
+			failedLines = append(failedLines, line)
+			failures++
 		}
 		if line == "" && err == io.EOF {
 			log.Debugf("Reading domain TTL file %s reached EOF", file)
@@ -224,7 +219,7 @@ func getFinder(name string) (f finder.Finder) {
 	case "full-map":
 		return &finderfull.Map{DataMap: make(map[string][]string, 100)}
 	default:
-		log.Warnf("Matcher %s does not exist, using full-map matcher as default", name)
+		log.Warnf("Finder %s does not exist, using full-map finder as default", name)
 		return &finderfull.Map{DataMap: make(map[string][]string, 100)}
 	}
 }
@@ -249,15 +244,12 @@ func initDomainMatcher(file string, name string, defaultName string) (m matcher.
 	defer f.Close()
 
 	lines := 0
-	reader := bufio.NewReader(f)
-
-	for {
-		line, err := reader.ReadString('\n')
-		if err != nil && err != io.EOF {
-			log.Errorf("Failed to read domain file %s: %s", file, err)
-			break
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if len(line) == 0 {
+			continue
 		}
-
 		line = strings.TrimSpace(line)
 		if line != "" {
 			_ = m.Insert(line)
@@ -292,31 +284,22 @@ func getIPNetworkList(file string) []*net.IPNet {
 	failures := 0
 	var failedLines []string
 
-	reader := bufio.NewReader(f)
-	for {
-		line, err := reader.ReadString('\n')
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if len(line) == 0 {
+			continue
+		}
+		_, ipNet, err := net.ParseCIDR(strings.TrimSuffix(line, "\n"))
 		if err != nil {
-			if err != io.EOF {
-				log.Errorf("Failed to read IP network file %s: %s", file, err)
-			} else {
-				log.Debugf("Reading IP network file %s has reached EOF", file)
-			}
-			break
+			log.Errorf("Error parsing IP network CIDR %s: %s", line, err)
+			failures++
+			failedLines = append(failedLines, line)
+			continue
 		}
-
-		if line != "" {
-			_, ipNet, err := net.ParseCIDR(strings.TrimSuffix(line, "\n"))
-			if err != nil {
-				log.Errorf("Error parsing IP network CIDR %s: %s", line, err)
-				failures++
-				failedLines = append(failedLines, line)
-				continue
-			}
-			ipNetList = append(ipNetList, ipNet)
-			successes++
-		}
+		ipNetList = append(ipNetList, ipNet)
+		successes++
 	}
-
 	if len(ipNetList) > 0 {
 		log.Infof("IP network file %s has been loaded with %d records", file, successes)
 		if failures > 0 {

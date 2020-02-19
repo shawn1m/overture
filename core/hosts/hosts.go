@@ -7,7 +7,6 @@ package hosts
 
 import (
 	"bufio"
-	"io"
 	"net"
 	"os"
 	"strings"
@@ -64,19 +63,9 @@ func (h *Hosts) initHosts() error {
 	defer f.Close()
 	defer log.Debugf("%s took %s", "Load hosts", time.Since(time.Now()))
 
-	reader := bufio.NewReader(f)
-	for {
-		line, err := reader.ReadString('\n')
-		if err != nil {
-			if err != io.EOF {
-				log.Errorf("NormalError reading hosts file: %s", err)
-			} else {
-				log.Debug("Reading hosts file reached EOF")
-			}
-			break
-		}
-
-		if err := h.parseLine(line); err != nil {
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		if err := h.parseLine(scanner.Text()); err != nil {
 			log.Warnf("Bad formatted hosts file line: %s", err)
 		}
 	}
