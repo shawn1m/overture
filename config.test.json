@@ -32,11 +32,6 @@
   "OnlyPrimaryDNS": false,
   "IPv6UseAlternativeDNS": false,
   "AlternativeDNSConcurrent": false,
-  "TCPPoolConfig": {
-    "InitialCapacity": 0,
-    "MaxCapacity": 15,
-    "IdleTimeout": 30
-  },
   "WhenPrimaryDNSAnswerNoneUse": "PrimaryDNS",
   "IPNetworkFile": {
     "Primary": "./ip_network_primary_sample",
