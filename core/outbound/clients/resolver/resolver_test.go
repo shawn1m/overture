@@ -10,11 +10,11 @@ import (
 
 var questionDomain = "www.yahoo.com."
 var udpUpstream = &common.DNSUpstream{
-	Name:             "Test-UDP",
-	Address:          "8.8.8.8",
-	Protocol:         "udp",
-	SOCKS5Address:    "",
-	Timeout:          6,
+	Name:          "Test-UDP",
+	Address:       "114.114.114.114",
+	Protocol:      "udp",
+	SOCKS5Address: "",
+	Timeout:       6,
 	EDNSClientSubnet: &common.EDNSClientSubnetType{
 		Policy:     "disable",
 		ExternalIP: "",
@@ -23,11 +23,11 @@ var udpUpstream = &common.DNSUpstream{
 }
 
 var tcpUpstream = &common.DNSUpstream{
-	Name:             "Test-TCP",
-	Address:          "8.8.8.8",
-	Protocol:         "tcp",
-	SOCKS5Address:    "",
-	Timeout:          6,
+	Name:          "Test-TCP",
+	Address:       "114.114.114.114",
+	Protocol:      "tcp",
+	SOCKS5Address: "",
+	Timeout:       6,
 	EDNSClientSubnet: &common.EDNSClientSubnetType{
 		Policy:     "disable",
 		ExternalIP: "",
@@ -36,11 +36,11 @@ var tcpUpstream = &common.DNSUpstream{
 }
 
 var tcptlsUpstream = &common.DNSUpstream{
-	Name:             "Test-TCPTLS",
-	Address:          "dns.google:853@8.8.8.8",
-	Protocol:         "tcp-tls",
-	SOCKS5Address:    "",
-	Timeout:          8,
+	Name:          "Test-TCPTLS",
+	Address:       "dns.google:853@8.8.8.8",
+	Protocol:      "tcp-tls",
+	SOCKS5Address: "",
+	Timeout:       8,
 	EDNSClientSubnet: &common.EDNSClientSubnetType{
 		Policy:     "disable",
 		ExternalIP: "",
@@ -49,11 +49,11 @@ var tcptlsUpstream = &common.DNSUpstream{
 }
 
 var httpsUpstream = &common.DNSUpstream{
-	Name:             "Test-HTTPS",
-	Address:          "https://dns.google/dns-query",
-	Protocol:         "https",
-	SOCKS5Address:    "",
-	Timeout:          8,
+	Name:          "Test-HTTPS",
+	Address:       "https://dns.google/dns-query",
+	Protocol:      "https",
+	SOCKS5Address: "",
+	Timeout:       8,
 	EDNSClientSubnet: &common.EDNSClientSubnetType{
 		Policy:     "disable",
 		ExternalIP: "",
@@ -94,7 +94,6 @@ func testTCP(t *testing.T) {
 	}
 }
 
-
 func testTCPTLS(t *testing.T) {
 	q := getQueryMsg(questionDomain, dns.TypeA)
 	resolver := NewResolver(udpUpstream)
@@ -103,7 +102,6 @@ func testTCPTLS(t *testing.T) {
 		t.Error(questionDomain + " should have A record")
 	}
 }
-
 
 func testHTTPS(t *testing.T) {
 	q := getQueryMsg(questionDomain, dns.TypeA)

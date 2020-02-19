@@ -38,9 +38,12 @@ type Config struct {
 	OnlyPrimaryDNS           bool
 	IPv6UseAlternativeDNS    bool
 	AlternativeDNSConcurrent bool
-	PoolIdleTimeout          int
-	PoolMaxCapacity          int
-	IPNetworkFile            struct {
+	TCPPoolConfig            struct {
+		InitialCapacity int
+		MaxCapacity     int
+		IdleTimeout     int
+	}
+	IPNetworkFile struct {
 		Primary     string
 		Alternative string
 	}
