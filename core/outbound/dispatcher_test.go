@@ -30,6 +30,7 @@ func init() {
 
 		RedirectIPv6Record:       conf.IPv6UseAlternativeDNS,
 		AlternativeDNSConcurrent: conf.AlternativeDNSConcurrent,
+		TCPPoolConfig:            conf.TCPPoolConfig,
 		MinimumTTL:               conf.MinimumTTL,
 		DomainTTLMap:             conf.DomainTTLMap,
 

@@ -7,10 +7,4 @@ type DNSUpstream struct {
 	SOCKS5Address    string
 	Timeout          int
 	EDNSClientSubnet *EDNSClientSubnetType
-	TCPPoolConfig    struct {
-		Enable          bool
-		InitialCapacity int
-		MaxCapacity     int
-		IdleTimeout     int
-	}
 }

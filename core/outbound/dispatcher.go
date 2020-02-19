@@ -1,10 +1,11 @@
 package outbound
 
 import (
+	"github.com/shawn1m/overture/core/outbound/clients/resolver"
 	"net"
+	"time"
 
 	"github.com/miekg/dns"
-	"github.com/shawn1m/overture/core/outbound/clients/resolver"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/shawn1m/overture/core/cache"
@@ -26,6 +27,11 @@ type Dispatcher struct {
 	DomainAlternativeList       matcher.Matcher
 	RedirectIPv6Record          bool
 	AlternativeDNSConcurrent    bool
+	TCPPoolConfig               struct {
+		InitialCapacity int
+		MaxCapacity     int
+		IdleTimeout     int
+	}
 
 	MinimumTTL   int
 	DomainTTLMap map[string]uint32
@@ -46,6 +52,10 @@ func createResolver(ul []*common.DNSUpstream) (resolvers []resolver.Resolver) {
 }
 
 func (d *Dispatcher) Init() {
+	resolver.IdleTimeout = time.Duration(d.TCPPoolConfig.IdleTimeout) * time.Second
+	resolver.MaxCapacity = d.TCPPoolConfig.MaxCapacity
+	resolver.InitialCapacity = d.TCPPoolConfig.InitialCapacity
+	log.Debugf("Set pool's IdleTimeout to %d, InitialCapacity to %d, MaxCapacity to %d", d.TCPPoolConfig.IdleTimeout, d.TCPPoolConfig.InitialCapacity, d.TCPPoolConfig.MaxCapacity)
 	d.primaryResolvers = createResolver(d.PrimaryDNS)
 	d.alternativeResolvers = createResolver(d.AlternativeDNS)
 }

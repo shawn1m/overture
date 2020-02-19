@@ -9,6 +9,7 @@ type UDPResolver struct {
 }
 
 func (r *UDPResolver) Exchange(q *dns.Msg) (*dns.Msg, error) {
+	// we don't need to pooling for UDP sockets
 	conn, err := r.CreateBaseConn()
 	if err != nil {
 		return nil, err
@@ -19,10 +20,6 @@ func (r *UDPResolver) Exchange(q *dns.Msg) (*dns.Msg, error) {
 	return ret, err
 }
 
-func (r *UDPResolver) Init() error {
-	err := r.BaseResolver.Init()
-	if err != nil {
-		return err
-	}
-	return nil
+func (r *UDPResolver) Init() {
+
 }

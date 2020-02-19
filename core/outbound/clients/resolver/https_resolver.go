@@ -10,6 +10,7 @@ import (
 
 type HTTPSResolver struct {
 	BaseResolver
+
 	client http.Client
 }
 
@@ -33,11 +34,7 @@ func (r *HTTPSResolver) Exchange(q *dns.Msg) (*dns.Msg, error) {
 	return msg, nil
 }
 
-func (r *HTTPSResolver) Init() error {
-	err := r.BaseResolver.Init()
-	if err != nil {
-		return err
-	}
+func (r *HTTPSResolver) Init() {
 	r.client = http.Client{
 		Transport: &http.Transport{
 			Dial: func(network, addr string) (net.Conn, error) {
@@ -45,5 +42,4 @@ func (r *HTTPSResolver) Init() error {
 			},
 		},
 	}
-	return nil
 }
