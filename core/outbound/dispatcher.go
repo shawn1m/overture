@@ -1,7 +1,9 @@
 package outbound
 
 import (
+	"github.com/shawn1m/overture/core/outbound/clients/resolver"
 	"net"
+	"time"
 
 	"github.com/miekg/dns"
 	log "github.com/sirupsen/logrus"
@@ -25,17 +27,39 @@ type Dispatcher struct {
 	DomainAlternativeList       matcher.Matcher
 	RedirectIPv6Record          bool
 	AlternativeDNSConcurrent    bool
+	PoolIdleTimeout          int
+	PoolMaxCapacity          int
 
 	MinimumTTL   int
 	DomainTTLMap map[string]uint32
 
 	Hosts *hosts.Hosts
 	Cache *cache.Cache
+
+	primaryResolvers     []resolver.Resolver
+	alternativeResolvers []resolver.Resolver
+}
+
+func createResolver(ul []*common.DNSUpstream) (resolvers []resolver.Resolver) {
+	resolvers = make([]resolver.Resolver, len(ul))
+	for i, u := range ul {
+		resolvers[i] = resolver.NewResolver(u)
+	}
+	return resolvers
+}
+
+func (d *Dispatcher) Init() {
+	resolver.IdleTimeout = time.Duration(d.PoolIdleTimeout) * time.Second
+	resolver.PoolMaxCapacity = d.PoolMaxCapacity
+	log.Debugf("Set pool's IdleTimeout to %d, MaxCapacity to %d", d.PoolIdleTimeout, d.PoolMaxCapacity)
+	d.primaryResolvers = createResolver(d.PrimaryDNS)
+	d.alternativeResolvers = createResolver(d.AlternativeDNS)
 }
 
 func (d *Dispatcher) Exchange(query *dns.Msg, inboundIP string) *dns.Msg {
-	PrimaryClientBundle := clients.NewClientBundle(query, d.PrimaryDNS, inboundIP, d.MinimumTTL, d.Cache, "Primary", d.DomainTTLMap)
-	AlternativeClientBundle := clients.NewClientBundle(query, d.AlternativeDNS, inboundIP, d.MinimumTTL, d.Cache, "Alternative", d.DomainTTLMap)
+	PrimaryClientBundle := clients.NewClientBundle(query, d.PrimaryDNS, d.primaryResolvers, inboundIP, d.MinimumTTL, d.Cache, "Primary", d.DomainTTLMap)
+	AlternativeClientBundle := clients.NewClientBundle(query, d.AlternativeDNS, d.alternativeResolvers, inboundIP, d.MinimumTTL, d.Cache, "Alternative", d.DomainTTLMap)
+
 	var ActiveClientBundle *clients.RemoteClientBundle
 
 	localClient := clients.NewLocalClient(query, d.Hosts, d.MinimumTTL, d.DomainTTLMap)
