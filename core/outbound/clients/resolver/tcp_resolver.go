@@ -1,18 +1,24 @@
 package resolver
 
 import (
+	"net"
+
 	"github.com/miekg/dns"
 	"github.com/silenceper/pool"
-	"net"
+	log "github.com/sirupsen/logrus"
 )
 
 type TCPResolver struct {
 	BaseResolver
-	connpool pool.Pool
+	poolConn pool.Pool
 }
 
 func (r *TCPResolver) Exchange(q *dns.Msg) (*dns.Msg, error) {
-	_conn, err := r.connpool.Get()
+	if !r.dnsUpstream.TCPPoolConfig.Enable {
+		return r.ExchangeByBaseConn(q)
+	}
+
+	_conn, err := r.poolConn.Get()
 	if err != nil {
 		return nil, err
 	}
@@ -20,16 +26,28 @@ func (r *TCPResolver) Exchange(q *dns.Msg) (*dns.Msg, error) {
 	r.setTimeout(conn)
 	ret, err := r.exchangeByDNSClient(q, conn)
 	if err != nil {
-		r.connpool.Close(conn)
+		r.poolConn.Close(conn)
 	} else {
 		r.setIdleTimeout(conn)
-		r.connpool.Put(conn)
+		r.poolConn.Put(conn)
 	}
 	return ret, err
 }
 
-func (r *TCPResolver) Init() {
-	r.connpool = r.createConnectionPool(
-		func() (interface{}, error) { return r.CreateBaseConn() },
-		func(v interface{}) error { return v.(net.Conn).Close() })
+func (r *TCPResolver) Init() error {
+	err := r.BaseResolver.Init()
+	if err != nil {
+		return err
+	}
+	if r.dnsUpstream.TCPPoolConfig.Enable {
+		r.poolConn, err = r.createConnectionPool(
+			func() (interface{}, error) { return r.CreateBaseConn() },
+			func(v interface{}) error { return v.(net.Conn).Close() })
+		if err != nil {
+			log.Debugf("Set %s pool's IdleTimeout to %d, InitialCapacity to %d, MaxCapacity to %d", r.dnsUpstream.Name, r.dnsUpstream.TCPPoolConfig.IdleTimeout, r.dnsUpstream.TCPPoolConfig.InitialCapacity, r.dnsUpstream.TCPPoolConfig.MaxCapacity)
+		}
+	} else {
+		return nil
+	}
+	return err
 }
