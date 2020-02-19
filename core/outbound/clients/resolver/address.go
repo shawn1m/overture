@@ -5,7 +5,7 @@
  */
 
 // Package outbound implements multiple dns client and dispatcher for outbound connection.
-package clients
+package resolver
 
 import (
 	"errors"
@@ -118,7 +118,13 @@ func ExtractDNSAddress(rawAddress string, protocol string) (host string, port st
 	case "https":
 		host, port, err = ExtractHTTPSAddress(rawAddress)
 	case "tcp-tls":
-		_, port, host = ExtractTLSDNSAddress(rawAddress)
+		_host, _port, _ip := ExtractTLSDNSAddress(rawAddress)
+		if len(_ip) > 0 {
+			host = _ip
+		} else {
+			host = _host
+		}
+		port = _port
 	default:
 		host, port, err = ExtractNormalDNSAddress(rawAddress, protocol)
 	}

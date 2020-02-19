@@ -8,19 +8,13 @@
 package clients
 
 import (
-	"bytes"
-	"crypto/tls"
-	"io/ioutil"
-	"net"
-	"net/http"
-	"time"
-
 	"github.com/miekg/dns"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/net/proxy"
+	"net"
 
 	"github.com/shawn1m/overture/core/cache"
 	"github.com/shawn1m/overture/core/common"
+	"github.com/shawn1m/overture/core/outbound/clients/resolver"
 )
 
 type RemoteClient struct {
@@ -30,12 +24,13 @@ type RemoteClient struct {
 	dnsUpstream        *common.DNSUpstream
 	ednsClientSubnetIP string
 	inboundIP          string
+	dnsResolver        resolver.Resolver
 
 	cache *cache.Cache
 }
 
-func NewClient(q *dns.Msg, u *common.DNSUpstream, ip string, cache *cache.Cache) *RemoteClient {
-	c := &RemoteClient{questionMessage: q.Copy(), dnsUpstream: u, inboundIP: ip, cache: cache}
+func NewClient(q *dns.Msg, u *common.DNSUpstream, resolver resolver.Resolver, ip string, cache *cache.Cache) *RemoteClient {
+	c := &RemoteClient{questionMessage: q.Copy(), dnsUpstream: u, dnsResolver: resolver, inboundIP: ip, cache: cache}
 	c.getEDNSClientSubnetIP()
 
 	return c
@@ -77,25 +72,9 @@ func (c *RemoteClient) Exchange(isLog bool) *dns.Msg {
 		return c.responseMessage
 	}
 
-	var conn net.Conn = nil
-	var err error
-	if c.dnsUpstream.SOCKS5Address != "" {
-		if conn, err = c.createSocks5Conn(); err != nil {
-			return nil
-		}
-	}
-
 	var temp *dns.Msg
-	switch c.dnsUpstream.Protocol {
-	case "udp":
-		temp, err = c.ExchangeByUDP(conn)
-	case "tcp":
-		temp, err = c.ExchangeByTCP(conn)
-	case "tcp-tls":
-		temp, err = c.ExchangeByTLS(conn)
-	case "https":
-		temp, err = c.ExchangeByHTTPS(conn)
-	}
+	var err error
+	temp, err = c.dnsResolver.Exchange(c.questionMessage)
 
 	if err != nil {
 		log.Debugf("%s Fail: %s", c.dnsUpstream.Name, err)
@@ -126,138 +105,4 @@ func (c *RemoteClient) logAnswer(indicator string) {
 		}
 		log.Debugf("Answer from %s: %s", name, a.String())
 	}
-}
-
-func (c *RemoteClient) createSocks5Conn() (conn net.Conn, err error) {
-	socksAddress, err := ExtractSocksAddress(c.dnsUpstream.SOCKS5Address)
-	if err != nil {
-		return nil, err
-	}
-	network := ToNetwork(c.dnsUpstream.Protocol)
-	s, err := proxy.SOCKS5(network, socksAddress, nil, proxy.Direct)
-	if err != nil {
-		log.Warnf("Failed to connect to SOCKS5 proxy: %s", err)
-		return nil, err
-	}
-	host, port, err := ExtractDNSAddress(c.dnsUpstream.Address, c.dnsUpstream.Protocol)
-	if err != nil {
-		return nil, err
-	}
-	address := net.JoinHostPort(host, port)
-	conn, err = s.Dial(network, address)
-	if err != nil {
-		log.Warnf("Failed to connect to upstream via SOCKS5 proxy: %s", err)
-		return nil, err
-	}
-	return conn, err
-}
-
-func (c *RemoteClient) exchangeByDNSClient(conn net.Conn) (msg *dns.Msg, err error) {
-	if conn == nil {
-		network := ToNetwork(c.dnsUpstream.Protocol)
-		host, port, err := ExtractDNSAddress(c.dnsUpstream.Address, c.dnsUpstream.Protocol)
-		if err != nil {
-			return nil, err
-		}
-		address := net.JoinHostPort(host, port)
-		if conn, err = net.Dial(network, address); err != nil {
-			log.Warnf("Failed to connect to DNS upstream: %s", err)
-			return nil, err
-		}
-	}
-	c.setTimeout(conn)
-	dc := &dns.Conn{Conn: conn, UDPSize: 65535}
-	defer dc.Close()
-	err = dc.WriteMsg(c.questionMessage)
-	if err != nil {
-		log.Warnf("%s Fail: Send question message failed", c.dnsUpstream.Name)
-		return nil, err
-	}
-	return dc.ReadMsg()
-}
-
-// ExchangeByUDP send dns record by udp protocol
-func (c *RemoteClient) ExchangeByUDP(conn net.Conn) (*dns.Msg, error) {
-	return c.exchangeByDNSClient(conn)
-}
-
-// ExchangeByTCP send dns record by tcp protocol
-func (c *RemoteClient) ExchangeByTCP(conn net.Conn) (*dns.Msg, error) {
-	return c.exchangeByDNSClient(conn)
-}
-
-// ExchangeByTLS send dns record by tcp-tls protocol
-func (c *RemoteClient) ExchangeByTLS(conn net.Conn) (msg *dns.Msg, err error) {
-	host, port, ip := ExtractTLSDNSAddress(c.dnsUpstream.Address)
-	var address string
-	if len(ip) > 0 {
-		address = net.JoinHostPort(ip, port)
-	} else {
-		address = net.JoinHostPort(host, port)
-	}
-
-	conf := &tls.Config{
-		InsecureSkipVerify: false,
-		ServerName:         host,
-	}
-	if conn != nil {
-		// crate tls client use the existing connection
-		conn = tls.Client(conn, conf)
-	} else {
-		if conn, err = tls.Dial("tcp", address, conf); err != nil {
-			log.Warnf("Failed to connect to DNS-over-TLS upstream: %s", err)
-			return nil, err
-		}
-	}
-	c.setTimeout(conn)
-	return c.exchangeByDNSClient(conn)
-}
-
-// ExchangeByHTTPS send dns record by https protocol
-func (c *RemoteClient) ExchangeByHTTPS(conn net.Conn) (*dns.Msg, error) {
-	if conn == nil {
-		host, port, err := ExtractHTTPSAddress(c.dnsUpstream.Address)
-		if err != nil {
-			return nil, err
-		}
-		address := net.JoinHostPort(host, port)
-		conn, err = net.Dial("tcp", address)
-		if err != nil {
-			log.Warnf("Fail connect to dns server %s", address)
-			return nil, err
-		}
-	}
-	c.setTimeout(conn)
-	client := http.Client{
-		Transport: &http.Transport{
-			Dial: func(network, addr string) (net.Conn, error) {
-				return conn, nil
-			},
-		},
-	}
-	defer client.CloseIdleConnections()
-	request, err := c.questionMessage.Pack()
-	resp, err := client.Post(c.dnsUpstream.Address, "application/dns-message",
-		bytes.NewBuffer(request))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	msg := new(dns.Msg)
-	err = msg.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return msg, nil
-}
-
-func (c *RemoteClient) setTimeout(conn net.Conn) {
-	dnsTimeout := time.Duration(c.dnsUpstream.Timeout) * time.Second / 3
-	conn.SetDeadline(time.Now().Add(dnsTimeout))
-	conn.SetReadDeadline(time.Now().Add(dnsTimeout))
-	conn.SetWriteDeadline(time.Now().Add(dnsTimeout))
 }
