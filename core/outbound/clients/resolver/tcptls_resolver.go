@@ -15,23 +15,16 @@ type TCPTLSResolver struct {
 }
 
 func (r *TCPTLSResolver) Exchange(q *dns.Msg) (*dns.Msg, error) {
-	if !r.dnsUpstream.TCPPoolConfig.Enable {
-		return r.ExchangeByBaseConn(q)
-	}
-	_conn, err := r.poolConn.Get()
-	if err != nil {
-		return nil, err
-	}
-	conn := _conn.(net.Conn)
-	r.setTimeout(conn)
-	ret, err := r.exchangeByDNSClient(q, conn)
-	if err != nil {
-		r.poolConn.Close(conn)
+	if r.dnsUpstream.TCPPoolConfig.Enable {
+		return r.BaseResolver.exchangeByPool(q, r.poolConn)
 	} else {
-		r.setIdleTimeout(conn)
-		r.poolConn.Put(conn)
+		conn, err := r.createTlsConn()
+		if err != nil {
+			return nil, err
+		}
+		defer conn.Close()
+		return r.exchangeByConnWithoutClose(q, conn)
 	}
-	return ret, err
 }
 
 func (r *TCPTLSResolver) createTlsConn() (conn net.Conn, err error) {

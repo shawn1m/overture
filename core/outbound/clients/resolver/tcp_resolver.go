@@ -14,24 +14,11 @@ type TCPResolver struct {
 }
 
 func (r *TCPResolver) Exchange(q *dns.Msg) (*dns.Msg, error) {
-	if !r.dnsUpstream.TCPPoolConfig.Enable {
-		return r.ExchangeByBaseConn(q)
-	}
-
-	_conn, err := r.poolConn.Get()
-	if err != nil {
-		return nil, err
-	}
-	conn := _conn.(net.Conn)
-	r.setTimeout(conn)
-	ret, err := r.exchangeByDNSClient(q, conn)
-	if err != nil {
-		r.poolConn.Close(conn)
+	if r.dnsUpstream.TCPPoolConfig.Enable {
+		return r.BaseResolver.exchangeByPool(q, r.poolConn)
 	} else {
-		r.setIdleTimeout(conn)
-		r.poolConn.Put(conn)
+		return r.BaseResolver.Exchange(q)
 	}
-	return ret, err
 }
 
 func (r *TCPResolver) Init() error {

@@ -25,20 +25,26 @@ type BaseResolver struct {
 	dnsUpstream *common.DNSUpstream
 }
 
-func (r *BaseResolver) Exchange(*dns.Msg) (*dns.Msg, error) {
-	return nil, nil
-}
-
-func (r *BaseResolver) ExchangeByBaseConn(q *dns.Msg) (*dns.Msg, error) {
+func (r *BaseResolver) Exchange(q *dns.Msg) (*dns.Msg, error) {
 	conn, err := r.CreateBaseConn()
+	defer conn.Close()
 	if err != nil {
 		return nil, err
 	}
+	return r.exchangeByConnWithoutClose(q, conn)
+}
+
+func (r *BaseResolver) exchangeByConnWithoutClose(q *dns.Msg, conn net.Conn) (msg *dns.Msg, err error) {
+	if conn == nil {
+		log.Fatal("Conn not initialized for exchangeByDNSClient")
+		return nil, err
+	}
+
 	r.setTimeout(conn)
 	dc := &dns.Conn{Conn: conn, UDPSize: 65535}
-	defer dc.Close()
 	err = dc.WriteMsg(q)
 	if err != nil {
+		log.Warnf("%s Fail: Send question message failed", r.dnsUpstream.Name)
 		return nil, err
 	}
 	return dc.ReadMsg()
@@ -147,17 +153,18 @@ func (r *BaseResolver) createConnectionPool(connCreate func() (interface{}, erro
 	return pool.NewChannelPool(poolConfig)
 }
 
-func (r *BaseResolver) exchangeByDNSClient(q *dns.Msg, conn net.Conn) (msg *dns.Msg, err error) {
-	if conn == nil {
-		log.Fatal("Conn not initialized for exchangeByDNSClient")
-		return nil, err
-	}
-
-	dc := &dns.Conn{Conn: conn, UDPSize: 65535}
-	err = dc.WriteMsg(q)
+func (r *BaseResolver) exchangeByPool(q *dns.Msg, poolConn pool.Pool) (msg *dns.Msg, err error) {
+	_conn, err := poolConn.Get()
 	if err != nil {
-		log.Warnf("%s Fail: Send question message failed", r.dnsUpstream.Name)
 		return nil, err
 	}
-	return dc.ReadMsg()
+	conn := _conn.(net.Conn)
+	ret, err := r.exchangeByConnWithoutClose(q, conn)
+	if err != nil {
+		poolConn.Close(conn)
+	} else {
+		r.setIdleTimeout(conn)
+		poolConn.Put(conn)
+	}
+	return ret, err
 }
