@@ -1,30 +1,59 @@
 # appveyor.yml
-image: Ubuntu
+image: 
+  - Ubuntu
+  - macOS
 
-clone_folder: /usr/go/src/github.com/shawn1m/overture
+stack: go 1.13
+
+for:
+-
+  matrix:
+    only:
+      - image: macOS
+  
+  environment:
+    GOPATH: /tmp/
+  clone_folder: /tmp/go/src/github.com/shawn1m/overture
+  before_build:
+    - "echo Building from macOS"
+    - "go env"
+    - "ls -al"
+    - "python3 ./build.py -create-sample"
+    - "python3 ./build.py -build-ios"
+
+-
+  matrix:
+    only:
+      - image: Ubuntu
+  
+  init:
+    #- sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
+  environment:
+    APPVEYOR_SSH_KEY: ""
+    GOPATH: /usr/go/
+    ANDROID_NDK_ROOT: /tmp/android-ndk-r16b
+  clone_folder: /usr/go/src/github.com/shawn1m/overture
+  before_build:
+    - "wget https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip -O /tmp/android-ndk.zip"
+    - "unzip -q /tmp/android-ndk.zip -d /tmp"
+    - "python $ANDROID_NDK_ROOT/build/tools/make_standalone_toolchain.py --api=16 --install-dir=$ANDROID_NDK_ROOT/bin/arm-linux-androideabi/ --arch=arm"
+    - "python $ANDROID_NDK_ROOT/build/tools/make_standalone_toolchain.py --api=21 --install-dir=$ANDROID_NDK_ROOT/bin/aarch64-linux-android/ --arch=arm64"
+    - "python $ANDROID_NDK_ROOT/build/tools/make_standalone_toolchain.py --api=16 --install-dir=$ANDROID_NDK_ROOT/bin/i686-linux-android/ --arch=x86"
+    - "python $ANDROID_NDK_ROOT/build/tools/make_standalone_toolchain.py --api=21 --install-dir=$ANDROID_NDK_ROOT/bin/x86_64-linux-android/ --arch=x86_64"
+    - "python3 ./build.py -create-sample"
+    - "python3 ./build.py -build-android"
+    - "python3 ./build.py -build"
+  on_finish:
+    #- sh: export APPVEYOR_SSH_BLOCK=true
+    #- sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
 
 branches:
   only:
     - master
 
-skip_tags: true
+#skip_tags: true
 
-skip_branch_with_pr: true
-
-environment:
-  GOPATH: /usr/go/
-
-stack: go 1.13
-
-before_build:
-  - "python3 ./build.py -create-sample"
-  - "python3 ./build.py -build"
-
-before_test:
-  - go vet ./...
-
-test_script:
-  - go test ./...
+#skip_branch_with_pr: true
 
 artifacts:
   - path: 'overture-*.zip'
