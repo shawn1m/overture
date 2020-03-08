@@ -91,7 +91,8 @@ func NewResolver(u *common.DNSUpstream) Resolver {
 }
 
 func (r *BaseResolver) CreateBaseConn() (net.Conn, error) {
-	dialer := net.Dial
+	dialer := net.Dialer{Timeout: r.getDialTimeout()}
+	dialerFunc := dialer.Dial
 	if r.dnsUpstream.SOCKS5Address != "" {
 		socksAddress, err := ExtractSocksAddress(r.dnsUpstream.SOCKS5Address)
 		if err != nil {
@@ -103,7 +104,7 @@ func (r *BaseResolver) CreateBaseConn() (net.Conn, error) {
 			log.Warnf("Failed to connect to SOCKS5 proxy: %s", err)
 			return nil, err
 		}
-		dialer = s.Dial
+		dialerFunc = s.Dial
 	}
 
 	network := ToNetwork(r.dnsUpstream.Protocol)
@@ -114,7 +115,7 @@ func (r *BaseResolver) CreateBaseConn() (net.Conn, error) {
 	address := net.JoinHostPort(host, port)
 	log.Debugf("Creating new connection to %s:%s", host, port)
 	var conn net.Conn
-	if conn, err = dialer(network, address); err != nil {
+	if conn, err = dialerFunc(network, address); err != nil {
 		log.Warnf("Failed to connect to DNS upstream: %s", err)
 		return nil, err
 	}
@@ -133,6 +134,10 @@ func (r *BaseResolver) setTimeout(conn net.Conn) {
 	conn.SetDeadline(time.Now().Add(dnsTimeout))
 	conn.SetReadDeadline(time.Now().Add(dnsTimeout))
 	conn.SetWriteDeadline(time.Now().Add(dnsTimeout))
+}
+
+func (r *BaseResolver) getDialTimeout() time.Duration {
+	return time.Duration(r.dnsUpstream.Timeout) * time.Second / 3
 }
 
 func (r *BaseResolver) setIdleTimeout(conn net.Conn) {

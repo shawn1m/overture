@@ -61,6 +61,9 @@ func getReservedIPNetworkList() []*net.IPNet {
 }
 
 func FindRecordByType(msg *dns.Msg, t uint16) string {
+	if msg == nil {
+		return ""
+	}
 	for _, rr := range msg.Answer {
 		if rr.Header().Rrtype == t {
 			items := strings.SplitN(rr.String(), "\t", 5)

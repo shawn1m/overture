@@ -24,7 +24,7 @@ var udpUpstream = &common.DNSUpstream{
 
 var tcpUpstream = &common.DNSUpstream{
 	Name:          "Test-TCP",
-	Address:       "114.114.114.114:53",
+	Address:       "1.1.1.1",
 	Protocol:      "tcp",
 	SOCKS5Address: "",
 	Timeout:       6,
