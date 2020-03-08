@@ -24,7 +24,7 @@ var udpUpstream = &common.DNSUpstream{
 
 var tcpUpstream = &common.DNSUpstream{
 	Name:          "Test-TCP",
-	Address:       "114.114.114.114",
+	Address:       "114.114.114.114:53",
 	Protocol:      "tcp",
 	SOCKS5Address: "",
 	Timeout:       6,
@@ -35,9 +35,9 @@ var tcpUpstream = &common.DNSUpstream{
 	},
 }
 
-var tcptlsUpstream = &common.DNSUpstream{
-	Name:          "Test-TCPTLS",
-	Address:       "dns.google:853@8.8.8.8",
+var tcpTlsUpstream = &common.DNSUpstream{
+	Name:          "Test-TCP-TLS",
+	Address:       "dns.google@8.8.8.8",
 	Protocol:      "tcp-tls",
 	SOCKS5Address: "",
 	Timeout:       8,
@@ -87,7 +87,7 @@ func testUDP(t *testing.T) {
 
 func testTCP(t *testing.T) {
 	q := getQueryMsg(questionDomain, dns.TypeA)
-	resolver := NewResolver(udpUpstream)
+	resolver := NewResolver(tcpUpstream)
 	resp, _ := resolver.Exchange(q)
 	if net.ParseIP(common.FindRecordByType(resp, dns.TypeA)).To4() == nil {
 		t.Error(questionDomain + " should have A record")
@@ -96,7 +96,7 @@ func testTCP(t *testing.T) {
 
 func testTCPTLS(t *testing.T) {
 	q := getQueryMsg(questionDomain, dns.TypeA)
-	resolver := NewResolver(udpUpstream)
+	resolver := NewResolver(tcpTlsUpstream)
 	resp, _ := resolver.Exchange(q)
 	if net.ParseIP(common.FindRecordByType(resp, dns.TypeA)).To4() == nil {
 		t.Error(questionDomain + " should have A record")
@@ -105,7 +105,7 @@ func testTCPTLS(t *testing.T) {
 
 func testHTTPS(t *testing.T) {
 	q := getQueryMsg(questionDomain, dns.TypeA)
-	resolver := NewResolver(udpUpstream)
+	resolver := NewResolver(httpsUpstream)
 	resp, _ := resolver.Exchange(q)
 	if net.ParseIP(common.FindRecordByType(resp, dns.TypeA)).To4() == nil {
 		t.Error(questionDomain + " should have A record")

@@ -74,8 +74,28 @@ func ExtractSocksAddress(rawAddress string) (string, error) {
 // ExtractTLSDNSAddress parse tcp-tls format: dns.google:853@8.8.8.8
 func ExtractTLSDNSAddress(rawAddress string) (host string, port string, ip string, err error) {
 	s := strings.Split(rawAddress, "@")
-	host, port, err = extractNormalDNSAddress(s[0], "tcp-tls")
-	return host, port, s[1], err
+	host, port, err = net.SplitHostPort(s[0])
+	isJustHost := len(rawAddress) > 0
+	if err != nil && !isJustHost {
+		log.Warnf("dns server address %s is invalid", rawAddress)
+		return "", "", "", errors.New("dns up server address is invalid")
+	}
+	if err != nil && isJustHost {
+		host = s[0]
+		if isJustIP(host) {
+			host = generateLiteralIPv6AddressIfNecessary(host)
+		}
+		port = getDefaultPort("tcp-tls")
+	}
+
+	ip = s[1]
+	if isJustIP(ip) {
+		ip = generateLiteralIPv6AddressIfNecessary(ip)
+	} else {
+		log.Warnf("dns server address %s is invalid", rawAddress)
+		return "", "", "", errors.New("dns up server address is invalid")
+	}
+	return host, port, ip, nil
 }
 
 // extractNormalDNSAddress parse normal format: 8.8.8.8:53
@@ -123,7 +143,7 @@ func extractHTTPSAddress(rawAddress string) (host string, port string, err error
 
 }
 
-// ExtractDNSAddress parse all format
+// ExtractDNSAddress parse all format, return literal IPv6 address
 func ExtractDNSAddress(rawAddress string, protocol string) (host string, port string, err error) {
 	switch protocol {
 	case "https":
