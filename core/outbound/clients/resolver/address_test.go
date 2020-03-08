@@ -25,6 +25,7 @@ func TestExtractDNSAddress(t *testing.T) {
 		{ipv4Address, "udp", ipv4Address, "53", nil},
 		{ipv6Address, "udp", literalIpa6Address, "53", nil},
 		{"https://dns.google/dns-query", "https", "dns.google", "443", nil},
+		{"dns.google/dns-query", "https", "dns.google", "443", nil},
 		{"https://dns.google:888/dns-query", "https", "dns.google", "888", nil},
 	}
 	for _, tt := range tests {
@@ -37,46 +38,27 @@ func TestExtractDNSAddress(t *testing.T) {
 	}
 }
 
-func TestExtractSocksAddress(t *testing.T) {
+func TestExtractFullUrl(t *testing.T) {
 	var tests = []struct {
-		in  string
-		out string
+		url      string
+		protocol string
+		out      string
 	}{
-		{"socks5://" + ipv4Address + ":80", ipv4Address + ":80"},
-		{"socks5://" + ipv6Address + ":80", ipv6Address + ":80"},
-		{"socks5://" + ipv6Address, ipv6Address + ":1080"},
-		{"" + ipv4Address + ":80", ipv4Address + ":80"},
-		{"" + ipv6Address + ":80", ipv6Address + ":80"},
-		{"" + ipv6Address, ipv6Address + ":1080"},
+		{"socks5://" + ipv4Address + ":80", "socks5", ipv4Address + ":80"},
+		{ipv4Address + ":80", "socks5", ipv4Address + ":80"},
+		{ipv6Address + ":80", "socks5", ipv6Address + ":80"},
+		{ipv6Address, "socks5", ipv6Address + ":1080"},
+		{ipv6Address, "https", ipv6Address + ":443"},
+		{"tcp-tls://" + ipv6Address, "tcp-tls", ipv6Address + ":853"},
+		{"" + ipv4Address + ":80", "socks5", ipv4Address + ":80"},
+		{"" + ipv6Address + ":80", "socks5", ipv6Address + ":80"},
+		{"" + ipv6Address, "socks5", ipv6Address + ":1080"},
+		{"abc.com", "socks5", "abc.com:1080"},
 	}
 	for _, tt := range tests {
-		t.Run(tt.in, func(t *testing.T) {
-			addr, err := ExtractSocksAddress(tt.in)
-			testEqual(t, addr, tt.out)
-			testErr(t, err)
-		})
-	}
-}
-
-func TestExtractTLSDNSAddress(t *testing.T) {
-
-	var tests = []struct {
-		in   string
-		host string
-		port string
-		ip   string
-		err  error
-	}{
-		{"dns.google:853@" + ipv6Address, "dns.google", "853", literalIpa6Address, nil},
-		{"dns.google@" + ipv6Address, "dns.google", "853", literalIpa6Address, nil},
-		{"dns.google:853@" + ipv4Address, "dns.google", "853", ipv4Address, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.in, func(t *testing.T) {
-			host, port, ip, err := ExtractTLSDNSAddress(tt.in)
-			testEqual(t, host, tt.host)
-			testEqual(t, port, tt.port)
-			testEqual(t, ip, tt.ip)
+		t.Run(tt.url, func(t *testing.T) {
+			url, err := ExtractFullUrl(tt.url, tt.protocol)
+			testEqual(t, url, tt.out)
 			testErr(t, err)
 		})
 	}

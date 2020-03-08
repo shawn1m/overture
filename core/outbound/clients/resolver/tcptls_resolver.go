@@ -33,7 +33,7 @@ func (r *TCPTLSResolver) createTlsConn() (conn net.Conn, err error) {
 	if err != nil {
 		return nil, err
 	}
-	host, _, _, err := ExtractTLSDNSAddress(r.dnsUpstream.Address)
+	host, err := ExtractTLSDNSHostName(r.dnsUpstream.Address)
 	if err != nil {
 		return nil, err
 	}

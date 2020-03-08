@@ -94,7 +94,7 @@ func (r *BaseResolver) CreateBaseConn() (net.Conn, error) {
 	dialer := net.Dialer{Timeout: r.getDialTimeout()}
 	dialerFunc := dialer.Dial
 	if r.dnsUpstream.SOCKS5Address != "" {
-		socksAddress, err := ExtractSocksAddress(r.dnsUpstream.SOCKS5Address)
+		socksAddress, err := ExtractFullUrl(r.dnsUpstream.SOCKS5Address, "socks5")
 		if err != nil {
 			return nil, err
 		}
