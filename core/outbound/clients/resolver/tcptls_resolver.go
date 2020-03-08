@@ -20,6 +20,7 @@ func (r *TCPTLSResolver) Exchange(q *dns.Msg) (*dns.Msg, error) {
 	} else {
 		conn, err := r.createTlsConn()
 		if err != nil {
+			log.Warnf("createTlsConn failed: %s", err)
 			return nil, err
 		}
 		defer conn.Close()
@@ -32,7 +33,10 @@ func (r *TCPTLSResolver) createTlsConn() (conn net.Conn, err error) {
 	if err != nil {
 		return nil, err
 	}
-	host, _, _ := ExtractTLSDNSAddress(r.dnsUpstream.Address)
+	host, _, _, err := ExtractTLSDNSAddress(r.dnsUpstream.Address)
+	if err != nil {
+		return nil, err
+	}
 	conf := &tls.Config{
 		InsecureSkipVerify: false,
 		ServerName:         host,

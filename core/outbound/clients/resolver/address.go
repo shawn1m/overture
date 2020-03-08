@@ -24,6 +24,8 @@ func getDefaultPort(protocol string) (port string) {
 		port = "853"
 	case "https":
 		port = "443"
+	case "socks5":
+		port = "1080"
 	}
 	return port
 }
@@ -41,16 +43,21 @@ func ToNetwork(protocol string) string {
 }
 
 // ExtractSocksAddress parse socks5 address,
-// suport two formats: socks5://127.0.0.1:1080 and 127.0.0.1:1080
+// support two formats: socks5://127.0.0.1:1080 and 127.0.0.1:1080
 func ExtractSocksAddress(rawAddress string) (string, error) {
 	uri, err := url.Parse(rawAddress)
 	if err != nil {
 		// socks5 address format is 127.0.0.1:1080
-		s := strings.Split(rawAddress, ":")
-		if len(s) == 2 {
-			return net.JoinHostPort(s[0], s[1]), nil
+		_, _, err = net.SplitHostPort(rawAddress)
+		isJustIP := isJustIP(rawAddress)
+		if err != nil && !isJustIP {
+			log.Warnf("socks5 address %s is invalid", rawAddress)
+			return "", errors.New("socks5 address is invalid")
 		}
-		return net.JoinHostPort(s[0], "1080"), nil
+		if isJustIP {
+			rawAddress = rawAddress + ":" + getDefaultPort("socks5")
+		}
+		return rawAddress, nil
 	}
 	// socks5://127.0.0.1:1080
 	if len(uri.Scheme) == 0 || uri.Scheme != "socks5" {
@@ -65,40 +72,44 @@ func ExtractSocksAddress(rawAddress string) (string, error) {
 }
 
 // ExtractTLSDNSAddress parse tcp-tls format: dns.google:853@8.8.8.8
-func ExtractTLSDNSAddress(rawAddress string) (host string, port string, ip string) {
+func ExtractTLSDNSAddress(rawAddress string) (host string, port string, ip string, err error) {
 	s := strings.Split(rawAddress, "@")
-	if len(s) == 2 {
-		ip = s[1]
-	}
-	items := strings.Split(s[0], ":")
-	host = items[0]
-	if len(items) == 1 {
-		port = getDefaultPort("tcp-tls")
-	} else {
-		port = items[1]
-	}
-	return host, port, ip
+	host, port, err = extractNormalDNSAddress(s[0], "tcp-tls")
+	return host, port, s[1], err
 }
 
-// ExtractNormalDNSAddress parse normal format: 8.8.8.8:53
-func ExtractNormalDNSAddress(rawAddress string, protocol string) (host string, port string, err error) {
-	s := strings.Split(rawAddress, ":")
-	if len(s) != 1 && len(s) != 2 {
+// extractNormalDNSAddress parse normal format: 8.8.8.8:53
+func extractNormalDNSAddress(rawAddress string, protocol string) (host string, port string, err error) {
+	host, port, err = net.SplitHostPort(rawAddress)
+	isJustIP := isJustIP(rawAddress)
+	if err != nil && !isJustIP {
 		log.Warnf("dns server address %s is invalid", rawAddress)
-		return "", "", errors.New("dns up server adrress is invalid")
+		return "", "", errors.New("dns up server address is invalid")
 	}
-	host = s[0]
-	if len(s) == 2 {
-		port = s[1]
-	} else {
+	if isJustIP {
+		host = generateLiteralIPv6AddressIfNecessary(rawAddress)
 		port = getDefaultPort(protocol)
 	}
 	return host, port, nil
 
 }
 
-// ExtractHTTPSAddress parse https format: https://dns.google/dns-query
-func ExtractHTTPSAddress(rawAddress string) (host string, port string, err error) {
+func isJustIP(rawAddress string) bool {
+	// If this rawAddress is not like "[::1]:5353", change [::1] to ::1
+	if !strings.Contains(rawAddress, "]:") {
+		rawAddress = generateLiteralIPv6AddressIfNecessary(rawAddress)
+	}
+	return net.ParseIP(rawAddress) != nil
+}
+
+func generateLiteralIPv6AddressIfNecessary(rawAddress string) string {
+	rawAddress = strings.Replace(rawAddress, "[", "", 1)
+	rawAddress = strings.Replace(rawAddress, "]", "", 1)
+	return rawAddress
+}
+
+// extractHTTPSAddress parse https format: https://dns.google/dns-query
+func extractHTTPSAddress(rawAddress string) (host string, port string, err error) {
 	uri, err := url.Parse(rawAddress)
 	if err != nil {
 		return "", "", err
@@ -116,17 +127,18 @@ func ExtractHTTPSAddress(rawAddress string) (host string, port string, err error
 func ExtractDNSAddress(rawAddress string, protocol string) (host string, port string, err error) {
 	switch protocol {
 	case "https":
-		host, port, err = ExtractHTTPSAddress(rawAddress)
+		host, port, err = extractHTTPSAddress(rawAddress)
 	case "tcp-tls":
-		_host, _port, _ip := ExtractTLSDNSAddress(rawAddress)
+		_host, _port, _ip, _err := ExtractTLSDNSAddress(rawAddress)
 		if len(_ip) > 0 {
 			host = _ip
 		} else {
 			host = _host
 		}
 		port = _port
+		err = _err
 	default:
-		host, port, err = ExtractNormalDNSAddress(rawAddress, protocol)
+		host, port, err = extractNormalDNSAddress(rawAddress, protocol)
 	}
 	return host, port, err
 }

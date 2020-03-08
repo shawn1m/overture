@@ -27,10 +27,10 @@ type BaseResolver struct {
 
 func (r *BaseResolver) Exchange(q *dns.Msg) (*dns.Msg, error) {
 	conn, err := r.CreateBaseConn()
-	defer conn.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer conn.Close()
 	return r.exchangeByConnWithoutClose(q, conn)
 }
 
