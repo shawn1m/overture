@@ -192,8 +192,10 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
 + DNS: You can specify multiple DNS upstream servers here.
     + Name: This field is only used for logging.
     + Address: Same as BindAddress.
-    + Protocol: `tcp`, `udp` or `tcp-tls`
+    + Protocol: `tcp`, `udp`, `tcp-tls` or `https`
         + `tcp-tls`: Address format is "servername:port@serverAddress", try one.one.one.one:853 or one.one.one.one:853@1.1.1.1
+        + `https`: Just try https://cloudflare-dns.com/dns-query
+        +  Check [DNS Privacy Public Resolvers](https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Public+Resolvers) for more public `tcp-tls`, `https` resolvers.
     + SOCKS5Address: Forward dns query to this SOCKS5 proxy, `“”` to disable.
     + EDNSClientSubnet: Used to improve DNS accuracy. Please check [RFC7871](https://tools.ietf.org/html/rfc7871) for
     details.
