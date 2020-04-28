@@ -62,8 +62,8 @@ type Config struct {
 	DomainPrimaryList           matcher.Matcher
 	DomainAlternativeList       matcher.Matcher
 	WhenPrimaryDNSAnswerNoneUse string
-	IPNetworkPrimaryList        []*net.IPNet
-	IPNetworkAlternativeList    []*net.IPNet
+	IPNetworkPrimarySet         *common.IPSet
+	IPNetworkAlternativeSet     *common.IPSet
 	Hosts                       *hosts.Hosts
 	Cache                       *cache.Cache
 }
@@ -77,8 +77,8 @@ func NewConfig(configFile string) *Config {
 	config.DomainPrimaryList = initDomainMatcher(config.DomainFile.Primary, config.DomainFile.PrimaryMatcher, config.DomainFile.Matcher)
 	config.DomainAlternativeList = initDomainMatcher(config.DomainFile.Alternative, config.DomainFile.AlternativeMatcher, config.DomainFile.Matcher)
 
-	config.IPNetworkPrimaryList = getIPNetworkList(config.IPNetworkFile.Primary)
-	config.IPNetworkAlternativeList = getIPNetworkList(config.IPNetworkFile.Alternative)
+	config.IPNetworkPrimarySet = getIPNetworkSet(config.IPNetworkFile.Primary)
+	config.IPNetworkAlternativeSet = getIPNetworkSet(config.IPNetworkFile.Alternative)
 
 	if config.MinimumTTL > 0 {
 		log.Infof("Minimum TTL has been set to %d", config.MinimumTTL)
@@ -265,7 +265,7 @@ func initDomainMatcher(file string, name string, defaultName string) (m matcher.
 	return
 }
 
-func getIPNetworkList(file string) []*net.IPNet {
+func getIPNetworkSet(file string) *common.IPSet {
 	ipNetList := make([]*net.IPNet, 0)
 
 	f, err := os.Open(file)
@@ -313,5 +313,5 @@ func getIPNetworkList(file string) []*net.IPNet {
 		}
 	}
 
-	return ipNetList
+	return common.NewIPSet(ipNetList)
 }

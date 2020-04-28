@@ -39,14 +39,14 @@ func NewClient(q *dns.Msg, u *common.DNSUpstream, resolver resolver.Resolver, ip
 func (c *RemoteClient) getEDNSClientSubnetIP() {
 	switch c.dnsUpstream.EDNSClientSubnet.Policy {
 	case "auto":
-		if !common.IsIPMatchList(net.ParseIP(c.inboundIP), common.ReservedIPNetworkList, false, "") {
+		if !common.ReservedIPNetworkList.Contains(net.ParseIP(c.inboundIP), false, "") {
 			c.ednsClientSubnetIP = c.inboundIP
 		} else {
 			c.ednsClientSubnetIP = c.dnsUpstream.EDNSClientSubnet.ExternalIP
 		}
 	case "manual":
 		if c.dnsUpstream.EDNSClientSubnet.ExternalIP != "" &&
-			!common.IsIPMatchList(net.ParseIP(c.dnsUpstream.EDNSClientSubnet.ExternalIP), common.ReservedIPNetworkList, false, "") {
+			!common.ReservedIPNetworkList.Contains(net.ParseIP(c.dnsUpstream.EDNSClientSubnet.ExternalIP), false, "") {
 			c.ednsClientSubnetIP = c.dnsUpstream.EDNSClientSubnet.ExternalIP
 			return
 		}

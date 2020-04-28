@@ -16,23 +16,6 @@ import (
 
 var ReservedIPNetworkList = getReservedIPNetworkList()
 
-func IsIPMatchList(ip net.IP, ipNetList []*net.IPNet, isLog bool, name string) bool {
-	if ipNetList != nil {
-		for _, ipNet := range ipNetList {
-			if ipNet.Contains(ip) {
-				if isLog {
-					log.Debugf("Matched: IP network %s %s %s", name, ip.String(), ipNet.String())
-				}
-				return true
-			}
-		}
-	} else {
-		log.Debug("IP network list is nil, not checking")
-	}
-
-	return false
-}
-
 func IsDomainMatchRule(pattern string, domain string) bool {
 	matched, err := regexp.MatchString(pattern, domain)
 	if err != nil {
@@ -47,7 +30,7 @@ func HasSubDomain(s string, sub string) bool {
 	return strings.HasSuffix(sub, "."+s) || s == sub
 }
 
-func getReservedIPNetworkList() []*net.IPNet {
+func getReservedIPNetworkList() *IPSet {
 	var ipNetList []*net.IPNet
 	localCIDR := []string{"127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "100.64.0.0/10"}
 	for _, c := range localCIDR {
@@ -57,7 +40,7 @@ func getReservedIPNetworkList() []*net.IPNet {
 		}
 		ipNetList = append(ipNetList, ipNet)
 	}
-	return ipNetList
+	return NewIPSet(ipNetList)
 }
 
 func FindRecordByType(msg *dns.Msg, t uint16) string {
