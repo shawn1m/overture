@@ -45,11 +45,8 @@ func (ipSet *IPSet) Contains(ip net.IP, isLog bool, name string) bool {
 	if ipSet != nil {
 		if ipv4 := ip.To4(); ipv4 != nil {
 			result = ipSet.ipv4.contains(ipv4)
-		}
-		if !result && ipSet.ipv6 != nil {
-			if ipv6 := ip.To16(); ipv6 != nil {
-				result = ipSet.ipv6.contains(ipv6)
-			}
+		} else if ipv6 := ip.To16(); ipv6 != nil {
+			result = ipSet.ipv6.contains(ipv6)
 		}
 		if result && isLog {
 			log.Debugf("Matched: IP network %s %s", name, ip.String())
@@ -60,8 +57,8 @@ func (ipSet *IPSet) Contains(ip net.IP, isLog bool, name string) bool {
 	return result
 }
 
-func toRange(ipNet *net.IPNet) *ipRange {
-	ip, mask := ipNet.IP, ipNet.Mask
+func toRange(ip net.IP, mask net.IPMask) *ipRange {
+	// assert len(ip) == len(mask)
 	ipLen := len(ip)
 	start, end := make(net.IP, ipLen), make(net.IP, ipLen)
 	for i := 0; i < ipLen; i++ {
@@ -118,12 +115,25 @@ func sortAndMerge(rr ipRanges) ipRanges {
 func NewIPSet(ipNetList []*net.IPNet) *IPSet {
 	result := &IPSet{}
 	for _, ipNet := range ipNetList {
-		switch len(ipNet.IP) {
-		case net.IPv4len:
-			result.ipv4 = append(result.ipv4, toRange(ipNet))
-		case net.IPv6len:
-			result.ipv6 = append(result.ipv4, toRange(ipNet))
-		default:
+		ip, mask := ipNet.IP, ipNet.Mask
+		if ipv4 := ip.To4(); ipv4 != nil {
+			ip = ipv4
+		}
+		if len(ip) == net.IPv4len && len(mask) == net.IPv6len && allFF(mask[:12]) {
+			mask = mask[12:]
+		}
+		if lenIp := len(ip); lenIp == len(mask) {
+			r := toRange(ip, mask)
+			switch lenIp {
+			case net.IPv4len:
+				result.ipv4 = append(result.ipv4, r)
+			case net.IPv6len:
+				result.ipv6 = append(result.ipv6, r)
+			default:
+				// invalid ip length, should not happen
+			}
+		} else {
+			// invalid IPNet, should not happen
 		}
 	}
 	if result.ipv4 == nil && result.ipv6 == nil {
