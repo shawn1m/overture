@@ -21,8 +21,8 @@ func InitServer(configFilePath string) {
 		AlternativeDNS:              conf.AlternativeDNS,
 		OnlyPrimaryDNS:              conf.OnlyPrimaryDNS,
 		WhenPrimaryDNSAnswerNoneUse: conf.WhenPrimaryDNSAnswerNoneUse,
-		IPNetworkPrimaryList:        conf.IPNetworkPrimaryList,
-		IPNetworkAlternativeList:    conf.IPNetworkAlternativeList,
+		IPNetworkPrimarySet:         conf.IPNetworkPrimarySet,
+		IPNetworkAlternativeSet:     conf.IPNetworkAlternativeSet,
 		DomainPrimaryList:           conf.DomainPrimaryList,
 		DomainAlternativeList:       conf.DomainAlternativeList,
 

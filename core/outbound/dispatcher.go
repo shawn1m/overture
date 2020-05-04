@@ -20,8 +20,8 @@ type Dispatcher struct {
 	OnlyPrimaryDNS bool
 
 	WhenPrimaryDNSAnswerNoneUse string
-	IPNetworkPrimaryList        []*net.IPNet
-	IPNetworkAlternativeList    []*net.IPNet
+	IPNetworkPrimarySet         *common.IPSet
+	IPNetworkAlternativeSet     *common.IPSet
 	DomainPrimaryList           matcher.Matcher
 	DomainAlternativeList       matcher.Matcher
 	RedirectIPv6Record          bool
@@ -164,11 +164,11 @@ func (d *Dispatcher) selectByIPNetwork(PrimaryClientBundle, AlternativeClientBun
 		} else {
 			continue
 		}
-		if common.IsIPMatchList(ip, d.IPNetworkPrimaryList, true, "primary") {
+		if d.IPNetworkPrimarySet.Contains(ip, true, "primary") {
 			log.Debug("Finally use primary DNS")
 			return PrimaryClientBundle
 		}
-		if common.IsIPMatchList(ip, d.IPNetworkAlternativeList, true, "alternative") {
+		if d.IPNetworkAlternativeSet.Contains(ip, true, "alternative") {
 			log.Debug("Finally use alternative DNS")
 			waitAlternateResp()
 			return AlternativeClientBundle
