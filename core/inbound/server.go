@@ -2,6 +2,7 @@
 package inbound
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net"
@@ -22,15 +23,19 @@ type Server struct {
 	debugHttpAddress string
 	dispatcher       outbound.Dispatcher
 	rejectQType      []uint16
+	ctx              context.Context
+	cancel           context.CancelFunc
 }
 
 func NewServer(bindAddress string, debugHTTPAddress string, dispatcher outbound.Dispatcher, rejectQType []uint16) *Server {
-	return &Server{
+	s := &Server{
 		bindAddress:      bindAddress,
 		debugHttpAddress: debugHTTPAddress,
 		dispatcher:       dispatcher,
 		rejectQType:      rejectQType,
 	}
+	s.ctx, s.cancel = context.WithCancel(context.Background())
+	return s
 }
 
 func (s *Server) DumpCache(w http.ResponseWriter, req *http.Request) {
@@ -104,21 +109,57 @@ func (s *Server) Run() {
 
 	for _, p := range [2]string{"tcp", "udp"} {
 		go func(p string) {
-			err := dns.ListenAndServe(s.bindAddress, p, mux)
+
+			// Manual create server inorder to have a way to close it.
+			srv := &dns.Server{Addr: s.bindAddress, Net: p, Handler: mux}
+			go func() {
+				<-s.ctx.Done()
+				log.Warnf("Shutting down the server on protocol %s", p)
+				srv.ShutdownContext(s.ctx)
+			}()
+			err := srv.ListenAndServe()
+			//err := dns.ListenAndServe(s.bindAddress, p, mux)
 			if err != nil {
 				log.Fatalf("Listening on port %s failed: %s", p, err)
 				os.Exit(1)
 			}
+			wg.Done()
 		}(p)
 	}
 
 	if s.debugHttpAddress != "" {
-		http.HandleFunc("/cache", s.DumpCache)
+
+		mux := http.NewServeMux()
+		mux.HandleFunc("/cache", s.DumpCache)
+
 		wg.Add(1)
-		go http.ListenAndServe(s.debugHttpAddress, nil)
+		go func() {
+			// Manual create server inorder to have a way to close it.
+			srv := &http.Server{
+				Addr:    s.debugHttpAddress,
+				Handler: mux,
+			}
+			go func() {
+				<-s.ctx.Done()
+				log.Warnf("Shutting down debug HTTP server")
+				srv.Shutdown(s.ctx)
+			}()
+
+			err := srv.ListenAndServe()
+			if err != http.ErrServerClosed {
+				log.Fatalf("Debug HTTP Server Listen on port %s  faild: %s", s.debugHttpAddress, err)
+				os.Exit(1)
+			}
+			wg.Done()
+		}()
+		// http.ListenAndServe(s.debugHttpAddress, nil)
 	}
 
 	wg.Wait()
+}
+
+func (s *Server) Stop() {
+	s.cancel()
 }
 
 func (s *Server) ServeDNS(w dns.ResponseWriter, q *dns.Msg) {

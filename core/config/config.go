@@ -31,6 +31,7 @@ import (
 )
 
 type Config struct {
+	FilePath                 string
 	BindAddress              string
 	DebugHTTPAddress         string
 	PrimaryDNS               []*common.DNSUpstream
@@ -71,6 +72,7 @@ type Config struct {
 // New config with json file and do some other initiate works
 func NewConfig(configFile string) *Config {
 	config := parseJson(configFile)
+	config.FilePath = configFile
 
 	config.DomainTTLMap = getDomainTTLMap(config.DomainTTLFile)
 
