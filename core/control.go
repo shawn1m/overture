@@ -6,27 +6,26 @@
 package core
 
 import (
+	"log"
+	"os"
 	"time"
 
-	"github.com/fsnotify/fsnotify"
 	"github.com/shawn1m/overture/core/config"
 	"github.com/shawn1m/overture/core/inbound"
 	"github.com/shawn1m/overture/core/outbound"
-	log "github.com/sirupsen/logrus"
+	"github.com/shawn1m/overture/core/watcher"
 )
 
 var (
-	srv      *inbound.Server
-	conf     *config.Config
-	reloaded bool
+	srv   *inbound.Server
+	conf  *config.Config
+	watch *watcher.Watcher
 )
 
 // Initiate the server with config file
 func InitServer(configFilePath string) {
 	conf = config.NewConfig(configFilePath)
-	go func() {
-		StartMonitor()
-	}()
+	StartMonitor(conf)
 	Start()
 }
 
@@ -68,75 +67,18 @@ func Reload() {
 	// Have to wait seconds (may be waiting for server shutdown completly) or we will get json parse ERROR. Unknown reason.
 	time.Sleep(time.Second)
 	conf = config.NewConfig(conf.FilePath)
-	reloaded = false
+	watch.ReloadConfig(conf)
 	Start()
 }
 
 // Using fsnotify to watch if config file modified.
 // It will call Reload() when got a event.
-func StartMonitor() {
-	watch, err := fsnotify.NewWatcher()
+func StartMonitor(c *config.Config) {
+	var err error
+	watch, err = watcher.NewWatcher(c, Reload)
 	if err != nil {
-		log.Fatalf("Error open a file watcher: %s", err)
+		log.Fatalf("Config watcher error: %s", err)
+		os.Exit(1)
 	}
-
-	defer watch.Close()
-
-	done := make(chan bool)
-
-	// Watching config files
-	err = watch.Add(conf.FilePath)
-	if err != nil {
-		log.Fatalf("Error watching config file: %s", conf.FilePath, err)
-	}
-	err = watch.Add(conf.DomainTTLFile)
-	if err != nil {
-		log.Fatalf("Error watching %S file: %s", conf.DomainTTLFile, err)
-	}
-	err = watch.Add(conf.DomainFile.Primary)
-	if err != nil {
-		log.Fatalf("Error watching %s file: %s", conf.DomainFile.Primary, err)
-	}
-	err = watch.Add(conf.DomainFile.Alternative)
-	if err != nil {
-		log.Fatalf("Error watching %s file: %s", conf.DomainFile.Alternative, err)
-	}
-	err = watch.Add(conf.IPNetworkFile.Primary)
-	if err != nil {
-		log.Fatalf("Error watching %s file: %s", conf.IPNetworkFile.Primary, err)
-	}
-	err = watch.Add(conf.IPNetworkFile.Alternative)
-	if err != nil {
-		log.Fatalf("Error watching %s file: %s", conf.IPNetworkFile.Alternative, err)
-	}
-	err = watch.Add(conf.HostsFile.HostsFile)
-	if err != nil {
-		log.Fatalf("Error watching %s file: %s", conf.HostsFile.HostsFile, err)
-	}
-
-	go func() {
-
-		// This is a dirty hack to avoid getting multiple same event
-		reloaded = false
-
-		for {
-			select {
-			case event, ok := <-watch.Events:
-				if event.Op&fsnotify.Write == fsnotify.Write && ok {
-					if !reloaded {
-						log.Warnf("%s file changed, reloading.", event.Name)
-						reloaded = true
-						go Reload()
-					}
-				}
-			case err, ok := <-watch.Errors:
-				if !ok {
-					log.Fatalf("File watch error: %s", err)
-					return
-				}
-			}
-		}
-
-	}()
-	<-done
+	watch.StartWatch()
 }
