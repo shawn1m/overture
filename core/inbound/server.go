@@ -23,6 +23,7 @@ type Server struct {
 	debugHttpAddress string
 	dispatcher       outbound.Dispatcher
 	rejectQType      []uint16
+	HTTPMux          *http.ServeMux
 	ctx              context.Context
 	cancel           context.CancelFunc
 }
@@ -35,6 +36,7 @@ func NewServer(bindAddress string, debugHTTPAddress string, dispatcher outbound.
 		rejectQType:      rejectQType,
 	}
 	s.ctx, s.cancel = context.WithCancel(context.Background())
+	s.HTTPMux = http.NewServeMux()
 	return s
 }
 
@@ -128,16 +130,14 @@ func (s *Server) Run() {
 	}
 
 	if s.debugHttpAddress != "" {
-
-		mux := http.NewServeMux()
-		mux.HandleFunc("/cache", s.DumpCache)
+		s.HTTPMux.HandleFunc("/cache", s.DumpCache)
 
 		wg.Add(1)
 		go func() {
 			// Manual create server inorder to have a way to close it.
 			srv := &http.Server{
 				Addr:    s.debugHttpAddress,
-				Handler: mux,
+				Handler: s.HTTPMux,
 			}
 			go func() {
 				<-s.ctx.Done()

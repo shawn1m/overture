@@ -6,26 +6,24 @@
 package core
 
 import (
-	"log"
-	"os"
+	"io"
+	"net/http"
 	"time"
 
 	"github.com/shawn1m/overture/core/config"
 	"github.com/shawn1m/overture/core/inbound"
 	"github.com/shawn1m/overture/core/outbound"
-	"github.com/shawn1m/overture/core/watcher"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
-	srv   *inbound.Server
-	conf  *config.Config
-	watch *watcher.Watcher
+	srv  *inbound.Server
+	conf *config.Config
 )
 
 // Initiate the server with config file
 func InitServer(configFilePath string) {
 	conf = config.NewConfig(configFilePath)
-	StartMonitor(conf)
 	Start()
 }
 
@@ -52,6 +50,7 @@ func Start() {
 	dispatcher.Init()
 
 	srv = inbound.NewServer(conf.BindAddress, conf.DebugHTTPAddress, dispatcher, conf.RejectQType)
+	srv.HTTPMux.HandleFunc("/reload", ReloadHandler)
 
 	go srv.Run()
 }
@@ -61,24 +60,18 @@ func Stop() {
 	srv.Stop()
 }
 
+func ReloadHandler(w http.ResponseWriter, r *http.Request) {
+	log.Warnf("Realod call received")
+	Reload()
+	io.WriteString(w, "Reloaded")
+}
+
 // Reload config and restart server
 func Reload() {
+	log.Warnf("Reloading")
 	Stop()
 	// Have to wait seconds (may be waiting for server shutdown completly) or we will get json parse ERROR. Unknown reason.
 	time.Sleep(time.Second)
 	conf = config.NewConfig(conf.FilePath)
-	watch.ReloadConfig(conf)
 	Start()
-}
-
-// Using fsnotify to watch if config file modified.
-// It will call Reload() when got a event.
-func StartMonitor(c *config.Config) {
-	var err error
-	watch, err = watcher.NewWatcher(c, Reload)
-	if err != nil {
-		log.Fatalf("Config watcher error: %s", err)
-		os.Exit(1)
-	}
-	watch.StartWatch()
 }
