@@ -152,7 +152,6 @@ func (s *Server) Run() {
 			}
 			wg.Done()
 		}()
-		// http.ListenAndServe(s.debugHttpAddress, nil)
 	}
 
 	wg.Wait()

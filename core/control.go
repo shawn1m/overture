@@ -60,6 +60,7 @@ func Stop() {
 	srv.Stop()
 }
 
+// ReloadHandler is passed to http.Server for handle "/reload" request
 func ReloadHandler(w http.ResponseWriter, r *http.Request) {
 	log.Warnf("Realod call received")
 	Reload()
