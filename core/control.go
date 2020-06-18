@@ -62,14 +62,13 @@ func Stop() {
 
 // ReloadHandler is passed to http.Server for handle "/reload" request
 func ReloadHandler(w http.ResponseWriter, r *http.Request) {
-	log.Warnf("Realod call received")
 	Reload()
 	io.WriteString(w, "Reloaded")
 }
 
 // Reload config and restart server
 func Reload() {
-	log.Warnf("Reloading")
+	log.Infof("Reloading")
 	Stop()
 	// Have to wait seconds (may be waiting for server shutdown completly) or we will get json parse ERROR. Unknown reason.
 	time.Sleep(time.Second)

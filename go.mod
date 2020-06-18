@@ -3,7 +3,6 @@ module github.com/shawn1m/overture
 go 1.12
 
 require (
-	github.com/fsnotify/fsnotify v1.4.9
 	github.com/miekg/dns v1.1.8
 	github.com/silenceper/pool v0.0.0-20191105065223-1f4530b6ba17
 	github.com/sirupsen/logrus v1.4.1

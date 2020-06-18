@@ -120,7 +120,6 @@ func (s *Server) Run() {
 				srv.ShutdownContext(s.ctx)
 			}()
 			err := srv.ListenAndServe()
-			//err := dns.ListenAndServe(s.bindAddress, p, mux)
 			if err != nil {
 				log.Fatalf("Listening on port %s failed: %s", p, err)
 				os.Exit(1)
