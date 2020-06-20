@@ -10,7 +10,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"runtime"
+	"syscall"
 
 	log "github.com/sirupsen/logrus"
 
@@ -62,5 +64,10 @@ func main() {
 
 	runtime.GOMAXPROCS(*processorNumber)
 
+	// Waiting for SIGTERM to close app. InitServer() always return.
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGTERM)
+
 	core.InitServer(*configPath)
+	<-stop
 }
