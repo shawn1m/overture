@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"strconv"
 	"strings"
@@ -130,6 +131,11 @@ func (s *Server) Run() {
 
 	if s.debugHttpAddress != "" {
 		s.HTTPMux.HandleFunc("/cache", s.DumpCache)
+		s.HTTPMux.HandleFunc("/debug/pprof/", pprof.Index)
+		s.HTTPMux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+		s.HTTPMux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		s.HTTPMux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+		s.HTTPMux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 
 		wg.Add(1)
 		go func() {
