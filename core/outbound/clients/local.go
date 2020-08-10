@@ -77,6 +77,12 @@ func (c *LocalClient) exchangeFromHosts() bool {
 		}
 	}
 
+	if (len(ipv4List) > 0 || len(ipv6List) > 0) &&
+		(c.questionMessage.Question[0].Qtype == dns.TypeA || c.questionMessage.Question[0].Qtype == dns.TypeAAAA) {
+		c.setLocalResponseMessage(nil)
+		return true
+	}
+
 	return false
 }
 
