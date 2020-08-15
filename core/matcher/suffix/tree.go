@@ -14,8 +14,9 @@ import (
 type Domain string
 
 type Tree struct {
-	mark uint8
-	sub  domainMap
+	mark  uint8
+	sub   domainMap
+	final bool
 }
 
 func (dt *Tree) Name() string {
@@ -51,7 +52,7 @@ func NewDomainTree() (dt *Tree) {
 }
 
 func (dt *Tree) has(d Domain) bool {
-	if len(dt.sub) == 0 {
+	if len(dt.sub) == 0 || dt.final {
 		return true
 	}
 
@@ -71,6 +72,7 @@ func (dt *Tree) Has(d string) bool {
 func (dt *Tree) insert(sections []Domain) {
 
 	if len(sections) == 0 {
+		dt.final = true
 		return
 	}
 
