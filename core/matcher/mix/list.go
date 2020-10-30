@@ -47,9 +47,12 @@ func (s *List) Has(str string) bool {
 		switch data.Type {
 		case "domain":
 			idx := len(str) - len(data.Content)
-			if idx > 0 && data.Content == str[idx:] {
-				return true
-			}
+			if idx >= 0 && data.Content == str[idx:] {
+                                if idx >=1 && (str[idx-1] != '.') {
+                                   return false
+                                }
+                                return true
+                        }
 		case "regex":
 			reg := regexp.MustCompile(data.Content)
 			if reg.MatchString(str) {
