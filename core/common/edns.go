@@ -27,19 +27,30 @@ func SetEDNSClientSubnet(m *dns.Msg, ip string, isNoCookie bool) {
 	}
 
 	es := IsEDNSClientSubnet(o)
-	if es == nil {
-		es = new(dns.EDNS0_SUBNET)
-		es.Code = dns.EDNS0SUBNET
-		es.Address = net.ParseIP(ip)
-		if es.Address.To4() != nil {
-			es.Family = 1         // 1 for IPv4 source address, 2 for IPv6
-			es.SourceNetmask = 32 // 32 for IPV4, 128 for IPv6
+	if es == nil || es.Address.IsUnspecified() {
+		nes := new(dns.EDNS0_SUBNET)
+		nes.Code = dns.EDNS0SUBNET
+		nes.Address = net.ParseIP(ip)
+		if nes.Address.To4() != nil {
+			nes.Family = 1         // 1 for IPv4 source address, 2 for IPv6
+			nes.SourceNetmask = 32 // 32 for IPV4, 128 for IPv6
 		} else {
-			es.Family = 2          // 1 for IPv4 source address, 2 for IPv6
-			es.SourceNetmask = 128 // 32 for IPV4, 128 for IPv6
+			nes.Family = 2          // 1 for IPv4 source address, 2 for IPv6
+			nes.SourceNetmask = 128 // 32 for IPV4, 128 for IPv6
 		}
-		es.SourceScope = 0
-		o.Option = append(o.Option, es)
+		nes.SourceScope = 0
+		if es != nil && es.Address.IsUnspecified() {
+			var edns0 []dns.EDNS0
+			for _, s := range o.Option {
+				switch e := s.(type) {
+				case *dns.EDNS0_SUBNET:
+				default:
+					edns0 = append(edns0, e)
+				}
+			}
+			o.Option = edns0
+		}
+		o.Option = append(o.Option, nes)
 		if isNoCookie {
 			deleteCookie(o)
 		}

@@ -82,6 +82,7 @@ Configuration file is "config.json" by default:
 {
   "BindAddress": ":53",
   "DebugHTTPAddress": "127.0.0.1:5555",
+  "DohEnabled": false,
   "PrimaryDNS": [
     {
       "Name": "DNSPod",
@@ -188,7 +189,7 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
           }
         }
         ```
-
++ DohEnabled(Experimental): Enable DNS over HTTP server using `DebugHTTPAddress` above with url path `/dns-query`. DNS over HTTPS server can be easily achieved helping by other web server software like caddy or nginx.
 + DNS: You can specify multiple DNS upstream servers here.
     + Name: This field is only used for logging.
     + Address: Same as BindAddress.

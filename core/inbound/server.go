@@ -4,6 +4,7 @@ package inbound
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -12,8 +13,13 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
+	"github.com/coredns/coredns/plugin/pkg/dnsutil"
+	"github.com/coredns/coredns/plugin/pkg/doh"
+	"github.com/coredns/coredns/plugin/pkg/response"
 	"github.com/miekg/dns"
+	"github.com/shawn1m/overture/core/common"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/shawn1m/overture/core/outbound"
@@ -27,18 +33,68 @@ type Server struct {
 	HTTPMux          *http.ServeMux
 	ctx              context.Context
 	cancel           context.CancelFunc
+	dohEnabled       bool
 }
 
-func NewServer(bindAddress string, debugHTTPAddress string, dispatcher outbound.Dispatcher, rejectQType []uint16) *Server {
+func NewServer(bindAddress string, debugHTTPAddress string, dispatcher outbound.Dispatcher, rejectQType []uint16, dohEnabled bool) *Server {
 	s := &Server{
 		bindAddress:      bindAddress,
 		debugHttpAddress: debugHTTPAddress,
 		dispatcher:       dispatcher,
 		rejectQType:      rejectQType,
+		dohEnabled:       dohEnabled,
 	}
 	s.ctx, s.cancel = context.WithCancel(context.Background())
 	s.HTTPMux = http.NewServeMux()
 	return s
+}
+
+func (s *Server) ServeDNSHttp(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != doh.Path {
+		http.Error(w, "", http.StatusNotFound)
+		return
+	}
+
+	q, err := doh.RequestToMsg(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Create a DoHWriter with the correct addresses in it.
+	inboundIP, _, _ := net.SplitHostPort(r.RemoteAddr)
+	forwardIP := r.Header.Get("X-Forwarded-For")
+	if net.ParseIP(forwardIP) != nil && common.ReservedIPNetworkList.Contains(net.ParseIP(inboundIP), false, "") {
+		inboundIP = forwardIP
+	}
+	log.Debugf("Question from %s: %s", inboundIP, q.Question[0].String())
+
+	for _, qt := range s.rejectQType {
+		if isQuestionType(q, qt) {
+			log.Debugf("Reject %s: %s", inboundIP, q.Question[0].String())
+			http.Error(w, "Rejected", http.StatusForbidden)
+			return
+		}
+	}
+
+	responseMessage := s.dispatcher.Exchange(q, inboundIP)
+
+	if responseMessage == nil {
+		http.Error(w, "No response", http.StatusInternalServerError)
+		return
+	}
+
+	buf, _ := responseMessage.Pack()
+
+	mt, _ := response.Typify(responseMessage, time.Now().UTC())
+	age := dnsutil.MinimalTTL(responseMessage, mt)
+
+	w.Header().Set("Content-Type", doh.MimeType)
+	w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%f", age.Seconds()))
+	w.Header().Set("Content-Length", strconv.Itoa(len(buf)))
+	w.WriteHeader(http.StatusOK)
+
+	w.Write(buf)
 }
 
 func (s *Server) DumpCache(w http.ResponseWriter, req *http.Request) {
@@ -136,6 +192,10 @@ func (s *Server) Run() {
 		s.HTTPMux.HandleFunc("/debug/pprof/profile", pprof.Profile)
 		s.HTTPMux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 		s.HTTPMux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+		if s.dohEnabled {
+			log.Info("Dns over http server started!")
+			s.HTTPMux.HandleFunc(doh.Path, s.ServeDNSHttp)
+		}
 
 		wg.Add(1)
 		go func() {

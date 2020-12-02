@@ -49,7 +49,7 @@ func Start() {
 	}
 	dispatcher.Init()
 
-	srv = inbound.NewServer(conf.BindAddress, conf.DebugHTTPAddress, dispatcher, conf.RejectQType)
+	srv = inbound.NewServer(conf.BindAddress, conf.DebugHTTPAddress, dispatcher, conf.RejectQType, conf.DohEnabled)
 	srv.HTTPMux.HandleFunc("/reload", ReloadHandler)
 
 	go srv.Run()

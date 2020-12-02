@@ -34,6 +34,7 @@ type Config struct {
 	FilePath                 string
 	BindAddress              string
 	DebugHTTPAddress         string
+	DohEnabled               bool
 	PrimaryDNS               []*common.DNSUpstream
 	AlternativeDNS           []*common.DNSUpstream
 	OnlyPrimaryDNS           bool
