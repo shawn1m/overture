@@ -18,6 +18,7 @@ import (
 	finderfull "github.com/shawn1m/overture/core/finder/full"
 	finderregex "github.com/shawn1m/overture/core/finder/regex"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
 
 	"github.com/shawn1m/overture/core/cache"
 	"github.com/shawn1m/overture/core/common"
@@ -31,48 +32,48 @@ import (
 )
 
 type Config struct {
-	FilePath                 string
-	BindAddress              string
-	DebugHTTPAddress         string
-	DohEnabled               bool
-	PrimaryDNS               []*common.DNSUpstream
-	AlternativeDNS           []*common.DNSUpstream
-	OnlyPrimaryDNS           bool
-	IPv6UseAlternativeDNS    bool
-	AlternativeDNSConcurrent bool
-	IPNetworkFile            struct {
-		Primary     string
-		Alternative string
-	}
+	FilePath                    string
+	BindAddress                 string                `yaml:"bindAddress"`
+	DebugHTTPAddress            string                `yaml:"debugHTTPAddress"`
+	DohEnabled                  bool                  `yaml:"dohEnabled"`
+	PrimaryDNS                  []*common.DNSUpstream `yaml:"primaryDNS"`
+	AlternativeDNS              []*common.DNSUpstream `yaml:"alternativeDNS"`
+	OnlyPrimaryDNS              bool                  `yaml:"onlyPrimaryDNS"`
+	IPv6UseAlternativeDNS       bool                  `yaml:"iPv6UseAlternativeDNS"`
+	AlternativeDNSConcurrent    bool                  `yaml:"alternativeDNSConcurrent"`
+	WhenPrimaryDNSAnswerNoneUse string                `yaml:"whenPrimaryDNSAnswerNoneUse"`
+	IPNetworkFile               struct {
+		Primary     string `yaml:"primary"`
+		Alternative string `yaml:"alternative"`
+	} `yaml:"ipNetworkFile"`
 	DomainFile struct {
-		Primary            string
-		Alternative        string
-		PrimaryMatcher     string
-		AlternativeMatcher string
-		Matcher            string
-	}
+		Primary            string `yaml:"primary"`
+		Alternative        string `yaml:"alternative"`
+		PrimaryMatcher     string `yaml:"primaryMatcher"`
+		AlternativeMatcher string `yaml:"alternativeMatcher"`
+		Matcher            string `yaml:"matcher"`
+	} `yaml:"domainFile"`
 	HostsFile struct {
-		HostsFile string
-		Finder    string
-	}
-	MinimumTTL    int
-	DomainTTLFile string
-	CacheSize     int
-	RejectQType   []uint16
+		HostsFile string `yaml:"hostsFile"`
+		Finder    string `yaml:"finder"`
+	} `yaml:"hostsFile"`
+	MinimumTTL    int      `yaml:"minimumTTL"`
+	DomainTTLFile string   `yaml:"domainTTLFile"`
+	CacheSize     int      `yaml:"cacheSize"`
+	RejectQType   []uint16 `yaml:"rejectQType"`
 
-	DomainTTLMap                map[string]uint32
-	DomainPrimaryList           matcher.Matcher
-	DomainAlternativeList       matcher.Matcher
-	WhenPrimaryDNSAnswerNoneUse string
-	IPNetworkPrimarySet         *common.IPSet
-	IPNetworkAlternativeSet     *common.IPSet
-	Hosts                       *hosts.Hosts
-	Cache                       *cache.Cache
+	DomainTTLMap            map[string]uint32
+	DomainPrimaryList       matcher.Matcher
+	DomainAlternativeList   matcher.Matcher
+	IPNetworkPrimarySet     *common.IPSet
+	IPNetworkAlternativeSet *common.IPSet
+	Hosts                   *hosts.Hosts
+	Cache                   *cache.Cache
 }
 
 // New config with json file and do some other initiate works
 func NewConfig(configFile string) *Config {
-	config := parseJson(configFile)
+	config := parseConfigFile(configFile)
 	config.FilePath = configFile
 
 	config.DomainTTLMap = getDomainTTLMap(config.DomainTTLFile)
@@ -107,21 +108,26 @@ func NewConfig(configFile string) *Config {
 	return config
 }
 
-func parseJson(path string) *Config {
+func parseConfigFile(path string) *Config {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatalf("Failed to read config file: %s", err)
 		os.Exit(1)
 	}
 
-	j := new(Config)
-	err = json.Unmarshal(b, j)
+	config := new(Config)
+	if strings.HasSuffix(path, "yaml") || strings.HasSuffix(path, "yml") {
+		err = yaml.Unmarshal(b, config)
+	} else {
+		err = json.Unmarshal(b, config)
+	}
+
 	if err != nil {
 		log.Fatalf("Failed to parse config file: %s", err)
 		os.Exit(1)
 	}
 
-	return j
+	return config
 }
 
 func getDomainTTLMap(file string) map[string]uint32 {
