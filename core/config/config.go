@@ -39,7 +39,7 @@ type Config struct {
 	PrimaryDNS                  []*common.DNSUpstream `yaml:"primaryDNS"`
 	AlternativeDNS              []*common.DNSUpstream `yaml:"alternativeDNS"`
 	OnlyPrimaryDNS              bool                  `yaml:"onlyPrimaryDNS"`
-	IPv6UseAlternativeDNS       bool                  `yaml:"iPv6UseAlternativeDNS"`
+	IPv6UseAlternativeDNS       bool                  `yaml:"ipv6UseAlternativeDNS"`
 	AlternativeDNSConcurrent    bool                  `yaml:"alternativeDNSConcurrent"`
 	WhenPrimaryDNSAnswerNoneUse string                `yaml:"whenPrimaryDNSAnswerNoneUse"`
 	IPNetworkFile               struct {
