@@ -63,7 +63,6 @@ var httpsUpstream = &common.DNSUpstream{
 
 func init() {
 	os.Chdir("../..")
-	//conf := config.NewConfig("config.test.json")
 }
 
 func TestDispatcher(t *testing.T) {

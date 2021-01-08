@@ -49,13 +49,15 @@ For ArchLinux users, package `overture` is available in AUR. If you use a AUR he
 
 ## Usages
 
-Start with the default config file -> ./config.json
+Start with the default config file -> ./config.yml 
+
+**Only file having a `.json` suffix will be considered as json format for compatibility reason, and json support will be ended at any time in the future**
 
     $ ./overture
 
 Or use your own config file:
 
-    $ ./overture -c /path/to/config.json
+    $ ./overture -c /path/to/config.yml
 
 Verbose mode:
 
@@ -76,63 +78,51 @@ Tips:
 
 ###  Configuration Syntax
 
-Configuration file is "config.json" by default:
+Configuration file is "config.yml" by default:
 
-```json
-{
-  "BindAddress": ":53",
-  "DebugHTTPAddress": "127.0.0.1:5555",
-  "DohEnabled": false,
-  "PrimaryDNS": [
-    {
-      "Name": "DNSPod",
-      "Address": "119.29.29.29:53",
-      "Protocol": "udp",
-      "SOCKS5Address": "",
-      "Timeout": 6,
-      "EDNSClientSubnet": {
-        "Policy": "disable",
-        "ExternalIP": "",
-        "NoCookie": true
-      }
-    }
-  ],
-  "AlternativeDNS": [
-    {
-      "Name": "114DNS",
-      "Address": "114.114.114.114:53",
-      "Protocol": "udp",
-      "SOCKS5Address": "",
-      "Timeout": 6,
-      "EDNSClientSubnet": {
-        "Policy": "disable",
-        "ExternalIP": "",
-        "NoCookie": true
-      }
-    }
-  ],
-  "OnlyPrimaryDNS": false,
-  "IPv6UseAlternativeDNS": false,
-  "AlternativeDNSConcurrent": false,
-  "WhenPrimaryDNSAnswerNoneUse": "PrimaryDNS",
-  "IPNetworkFile": {
-    "Primary": "./ip_network_primary_sample",
-    "Alternative": "./ip_network_alternative_sample"
-  },
-  "DomainFile": {
-    "Primary": "./domain_primary_sample",
-    "Alternative": "./domain_alternative_sample",
-    "Matcher":  "full-map"
-  },
-  "HostsFile": {
-    "HostsFile": "./hosts_sample",
-    "Finder": "full-map"
-  },
-  "MinimumTTL": 0,
-  "DomainTTLFile" : "./domain_ttl_sample",
-  "CacheSize" : 0,
-  "RejectQType": [255]
-}
+```yaml
+bindAddress: :53
+debugHTTPAddress: 127.0.0.1:5555
+dohEnabled: false
+primaryDNS:
+  - name: DNSPod
+    address: 119.29.29.29:53
+    protocol: udp
+    socks5Address:
+    timeout: 6
+    ednsClientSubnet:
+      policy: disable
+      externalIP:
+      noCookie: true
+alternativeDNS:
+  - name: 114DNS
+    address: 114.114.114.114:53
+    protocol: udp
+    socks5Address:
+    timeout: 6
+    ednsClientSubnet:
+      policy: disable
+      externalIP:
+      noCookie: true
+onlyPrimaryDNS: false
+ipv6UseAlternativeDNS: false
+alternativeDNSConcurrent: false
+whenPrimaryDNSAnswerNoneUse: PrimaryDNS
+ipNetworkFile:
+  primary: ./ip_network_primary_sample
+  alternative: ./ip_network_alternative_sample
+domainFile:
+  primary: ./domain_primary_sample
+  alternative: ./domain_alternative_sample
+  matcher: full-map
+hostsFile:
+  hostsFile: ./hosts_sample
+  finder: full-map
+minimumTTL: 0
+domainTTLFile: ./domain_ttl_sample
+cacheSize: 0
+rejectQType:
+  - 255
 ```
 
 Tips:

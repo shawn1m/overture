@@ -70,7 +70,7 @@ func ReloadHandler(w http.ResponseWriter, r *http.Request) {
 func Reload() {
 	log.Infof("Reloading")
 	Stop()
-	// Have to wait seconds (may be waiting for server shutdown completly) or we will get json parse ERROR. Unknown reason.
+	// Have to wait seconds (may be waiting for server shutdown completly) or we will get config parse ERROR. Unknown reason.
 	time.Sleep(time.Second)
 	conf = config.NewConfig(conf.FilePath)
 	Start()

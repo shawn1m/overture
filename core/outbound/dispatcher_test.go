@@ -17,7 +17,7 @@ var questionDomain = "www.yahoo.com."
 
 func init() {
 	os.Chdir("../..")
-	conf := config.NewConfig("config.test.json")
+	conf := config.NewConfig("config.test.yml")
 	dispatcher = Dispatcher{
 		PrimaryDNS:                  conf.PrimaryDNS,
 		AlternativeDNS:              conf.AlternativeDNS,

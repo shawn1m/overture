@@ -34,7 +34,6 @@ vendor/
 .idea/
 .DS_Store
 
-/config.json
 *.txt
 *_sample
 *_temp

@@ -1,0 +1,42 @@
+bindAddress: :53
+debugHTTPAddress: 127.0.0.1:5555
+dohEnabled: true
+primaryDNS:
+  - name: DNSPod
+    address: 119.29.29.29:53
+    protocol: udp
+    socks5Address:
+    timeout: 6
+    ednsClientSubnet:
+      policy: disable
+      externalIP:
+      noCookie: true
+alternativeDNS:
+  - name: 114DNS
+    address: 114.114.114.114:53
+    protocol: udp
+    socks5Address:
+    timeout: 6
+    ednsClientSubnet:
+      policy: disable
+      externalIP:
+      noCookie: true
+onlyPrimaryDNS: false
+ipv6UseAlternativeDNS: false
+alternativeDNSConcurrent: false
+whenPrimaryDNSAnswerNoneUse: PrimaryDNS
+ipNetworkFile:
+  primary: ./ip_network_primary_sample
+  alternative: ./ip_network_alternative_sample
+domainFile:
+  primary: ./domain_primary_sample
+  alternative: ./domain_alternative_sample
+  matcher: full-map
+hostsFile:
+  hostsFile: ./hosts_sample
+  finder: full-map
+minimumTTL: 86400
+domainTTLFile: ./domain_ttl_sample
+cacheSize: 10000
+rejectQType:
+  - 255

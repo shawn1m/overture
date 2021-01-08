@@ -14,14 +14,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/shawn1m/overture/core/cache"
+	"github.com/shawn1m/overture/core/common"
 	"github.com/shawn1m/overture/core/finder"
 	finderfull "github.com/shawn1m/overture/core/finder/full"
 	finderregex "github.com/shawn1m/overture/core/finder/regex"
-	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
-
-	"github.com/shawn1m/overture/core/cache"
-	"github.com/shawn1m/overture/core/common"
 	"github.com/shawn1m/overture/core/hosts"
 	"github.com/shawn1m/overture/core/matcher"
 	matcherfinal "github.com/shawn1m/overture/core/matcher/final"
@@ -29,6 +26,8 @@ import (
 	matchermix "github.com/shawn1m/overture/core/matcher/mix"
 	matcherregex "github.com/shawn1m/overture/core/matcher/regex"
 	matchersuffix "github.com/shawn1m/overture/core/matcher/suffix"
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
@@ -71,7 +70,7 @@ type Config struct {
 	Cache                   *cache.Cache
 }
 
-// New config with json file and do some other initiate works
+// New config with config file and do some other initiate works
 func NewConfig(configFile string) *Config {
 	config := parseConfigFile(configFile)
 	config.FilePath = configFile
@@ -116,10 +115,10 @@ func parseConfigFile(path string) *Config {
 	}
 
 	config := new(Config)
-	if strings.HasSuffix(path, "yaml") || strings.HasSuffix(path, "yml") {
-		err = yaml.Unmarshal(b, config)
-	} else {
+	if strings.HasSuffix(path, "json") {
 		err = json.Unmarshal(b, config)
+	} else {
+		err = yaml.Unmarshal(b, config)
 	}
 
 	if err != nil {

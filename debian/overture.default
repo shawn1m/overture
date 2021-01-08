@@ -12,7 +12,7 @@
 START=false
 
 # Configuration file
-CONFFILE="/etc/overture/config.json"
+CONFFILE="/etc/overture/config.yml"
 
 # Extra command line arguments
 DAEMON_ARGS=""

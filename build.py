@@ -62,7 +62,7 @@ def go_build_zip(arches, builder):
                                                                                     "domain_primary_sample "
                                                                                     "domain_alternative_sample "
                                                                                     "domain_ttl_sample "
-                                                                                    "config.json", shell=True)
+                                                                                    "config.yml", shell=True)
         except subprocess.CalledProcessError:
             print(o + " " + a + " " + (p[0] if p else "") + " failed.")
 
@@ -84,7 +84,7 @@ def create_sample_file():
 
 if __name__ == "__main__":
 
-    subprocess.check_call("cp config.sample.json config.json", shell=True)
+    subprocess.check_call("cp config.sample.yml config.yml", shell=True)
 
     if "-create-sample" in sys.argv:
         create_sample_file()

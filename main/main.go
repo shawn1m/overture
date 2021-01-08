@@ -24,7 +24,7 @@ import (
 var (
 	version string
 
-	configPath      = flag.String("c", "./config.json", "config file path")
+	configPath      = flag.String("c", "./config.yml", "config file path")
 	logPath         = flag.String("l", "", "log file path")
 	isLogVerbose    = flag.Bool("v", false, "verbose mode")
 	processorNumber = flag.Int("p", runtime.NumCPU(), "number of processor to use")
