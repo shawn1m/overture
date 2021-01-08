@@ -5,17 +5,14 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/shawn1m/overture)](https://goreportcard.com/report/github.com/shawn1m/overture)
 [![codecov](https://codecov.io/gh/shawn1m/overture/branch/master/graph/badge.svg)](https://codecov.io/gh/shawn1m/overture)
 
-Overture is a DNS server/forwarder/dispatcher written in Go.
+Overture is a DNS relay server written in Go.
 
 Overture means an orchestral piece at the beginning of a classical music composition, just like DNS which is nearly the
 first step of surfing the Internet.
 
 **Please note:** 
-- **Read the entire README document is necessary if you want to use overture safe and sound.** 
+- Read the **entire README first** is necessary if you want to use overture **safely** or **create an issue** for this project .
 - **Production usage is not recommended and there is no guarantee or warranty of it.**
-- **If you are using the binary releases, please follow the instructions in the README file with
-  corresponding git version tag. The README in master branch are subject to change and does not always reflect the correct
-   instructions to your binary release version.**
    
 ## Features
 
@@ -29,29 +26,26 @@ first step of surfing the Internet.
     + Custom domain
     + Custom IP network
 + Minimum TTL modification
-+ Hosts (Both IPv4 and IPv6 is supported. IPs will be returned in random order, if you want to use regex match, please understand regex first)
++ Hosts (Both IPv4 and IPv6 are supported and IPs will be returned in random order. If you want to use regex match, please understand regex first)
 + Cache with ECS
++ DNS over HTTP server support
 
 ### Dispatch process
 
-Overture can force custom domain DNS queries to use selected DNS when applicable.
+DNS queries with a custom domain can be forced to use selected DNS when applicable.
 
-For custom IP network, overture will query the domain with primary DNS firstly. If the answer is empty or the IP
-is not matched then overture will finally use the alternative DNS servers.
+For custom IP network, overture will send queries to primary DNS firstly. Then, If the answer is empty, or the IP
+is not matched, the alternative DNS servers will be used instead.
 
 ## Installation
 
-You can download binary releases from the [release](https://github.com/shawn1m/overture/releases).
-
-For ArchLinux users, package `overture` is available in AUR. If you use a AUR helper i.e. `yaourt`, you can simply run:
-
-    yaourt -S overture
+The binary releases are available in [releases](https://github.com/shawn1m/overture/releases).
 
 ## Usages
 
-Start with the default config file -> ./config.yml 
+Start with the default config file `./config.yml` 
 
-**Only file having a `.json` suffix will be considered as json format for compatibility reason, and json support will be ended at any time in the future**
+**Only file having a `.json` suffix will be considered as json format for compatibility reason, and this support is deprecated right now.**
 
     $ ./overture
 
@@ -67,14 +61,13 @@ Log to file:
 
     $ ./overture -l /path/to/overture.log
 
-For other options, please see help:
+For other options, please check the helping menu:
 
     $ ./overture -h
 
 Tips:
 
-+ Root privilege is required if you are listening on port 53.
-+ For Windows users, you can run overture on command prompt instead of double click.
++ Root privilege might be required if you want to let overture listen on port 53 or one of other system ports.
 
 ###  Configuration Syntax
 
@@ -127,9 +120,9 @@ rejectQType:
 
 Tips:
 
-+ BindAddress: Specifying only port (e.g. `:53`) will have overture listen on all available addresses (both IPv4 and
++ bindAddress: Specifying only port (e.g. `:53`) will let overture listen on all available addresses (both IPv4 and
 IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses are enclosed in square brackets (e.g. `[2001:4860:4860::8888]:53`)
-+ DebugHTTPAddress: Specifying an HTTP port for debugging (**`5555` is the default port but it is also acknowledged as the android wifi adb listener port**), currently used to dump DNS cache, and the request url is `/cache`, available query argument is `nobody`(boolean)
++ debugHTTPAddress: Specifying an HTTP port for debugging (**`5555` is the default port but it is also acknowledged as the android wifi adb listener port**), currently used to dump DNS cache, and the request url is `/cache`, available query argument is `nobody`(boolean)
 
     * true(default): only get the cache size;
 
@@ -179,35 +172,35 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
           }
         }
         ```
-+ DohEnabled(Experimental): Enable DNS over HTTP server using `DebugHTTPAddress` above with url path `/dns-query`. DNS over HTTPS server can be easily achieved helping by other web server software like caddy or nginx.
-+ DNS: You can specify multiple DNS upstream servers here.
-    + Name: This field is only used for logging.
-    + Address: Same as BindAddress.
-    + Protocol: `tcp`, `udp`, `tcp-tls` or `https`
++ dohEnabled(Experimental): Enable DNS over HTTP server using `DebugHTTPAddress` above with url path `/dns-query`. DNS over HTTPS server can be easily achieved helping by another web server software like caddy or nginx.
++ primaryDNS/alternativeDNS:
+    + name: This field is only used for logging.
+    + address: Same rule as BindAddress.
+    + protocol: `tcp`, `udp`, `tcp-tls` or `https`
         + `tcp-tls`: Address format is "servername:port@serverAddress", try one.one.one.one:853 or one.one.one.one:853@1.1.1.1
         + `https`: Just try https://cloudflare-dns.com/dns-query
         +  Check [DNS Privacy Public Resolvers](https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Public+Resolvers) for more public `tcp-tls`, `https` resolvers.
-    + SOCKS5Address: Forward dns query to this SOCKS5 proxy, `“”` to disable.
-    + EDNSClientSubnet: Used to improve DNS accuracy. Please check [RFC7871](https://tools.ietf.org/html/rfc7871) for
+    + socks5Address: Forward dns query to this SOCKS5 proxy, `“”` to disable.
+    + ednsClientSubnet: Use this to improve DNS accuracy for many reasons. Please check [RFC7871](https://tools.ietf.org/html/rfc7871) for
     details.
-        + Policy
-            + `auto`: If client IP is not in the reserved IP network, use client IP. Otherwise, use external IP.
-            + `manual`: Use external IP if this field is not empty, otherwise use client IP if it is not reserved IP.
+        + policy
+            + `auto`: If the client IP is not in the reserved IP network, use the client IP. Otherwise, use the external IP.
+            + `manual`: Use the external IP if this field is not empty, otherwise use the client IP if it is not one of the reserved IPs.
             + `disable`: Disable this feature.
-        + ExternalIP: If this field is empty, ECS will be disabled when the inbound IP is not an external IP.
-        + NoCookie: Disable cookie.
-+ OnlyPrimaryDNS: Disable dispatcher feature, use primary DNS only.
-+ IPv6UseAlternativeDNS: Redirect IPv6 DNS queries to alternative DNS servers.
-+ AlternativeDNSConcurrent: Query the PrimaryDNS and AlternativeDNS at the same time
-+ WhenPrimaryDNSAnswerNoneUse: If the response of PrimaryDNS exists and there is no `ANSWER SECTION` in it, the final DNS should be defined. (There is no `AAAA` record for most domains right now) 
-+ File: Absolute path like `/path/to/file` is allowed. For Windows users, please use properly escaped path like
+        + externalIP: If this field is empty, ECS will be disabled when the inbound IP is not an external IP.
+        + noCookie: Disable cookie.
++ onlyPrimaryDNS: Disable dispatcher feature, use primary DNS only.
++ ipv6UseAlternativeDNS: For to redirect IPv6 DNS queries to alternative DNS servers.
++ alternativeDNSConcurrent: Query the primaryDNS and alternativeDNS at the same time.
++ whenPrimaryDNSAnswerNoneUse: If the response of PrimaryDNS exists and there is no `ANSWER SECTION` in it, the final chosen DNS upstream should be defined here. (There is no `AAAA` record for most domains right now) 
++ *File: Absolute path like `/path/to/file` is allowed. For Windows users, please use properly escaped path like
   `C:\\path\\to\\file.txt` in the configuration.
-+ DomainFile.Matcher: Matching policy and implementation, including "full-list", "full-map", "regex-list", "mix-list", "suffix-tree" and "final". Default value is "full-map".
-+ HostsFile.Finder: Finder policy and implementation, including "full-map", "regex-list". Default value is "full-map".
-+ DomainTTLFile: Regex match only for now;
-+ MinimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
-+ CacheSize: The number of query record to cache, use `0` to disable.
-+ RejectQType: Reject inbound query with specific DNS record types, check [List of DNS record types](https://en.wikipedia.org/wiki/List_of_DNS_record_types) for details.
++ domainFile.Matcher: Matching policy and implementation, including "full-list", "full-map", "regex-list", "mix-list", "suffix-tree" and "final". Default value is "full-map".
++ hostsFile.Finder: Finder policy and implementation, including "full-map", "regex-list". Default value is "full-map".
++ domainTTLFile: Regex match only for now;
++ minimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
++ cacheSize: The number of query record to cache, use `0` to disable.
++ rejectQType: Reject query with specific DNS record types, check [List of DNS record types](https://en.wikipedia.org/wiki/List_of_DNS_record_types) for details.
 
 #### Domain file example (full match)
 
@@ -239,9 +232,9 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
 
 + DNSPod 119.29.29.29:53
 
-**For DNSPod, ECS only works via udp, you can test it by [patched dig](https://www.gsic.uva.es/~jnisigl/dig-edns-client-subnet.html)**
-
-You can compare the response IP with the client IP to test the feature. The accuracy depends on the server side.
+For DNSPod, ECS might only work via udp, you can test it by [patched dig](https://www.gsic.uva.es/~jnisigl/dig-edns-client-subnet.html) to certify this argument by comparing answers.
+ 
+**The accuracy depends on the server side.**
 
 ```
 $ dig @119.29.29.29 www.qq.com +client=119.29.29.29
