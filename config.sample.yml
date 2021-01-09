@@ -38,7 +38,7 @@ hostsFile:
 minimumTTL: 0
 domainTTLFile: ./domain_ttl_sample
 cacheSize: 0
-cacheRedisUrl: redis://localhost:6379/0
-cacheRedisConnectionPoolSize: 10
+cacheRedisUrl:
+cacheRedisConnectionPoolSize:
 rejectQType:
   - 255

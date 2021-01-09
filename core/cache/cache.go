@@ -125,14 +125,14 @@ func (c *Cache) InsertMessage(s string, m *dns.Msg, mTTL uint32) {
 	} else {
 		err = c.InsertMessageToRedis(s, m, mTTL)
 	}
-	if err!=nil{
-		log.Warnf("Insert cache failed: %s", s, err)
-	}else {
+	if err != nil {
+		log.Warn("Insert cache failed", s, err)
+	} else {
 		log.Debugf("Cached: %s", s)
 	}
 }
 
-func (c *Cache) InsertMessageToRedis(s string, m *dns.Msg, mTTL uint32) error{
+func (c *Cache) InsertMessageToRedis(s string, m *dns.Msg, mTTL uint32) error {
 
 	ttlDuration := convertToTTLDuration(m, mTTL)
 	if _, ok := c.table[s]; !ok {
