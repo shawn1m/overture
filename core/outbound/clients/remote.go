@@ -31,7 +31,10 @@ type RemoteClient struct {
 
 func NewClient(q *dns.Msg, u *common.DNSUpstream, resolver resolver.Resolver, ip string, cache *cache.Cache) *RemoteClient {
 	c := &RemoteClient{questionMessage: q.Copy(), dnsUpstream: u, dnsResolver: resolver, inboundIP: ip, cache: cache}
-	c.getEDNSClientSubnetIP()
+
+	if c.dnsUpstream.EDNSClientSubnet != nil {
+		c.getEDNSClientSubnetIP()
+	}
 
 	return c
 }
