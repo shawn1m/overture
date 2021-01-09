@@ -56,10 +56,12 @@ type Config struct {
 		HostsFile string `yaml:"hostsFile"`
 		Finder    string `yaml:"finder"`
 	} `yaml:"hostsFile"`
-	MinimumTTL    int      `yaml:"minimumTTL"`
-	DomainTTLFile string   `yaml:"domainTTLFile"`
-	CacheSize     int      `yaml:"cacheSize"`
-	RejectQType   []uint16 `yaml:"rejectQType"`
+	MinimumTTL                   int      `yaml:"minimumTTL"`
+	DomainTTLFile                string   `yaml:"domainTTLFile"`
+	CacheSize                    int      `yaml:"cacheSize"`
+	CacheRedisUrl                string   `yaml:"cacheRedisUrl"`
+	CacheRedisConnectionPoolSize int      `yaml:"cacheRedisConnectionPoolSize"`
+	RejectQType                  []uint16 `yaml:"rejectQType"`
 
 	DomainTTLMap            map[string]uint32
 	DomainPrimaryList       matcher.Matcher
@@ -89,7 +91,7 @@ func NewConfig(configFile string) *Config {
 		log.Info("Minimum TTL is disabled")
 	}
 
-	config.Cache = cache.New(config.CacheSize)
+	config.Cache = cache.New(config.CacheSize, config.CacheRedisUrl, config.CacheRedisConnectionPoolSize)
 	if config.CacheSize > 0 {
 		log.Infof("CacheSize is %d", config.CacheSize)
 	} else {

@@ -27,7 +27,7 @@ first step of surfing the Internet.
     + Custom IP network
 + Minimum TTL modification
 + Hosts (Both IPv4 and IPv6 are supported and IPs will be returned in random order. If you want to use regex match, please understand regex first)
-+ Cache with ECS
++ Cache with ECS and Redis(Persistence) support
 + DNS over HTTP server support
 
 ### Dispatch process
@@ -114,6 +114,8 @@ hostsFile:
 minimumTTL: 0
 domainTTLFile: ./domain_ttl_sample
 cacheSize: 0
+cacheRedisUrl: redis://localhost:6379/0
+cacheRedisConnectionPoolSize: 10 
 rejectQType:
   - 255
 ```
@@ -122,7 +124,7 @@ Tips:
 
 + bindAddress: Specifying only port (e.g. `:53`) will let overture listen on all available addresses (both IPv4 and
 IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses are enclosed in square brackets (e.g. `[2001:4860:4860::8888]:53`)
-+ debugHTTPAddress: Specifying an HTTP port for debugging (**`5555` is the default port but it is also acknowledged as the android wifi adb listener port**), currently used to dump DNS cache, and the request url is `/cache`, available query argument is `nobody`(boolean)
++ debugHTTPAddress: Specifying an HTTP port for debugging (**`5555` is the default port despite it is also acknowledged as the android Wi-Fi adb listener port**), currently used to dump DNS cache, and the request url is `/cache`, available query argument is `nobody`(boolean)
 
     * true(default): only get the cache size;
 
@@ -172,7 +174,7 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
           }
         }
         ```
-+ dohEnabled(Experimental): Enable DNS over HTTP server using `DebugHTTPAddress` above with url path `/dns-query`. DNS over HTTPS server can be easily achieved helping by another web server software like caddy or nginx.
++ dohEnabled: Enable DNS over HTTP server using `DebugHTTPAddress` above with url path `/dns-query`. DNS over HTTPS server can be easily achieved helping by another web server software like caddy or nginx. (Experimental)
 + primaryDNS/alternativeDNS:
     + name: This field is only used for logging.
     + address: Same rule as BindAddress.
@@ -193,13 +195,14 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
 + ipv6UseAlternativeDNS: For to redirect IPv6 DNS queries to alternative DNS servers.
 + alternativeDNSConcurrent: Query the primaryDNS and alternativeDNS at the same time.
 + whenPrimaryDNSAnswerNoneUse: If the response of PrimaryDNS exists and there is no `ANSWER SECTION` in it, the final chosen DNS upstream should be defined here. (There is no `AAAA` record for most domains right now) 
-+ *File: Absolute path like `/path/to/file` is allowed. For Windows users, please use properly escaped path like
++ *File: Both relative like `./file` or absolute path like `/path/to/file` are supported. Especially, for Windows users, please use properly escaped path like
   `C:\\path\\to\\file.txt` in the configuration.
 + domainFile.Matcher: Matching policy and implementation, including "full-list", "full-map", "regex-list", "mix-list", "suffix-tree" and "final". Default value is "full-map".
 + hostsFile.Finder: Finder policy and implementation, including "full-map", "regex-list". Default value is "full-map".
 + domainTTLFile: Regex match only for now;
 + minimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
 + cacheSize: The number of query record to cache, use `0` to disable.
++ cacheRedisUrl, cacheRedisConnectionPoolSize: Use redis cache instead of local cache. (Experimental)
 + rejectQType: Reject query with specific DNS record types, check [List of DNS record types](https://en.wikipedia.org/wiki/List_of_DNS_record_types) for details.
 
 #### Domain file example (full match)
@@ -289,13 +292,10 @@ www.qq.com.     43  IN  A   14.17.42.40
 
 ## Acknowledgements
 
-+ Dependencies:
-    + [dns](https://github.com/miekg/dns): BSD-3-Clause
-    + [logrus](https://github.com/Sirupsen/logrus): MIT
-+ Code reference:
-    + [skydns](https://github.com/skynetservices/skydns): MIT
-    + [go-dnsmasq](https://github.com/janeczku/go-dnsmasq):  MIT
-+ Contributors: https://github.com/shawn1m/overture/graphs/contributors
++ [dns](https://github.com/miekg/dns): BSD-3-Clause
++ [skydns](https://github.com/skynetservices/skydns): MIT
++ [go-dnsmasq](https://github.com/janeczku/go-dnsmasq):  MIT
++ [All Contributors](https://github.com/shawn1m/overture/graphs/contributors)
 
 ## License
 

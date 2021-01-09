@@ -8,10 +8,13 @@ package cache
 // Cache that holds RRs.
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/miekg/dns"
 	log "github.com/sirupsen/logrus"
 )
@@ -23,29 +26,71 @@ type elem struct {
 	msg        *dns.Msg
 }
 
+type elemData struct {
+	Expiration time.Time
+	Msg        []byte // dns.Msg cannot be converted to the json format successfully thus using its pack() method instead
+}
+
+func (e *elem) MarshalBinary() (data []byte, err error) {
+	msgBytes, _ := e.msg.Pack()
+	ed := elemData{e.expiration, msgBytes}
+	return json.Marshal(ed)
+}
+
+func (e *elem) UnmarshalBinary(data []byte) error {
+	var ed elemData
+	err := json.Unmarshal(data, &ed)
+	if err != nil {
+		return err
+	}
+	e.expiration = ed.Expiration
+	e.msg = &dns.Msg{}
+	return e.msg.Unpack(ed.Msg)
+}
+
 // Cache is a cache that holds on the a number of RRs or DNS messages. The cache
 // eviction is randomized.
 type Cache struct {
 	sync.RWMutex
 
-	capacity int
-	table    map[string]*elem
+	capacity    int
+	table       map[string]*elem
+	redisClient *redis.Client
 }
 
 // New returns a new cache with the capacity and the ttl specified.
-func New(capacity int) *Cache {
+func New(capacity int, redisUrl string, cacheRedisConnectionPoolSize int) *Cache {
 	if capacity <= 0 {
 		return nil
 	}
 	c := new(Cache)
 	c.table = make(map[string]*elem)
 	c.capacity = capacity
+
+	opt, err := redis.ParseURL(redisUrl)
+	if err != nil {
+		if redisUrl != "" {
+			log.Error("redisUrl error ", redisUrl, err)
+		}
+	} else {
+		if cacheRedisConnectionPoolSize > 0 {
+			opt.PoolSize = cacheRedisConnectionPoolSize
+		} else {
+			log.Warn("cacheRedisConnectionPoolSize is ignored", cacheRedisConnectionPoolSize)
+		}
+		c.redisClient = redis.NewClient(opt)
+		log.Info("Cache redis connected! ", c.redisClient.String())
+	}
+
 	return c
 }
 
 func (c *Cache) Capacity() int { return c.capacity }
 
 func (c *Cache) Remove(s string) {
+	if c.redisClient != nil {
+		return
+	}
 	c.Lock()
 	delete(c.table, s)
 	c.Unlock()
@@ -74,30 +119,86 @@ func (c *Cache) InsertMessage(s string, m *dns.Msg, mTTL uint32) {
 	if c.capacity <= 0 || m == nil {
 		return
 	}
+	var err error
+	if c.redisClient == nil {
+		c.InsertMessageToLocal(s, m, mTTL)
+	} else {
+		err = c.InsertMessageToRedis(s, m, mTTL)
+	}
+	if err!=nil{
+		log.Warnf("Insert cache failed: %s", s, err)
+	}else {
+		log.Debugf("Cached: %s", s)
+	}
+}
+
+func (c *Cache) InsertMessageToRedis(s string, m *dns.Msg, mTTL uint32) error{
+
+	ttlDuration := convertToTTLDuration(m, mTTL)
+	if _, ok := c.table[s]; !ok {
+		e := &elem{time.Now().Add(ttlDuration), m.Copy()}
+		cmd := c.redisClient.Set(context.TODO(), s, e, ttlDuration)
+		if cmd.Err() != nil {
+			log.Warn("Redis set for cache failed!", cmd.Err())
+			return cmd.Err()
+		}
+	}
+	return nil
+
+}
+func (c *Cache) InsertMessageToLocal(s string, m *dns.Msg, mTTL uint32) {
 
 	c.Lock()
+	ttlDuration := convertToTTLDuration(m, mTTL)
+	if _, ok := c.table[s]; !ok {
+		e := &elem{time.Now().Add(ttlDuration), m.Copy()}
+		c.table[s] = e
+	}
+
+	c.EvictRandom()
+	c.Unlock()
+}
+
+func convertToTTLDuration(m *dns.Msg, mTTL uint32) time.Duration {
 	var ttl uint32
 	if len(m.Answer) == 0 {
 		ttl = mTTL
 	} else {
 		ttl = m.Answer[0].Header().Ttl
 	}
-	ttlDuration := time.Duration(ttl) * time.Second
-	if _, ok := c.table[s]; !ok {
-		c.table[s] = &elem{time.Now().Add(ttlDuration), m.Copy()}
-	}
-	log.Debugf("Cached: %s", s)
-	c.EvictRandom()
-	c.Unlock()
+	return time.Duration(ttl) * time.Second
 }
 
 // Search returns a dns.Msg, the expiration time and a boolean indicating if we found something
 // in the cache.
-// todo: use finder implementation
 func (c *Cache) Search(s string) (*dns.Msg, time.Time, bool) {
 	if c.capacity <= 0 {
 		return nil, time.Time{}, false
 	}
+	if c.redisClient == nil {
+		return c.SearchFromLocal(s)
+	} else {
+		return c.SearchFromRedis(s)
+	}
+}
+
+func (c *Cache) SearchFromRedis(s string) (*dns.Msg, time.Time, bool) {
+	var e elem
+	err := c.redisClient.Get(context.TODO(), s).Scan(&e)
+	if err != nil {
+		if err.Error() == "redis: nil" {
+			log.Debug("Redis get return nil for ", s, err)
+		} else {
+			log.Warn("Redis get return nil for ", s, err)
+		}
+		return nil, time.Time{}, false
+	}
+	return e.msg, e.expiration, true
+
+}
+
+// todo: use finder implementation
+func (c *Cache) SearchFromLocal(s string) (*dns.Msg, time.Time, bool) {
 	c.RLock()
 	if e, ok := c.table[s]; ok {
 		e1 := e.msg.Copy()
@@ -113,8 +214,8 @@ func Key(q dns.Question, ednsIP string) string {
 	return fmt.Sprintf("%s %d %s", q.Name, q.Qtype, ednsIP)
 }
 
-// Hit returns a dns message from the cache. If the message's TTL is expired nil
-// is returned and the message is removed from the cache.
+// Hit returns a dns message from the cache. If the message's TTL is expired, nil
+// will be returned and the message is removed from the cache.
 func (c *Cache) Hit(key string, msgid uint16) *dns.Msg {
 	m, exp, hit := c.Search(key)
 	if hit {
@@ -135,7 +236,7 @@ func (c *Cache) Hit(key string, msgid uint16) *dns.Msg {
 	return nil
 }
 
-// Dump returns all dns cache information, for dubugging
+// Dump returns all local dns cache information for debugging
 func (c *Cache) Dump(nobody bool) (rs map[string][]string, l int) {
 	if c.capacity <= 0 {
 		return
