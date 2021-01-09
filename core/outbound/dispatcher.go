@@ -139,11 +139,11 @@ func (d *Dispatcher) selectByIPNetwork(PrimaryClientBundle, AlternativeClientBun
 
 	if primaryResponse != nil {
 		if primaryResponse.Answer == nil {
-			if d.WhenPrimaryDNSAnswerNoneUse != "AlternativeDNS" {
-				log.Debug("Primary DNS response has no answer section but exist, finally use PrimaryDNS")
+			if d.WhenPrimaryDNSAnswerNoneUse != "alternativeDNS" && d.WhenPrimaryDNSAnswerNoneUse != "AlternativeDNS" {
+				log.Debug("primaryDNS response has no answer section but exist, finally use primaryDNS")
 				return PrimaryClientBundle
 			} else {
-				log.Debug("Primary DNS response has no answer section but exist, finally use AlternativeDNS")
+				log.Debug("primaryDNS response has no answer section but exist, finally use alternativeDNS")
 				waitAlternateResp()
 				return AlternativeClientBundle
 			}

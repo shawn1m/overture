@@ -5,7 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/shawn1m/overture)](https://goreportcard.com/report/github.com/shawn1m/overture)
 [![codecov](https://codecov.io/gh/shawn1m/overture/branch/master/graph/badge.svg)](https://codecov.io/gh/shawn1m/overture)
 
-Overture is a DNS relay server written in Go.
+Overture is a customized DNS relay server.
 
 Overture means an orchestral piece at the beginning of a classical music composition, just like DNS which is nearly the
 first step of surfing the Internet.
@@ -100,7 +100,7 @@ alternativeDNS:
 onlyPrimaryDNS: false
 ipv6UseAlternativeDNS: false
 alternativeDNSConcurrent: false
-whenPrimaryDNSAnswerNoneUse: PrimaryDNS
+whenPrimaryDNSAnswerNoneUse: primaryDNS
 ipNetworkFile:
   primary: ./ip_network_primary_sample
   alternative: ./ip_network_alternative_sample
@@ -194,7 +194,7 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
 + onlyPrimaryDNS: Disable dispatcher feature, use primary DNS only.
 + ipv6UseAlternativeDNS: For to redirect IPv6 DNS queries to alternative DNS servers.
 + alternativeDNSConcurrent: Query the primaryDNS and alternativeDNS at the same time.
-+ whenPrimaryDNSAnswerNoneUse: If the response of PrimaryDNS exists and there is no `ANSWER SECTION` in it, the final chosen DNS upstream should be defined here. (There is no `AAAA` record for most domains right now) 
++ whenPrimaryDNSAnswerNoneUse: If the response of primaryDNS exists and there is no `ANSWER SECTION` in it, the final chosen DNS upstream should be defined here. (There is no `AAAA` record for most domains right now) 
 + *File: Both relative like `./file` or absolute path like `/path/to/file` are supported. Especially, for Windows users, please use properly escaped path like
   `C:\\path\\to\\file.txt` in the configuration.
 + domainFile.Matcher: Matching policy and implementation, including "full-list", "full-map", "regex-list", "mix-list", "suffix-tree" and "final". Default value is "full-map".

@@ -24,7 +24,7 @@ alternativeDNS:
 onlyPrimaryDNS: false
 ipv6UseAlternativeDNS: false
 alternativeDNSConcurrent: false
-whenPrimaryDNSAnswerNoneUse: PrimaryDNS
+whenPrimaryDNSAnswerNoneUse: primaryDNS
 ipNetworkFile:
   primary: ./ip_network_primary_sample
   alternative: ./ip_network_alternative_sample

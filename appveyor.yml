@@ -3,7 +3,7 @@ image:
   - Ubuntu
   - macOS
 
-stack: go 1.13
+stack: go 1.15
 
 for:
 -
