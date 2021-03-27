@@ -33,10 +33,10 @@ func SetEDNSClientSubnet(m *dns.Msg, ip string, isNoCookie bool) {
 		nes.Address = net.ParseIP(ip)
 		if nes.Address.To4() != nil {
 			nes.Family = 1         // 1 for IPv4 source address, 2 for IPv6
-			nes.SourceNetmask = 32 // 32 for IPV4, 128 for IPv6
+			nes.SourceNetmask = 24 // 24 for IPV4, 64 for IPv6
 		} else {
 			nes.Family = 2          // 1 for IPv4 source address, 2 for IPv6
-			nes.SourceNetmask = 128 // 32 for IPV4, 128 for IPv6
+			nes.SourceNetmask = 64 // 24 for IPV4, 64 for IPv6
 		}
 		nes.SourceScope = 0
 		if es != nil && es.Address.IsUnspecified() {
