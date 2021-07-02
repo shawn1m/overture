@@ -1,8 +1,8 @@
 FROM alpine:latest
 MAINTAINER SgrAlpha <admin@mail.sgr.io>
 
-ARG OVERTURE_VERSION=1.7 \
-    OVERTURE_ASSET=overture-linux-amd64
+ARG OVERTURE_VERSION=1.7
+ARG OVERTURE_ASSET=overture-linux-amd64
 
 EXPOSE 53
 WORKDIR /opt/overture
