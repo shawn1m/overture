@@ -6,8 +6,8 @@ replacePrimaryDns() {
   IFS=","
   for dns in $1; do
     name=$(echo ${dns} | cut -d "/" -f1) \
-    address=$(echo ${dns} | cut -d "/" -f2) \
-    protocol=$(echo ${dns} | cut -d "/" -f3) \
+    protocol=$(echo ${dns} | rev | cut -d "/" -f1 | rev) \
+    address=$(echo ${dns} | cut -d "/" -f2- | rev | cut -d "/" -f2- | rev) \
     yq eval '.primaryDNS += [{"name":strenv(name),"address":strenv(address),"protocol":strenv(protocol),"socks5Address":"","timeout":6,"ednsClientSubnet":{"policy":"auto","externalIP":"","noCookie":true}}]' \
       -i /opt/overture/config.yml
     yq eval -j /opt/overture/config.yml > /tmp/config.json
@@ -21,8 +21,8 @@ replaceAlternativeDns() {
   IFS=","
   for dns in $1; do
     name=$(echo ${dns} | cut -d "/" -f1) \
-    address=$(echo ${dns} | cut -d "/" -f2) \
-    protocol=$(echo ${dns} | cut -d "/" -f3) \
+    protocol=$(echo ${dns} | rev | cut -d "/" -f1 | rev) \
+    address=$(echo ${dns} | cut -d "/" -f2- | rev | cut -d "/" -f2- | rev) \
     yq eval '.alternativeDNS += [{"name":strenv(name),"address":strenv(address),"protocol":strenv(protocol),"socks5Address":"","timeout":6,"ednsClientSubnet":{"policy":"auto","externalIP":"","noCookie":true}}]' \
       -i /opt/overture/config.yml
     yq eval -j /opt/overture/config.yml > /tmp/config.json

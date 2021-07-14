@@ -2,9 +2,10 @@
 
 ```
 docker run -it --rm --name=overture \
-  -e PRIMARY_DNS=AliDNS/dns.alidns.com:853@223.6.6.6/tcp-tls,DNSPod/119.29.29.29:53/udp \
+  -e PRIMARY_DNS=AliDNS/dns.alidns.com:853@223.6.6.6/tcp-tls,Alidns-doh/https://dns.alidns.com/dns-query/https \
   -e ALTERNATIVE_DNS=Google/dns.google:853@8.8.4.4/tcp-tls,Cloudflare/one.one.one.one:853@1.0.0.1/tcp-tls,OpenDNS/208.67.222.222:443/tcp \
   -e CACHE_SIZE=1000 \
+  -v /etc/hosts:/opt/overture/hosts_sample \
   -p 15353:53/udp sgrio/overture
 ```
 
