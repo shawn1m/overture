@@ -1,9 +1,7 @@
-# appveyor.yml
-image: 
+image:
   - Ubuntu
   - macOS
-
-stack: go 1.15
+stack: go 1.16.10
 
 for:
 -
@@ -27,7 +25,6 @@ for:
       - image: Ubuntu
   
   init:
-    #- sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
   environment:
     APPVEYOR_SSH_KEY: ""
     GOPATH: /usr/go/
@@ -44,16 +41,24 @@ for:
     - "python3 ./build.py -build-android"
     - "python3 ./build.py -build"
   on_finish:
-    #- sh: export APPVEYOR_SSH_BLOCK=true
-    #- sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
+    - "go test -cover ./... -race -coverprofile=coverage.txt -covermode=atomic"
+    - "bash <(curl -s https://codecov.io/bash)"
 
 branches:
   only:
     - master
 
-#skip_tags: true
-
-#skip_branch_with_pr: true
-
 artifacts:
   - path: 'overture-*.zip'
+
+deploy:
+  description: 'Release description'
+  provider: GitHub
+  auth_token:
+    secure: "JH5dTK6/eC4mEpgdQ8QUO5glIcFZFjoEvoav88d3hZciYEpc9HA6WU01E4yDcjnSNP5m1aS3O6Ttcmhlzkcop7SdoFlAP+TgQsRX1ddFE3XkDdCQiFeXSTPU25Fn7iD3lS/OQpZ/Si28dxYSbO0A2xEPeSGkPZ7YVtNIm0gonCro/2yGxtiLmFf8+ajiDX5wpnuAn427pwtMOe8ZUh27Y/1uWPVscVErqOKn6xhH9Cy2YyfwO6dGp1k8by9T4LF4d/w2f8QidmjxCGVU0wfngZUS6NTdCjk9GlspDDvg7/OaSkBT6ld8d+ITvXrAssOH6VhdnNG62JdwNJDfHbsqLMYKRRo871tQR3+/KebImG0Zc9KeLIlyhEirHDWK8U8kJ1F5hLDVJPFNCi6JzAfTgJ2Rll14CyRW33P3Cd5AIylGEXj67Hcv3iFVk98WyYmcSxbhYdTJGJ5po2GhFFDp4RzIwuLU68W5rtMEiKu8xjJQFyv8NE3kHAcLQzIUQs6QxdeJRmzpJdNsXfCsAdQqTLYtQ7s9rAwGM8HPGtE2TopaH6C3ZsZI6ik4cOp5lf3naop7UsNv+Ojk03N+j1GI0pNRpz6IeCPrXrnYY6x9fo0FnoSIPyLh8EHLttq7SzVDc1cDl7jhnXxQF33usQyXnZxM/ytrtk5VgIGRgl5blO0="
+  artifact: 'overture-*.zip'
+  draft: false
+  prerelease: true
+  on:
+    branch: master                 # release from master branch only
+    APPVEYOR_REPO_TAG: true        # deploy on tag push only
