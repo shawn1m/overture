@@ -1,2 +1,0 @@
-debian/config.yml etc/overture
-debian/overture.service lib/systemd/system
