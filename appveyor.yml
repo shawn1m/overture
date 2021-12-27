@@ -1,14 +1,14 @@
 image:
   - Ubuntu
   - macOS
-stack: go 1.16.10
+stack: go 1.15.15
 
 for:
 -
   matrix:
     only:
       - image: macOS
-  
+
   environment:
     GOPATH: /tmp/
   clone_folder: /tmp/go/src/github.com/shawn1m/overture
@@ -56,7 +56,6 @@ deploy:
   provider: GitHub
   auth_token:
     secure: bkFCV3S/fgcuuZevFwUJicGIhL1s5aUM8ML2Tc1IHL9/CTWY5hi//KBqM+83knPM
-  artifact: 'overture-*.zip'
   draft: false
   prerelease: true
   on:
