@@ -60,7 +60,7 @@ func main() {
 	}
 
 	log.Infof("Overture %s", version)
-	log.Info("If you want to use overture safe and sound, please read the README.md from project repository: https://github.com/shawn1m/overture")
+	log.Info("If you want to use overture safe and sound, please read the README.md first from the project's repo: https://github.com/shawn1m/overture")
 
 	runtime.GOMAXPROCS(*processorNumber)
 

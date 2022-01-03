@@ -6,7 +6,7 @@
 
 Overture is a customized DNS relay server.
 
-Overture means an orchestral piece at the beginning of a classical music composition, just like DNS which is nearly the
+Overture means the orchestral piece at the beginning of a classical music composition, just like DNS which is nearly the
 first step of surfing the Internet.
 
 **Please note:** 
@@ -15,26 +15,25 @@ first step of surfing the Internet.
    
 ## Features
 
-+ Full IPv6 support
 + Multiple DNS upstream
     + Via UDP/TCP with custom port
     + Via SOCKS5 proxy (TCP only)
     + With EDNS Client Subnet (ECS) [RFC7871](https://tools.ietf.org/html/rfc7871)
 + Dispatcher
-    + IPv6 record (AAAA) redirection
     + Custom domain
     + Custom IP network
+    + IPv6 record (AAAA) redirection
++ Full IPv6 support
 + Minimum TTL modification
-+ Hosts (Both IPv4 and IPv6 are supported and IPs will be returned in random order. If you want to use regex match, please understand regex first)
++ Hosts (Both IPv4 and IPv6 are supported and IPs will be returned in a random order. If you want to use regex match hosts, please understand how regex works first)
 + Cache with ECS and Redis(Persistence) support
 + DNS over HTTP server support
 
 ### Dispatch process
 
-DNS queries with a custom domain can be forced to use selected DNS when applicable.
+DNS queries with certain domain will be forced to use selected DNS when matched.
 
-For custom IP network, overture will send queries to primary DNS firstly. Then, If the answer is empty, or the IP
-is not matched, the alternative DNS servers will be used instead.
+For the IP network dispatch, overture will send queries to primary DNS first. Then, If that answer is empty or not matched, the alternative DNS servers will be used instead.
 
 ## Installation
 
@@ -42,9 +41,9 @@ The binary releases are available in [releases](https://github.com/shawn1m/overt
 
 ## Usages
 
-Start with the default config file `./config.yml` 
+Start with the default config file `./config.yml`
 
-**Only file having a `.json` suffix will be considered as json format for compatibility reason, and this support is deprecated right now.**
+**Only file having a `.json` suffix will be considered as json format for compatibility and that support is deprecated.**
 
     $ ./overture
 
@@ -121,9 +120,9 @@ rejectQType:
 
 Tips:
 
-+ bindAddress: Specifying only port (e.g. `:53`) will let overture listen on all available addresses (both IPv4 and
++ bindAddress: Specifying any port (e.g. `:53`) will let overture listen on all available addresses (both IPv4 and
 IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses are enclosed in square brackets (e.g. `[2001:4860:4860::8888]:53`)
-+ debugHTTPAddress: Specifying an HTTP port for debugging (**`5555` is the default port despite it is also acknowledged as the android Wi-Fi adb listener port**), currently used to dump DNS cache, and the request url is `/cache`, available query argument is `nobody`(boolean)
++ debugHTTPAddress: Specifying an HTTP port for debug (**`5555` is the default port despite it is also acknowledged as the android Wi-Fi adb listener port**), currently used to dump DNS cache, and the request url is `/cache`, available query argument is `nobody`(boolean)
 
     * true(default): only get the cache size;
 
@@ -173,7 +172,7 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
           }
         }
         ```
-+ dohEnabled: Enable DNS over HTTP server using `DebugHTTPAddress` above with url path `/dns-query`. DNS over HTTPS server can be easily achieved helping by another web server software like caddy or nginx. (Experimental)
++ dohEnabled: Enable DNS over HTTP server using `DebugHTTPAddress` above with url path `/dns-query`. DNS over HTTPS server can be easily achieved helping by another web server software like caddy or nginx.
 + primaryDNS/alternativeDNS:
     + name: This field is only used for logging.
     + address: Same rule as BindAddress.
@@ -201,7 +200,7 @@ IPv6). Overture will handle both TCP and UDP requests. Literal IPv6 addresses ar
 + domainTTLFile: Regex match only for now;
 + minimumTTL: Set the minimum TTL value (in seconds) in order to improve caching efficiency, use `0` to disable.
 + cacheSize: The number of query record to cache, use `0` to disable.
-+ cacheRedisUrl, cacheRedisConnectionPoolSize: Use redis cache instead of local cache. (Experimental)
++ cacheRedisUrl, cacheRedisConnectionPoolSize: Use redis cache instead of local cache.
 + rejectQType: Reject query with specific DNS record types, check [List of DNS record types](https://en.wikipedia.org/wiki/List_of_DNS_record_types) for details.
 
 #### Domain file example (full match)
