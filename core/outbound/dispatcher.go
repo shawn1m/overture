@@ -22,6 +22,7 @@ type Dispatcher struct {
 	WhenPrimaryDNSAnswerNoneUse string
 	IPNetworkPrimarySet         *common.IPSet
 	IPNetworkAlternativeSet     *common.IPSet
+	RejectIPNetworkSet          *common.IPSet
 	DomainPrimaryList           matcher.Matcher
 	DomainAlternativeList       matcher.Matcher
 	RedirectIPv6Record          bool
@@ -83,7 +84,31 @@ func (d *Dispatcher) Exchange(query *dns.Msg, inboundIP string) *dns.Msg {
 
 	// Only try to Cache result before return
 	ActiveClientBundle.CacheResultIfNeeded()
-	return ActiveClientBundle.GetResponseMessage()
+	var respMsg = ActiveClientBundle.GetResponseMessage()
+	d.FilterByRejectIpNetworkSet(respMsg)
+	return respMsg
+}
+
+func (d *Dispatcher) FilterByRejectIpNetworkSet(resp *dns.Msg) {
+	var answer []dns.RR
+	for _, a := range resp.Answer {
+		log.Debug("Try to match response ip address with IP network")
+		var ip net.IP
+		if a.Header().Rrtype == dns.TypeA {
+			ip = net.ParseIP(a.(*dns.A).A.String())
+		} else if a.Header().Rrtype == dns.TypeAAAA {
+			ip = net.ParseIP(a.(*dns.AAAA).AAAA.String())
+		} else {
+			answer = append(answer, a)
+			continue
+		}
+		if d.RejectIPNetworkSet.Contains(ip, true, "reject") {
+			log.Debug("anwser rejected")
+			continue
+		}
+		answer = append(answer, a)
+	}
+	resp.Answer = answer
 }
 
 func (d *Dispatcher) isExchangeForIPv6(query *dns.Msg) bool {

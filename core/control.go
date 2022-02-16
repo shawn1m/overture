@@ -36,6 +36,7 @@ func Start() {
 		WhenPrimaryDNSAnswerNoneUse: conf.WhenPrimaryDNSAnswerNoneUse,
 		IPNetworkPrimarySet:         conf.IPNetworkPrimarySet,
 		IPNetworkAlternativeSet:     conf.IPNetworkAlternativeSet,
+		RejectIPNetworkSet:          conf.RejectIPNetworkSet,
 		DomainPrimaryList:           conf.DomainPrimaryList,
 		DomainAlternativeList:       conf.DomainAlternativeList,
 

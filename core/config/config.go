@@ -45,7 +45,8 @@ type Config struct {
 		Primary     string `yaml:"primary"`
 		Alternative string `yaml:"alternative"`
 	} `yaml:"ipNetworkFile"`
-	DomainFile struct {
+	RejectIPNetworkFile string `yaml:"ipNetworkFile"`
+	DomainFile          struct {
 		Primary            string `yaml:"primary"`
 		Alternative        string `yaml:"alternative"`
 		PrimaryMatcher     string `yaml:"primaryMatcher"`
@@ -68,6 +69,7 @@ type Config struct {
 	DomainAlternativeList   matcher.Matcher
 	IPNetworkPrimarySet     *common.IPSet
 	IPNetworkAlternativeSet *common.IPSet
+	RejectIPNetworkSet      *common.IPSet
 	Hosts                   *hosts.Hosts
 	Cache                   *cache.Cache
 }
@@ -84,6 +86,7 @@ func NewConfig(configFile string) *Config {
 
 	config.IPNetworkPrimarySet = getIPNetworkSet(config.IPNetworkFile.Primary)
 	config.IPNetworkAlternativeSet = getIPNetworkSet(config.IPNetworkFile.Alternative)
+	config.RejectIPNetworkSet = getIPNetworkSet(config.RejectIPNetworkFile)
 
 	if config.MinimumTTL > 0 {
 		log.Infof("Minimum TTL has been set to %d", config.MinimumTTL)
