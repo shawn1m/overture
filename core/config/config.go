@@ -31,45 +31,45 @@ import (
 )
 
 type Config struct {
-	FilePath                    string
-	BindAddress                 string                `yaml:"bindAddress"`
-	DebugHTTPAddress            string                `yaml:"debugHTTPAddress"`
-	DohEnabled                  bool                  `yaml:"dohEnabled"`
-	PrimaryDNS                  []*common.DNSUpstream `yaml:"primaryDNS"`
-	AlternativeDNS              []*common.DNSUpstream `yaml:"alternativeDNS"`
-	OnlyPrimaryDNS              bool                  `yaml:"onlyPrimaryDNS"`
-	IPv6UseAlternativeDNS       bool                  `yaml:"ipv6UseAlternativeDNS"`
-	AlternativeDNSConcurrent    bool                  `yaml:"alternativeDNSConcurrent"`
-	WhenPrimaryDNSAnswerNoneUse string                `yaml:"whenPrimaryDNSAnswerNoneUse"`
+	FilePath                    string                `yaml:"-" json:"-"`
+	BindAddress                 string                `yaml:"bindAddress" json:"bindAddress"`
+	DebugHTTPAddress            string                `yaml:"debugHTTPAddress" json:"debugHTTPAddress"`
+	DohEnabled                  bool                  `yaml:"dohEnabled" json:"dohEnabled"`
+	PrimaryDNS                  []*common.DNSUpstream `yaml:"primaryDNS" json:"primaryDNS"`
+	AlternativeDNS              []*common.DNSUpstream `yaml:"alternativeDNS" json:"alternativeDNS"`
+	OnlyPrimaryDNS              bool                  `yaml:"onlyPrimaryDNS" json:"onlyPrimaryDNS"`
+	IPv6UseAlternativeDNS       bool                  `yaml:"ipv6UseAlternativeDNS" json:"ipv6UseAlternativeDNS"`
+	AlternativeDNSConcurrent    bool                  `yaml:"alternativeDNSConcurrent" json:"alternativeDNSConcurrent"`
+	WhenPrimaryDNSAnswerNoneUse string                `yaml:"whenPrimaryDNSAnswerNoneUse" json:"whenPrimaryDNSAnswerNoneUse"`
 	IPNetworkFile               struct {
-		Primary     string `yaml:"primary"`
-		Alternative string `yaml:"alternative"`
-	} `yaml:"ipNetworkFile"`
+		Primary     string `yaml:"primary" json:"primary"`
+		Alternative string `yaml:"alternative" json:"alternative"`
+	} `yaml:"ipNetworkFile" json:"ipNetworkFile"`
 	DomainFile struct {
-		Primary            string `yaml:"primary"`
-		Alternative        string `yaml:"alternative"`
-		PrimaryMatcher     string `yaml:"primaryMatcher"`
-		AlternativeMatcher string `yaml:"alternativeMatcher"`
-		Matcher            string `yaml:"matcher"`
-	} `yaml:"domainFile"`
+		Primary            string `yaml:"primary" json:"primary"`
+		Alternative        string `yaml:"alternative" json:"alternative"`
+		PrimaryMatcher     string `yaml:"primaryMatcher" json:"primaryMatcher"`
+		AlternativeMatcher string `yaml:"alternativeMatcher" json:"alternativeMatcher"`
+		Matcher            string `yaml:"matcher" json:"matcher"`
+	} `yaml:"domainFile" json:"domainFile"`
 	HostsFile struct {
-		HostsFile string `yaml:"hostsFile"`
-		Finder    string `yaml:"finder"`
-	} `yaml:"hostsFile"`
-	MinimumTTL                   int      `yaml:"minimumTTL"`
-	DomainTTLFile                string   `yaml:"domainTTLFile"`
-	CacheSize                    int      `yaml:"cacheSize"`
-	CacheRedisUrl                string   `yaml:"cacheRedisUrl"`
-	CacheRedisConnectionPoolSize int      `yaml:"cacheRedisConnectionPoolSize"`
-	RejectQType                  []uint16 `yaml:"rejectQType"`
+		HostsFile string `yaml:"hostsFile" json:"hostsFile"`
+		Finder    string `yaml:"finder" json:"finder"`
+	} `yaml:"hostsFile" json:"hostsFile"`
+	MinimumTTL                   int      `yaml:"minimumTTL" json:"minimumTTL"`
+	DomainTTLFile                string   `yaml:"domainTTLFile" json:"domainTTLFile"`
+	CacheSize                    int      `yaml:"cacheSize" json:"cacheSize"`
+	CacheRedisUrl                string   `yaml:"cacheRedisUrl" json:"cacheRedisUrl"`
+	CacheRedisConnectionPoolSize int      `yaml:"cacheRedisConnectionPoolSize" json:"cacheRedisConnectionPoolSize"`
+	RejectQType                  []uint16 `yaml:"rejectQType" json:"rejectQType"`
 
-	DomainTTLMap            map[string]uint32
-	DomainPrimaryList       matcher.Matcher
-	DomainAlternativeList   matcher.Matcher
-	IPNetworkPrimarySet     *common.IPSet
-	IPNetworkAlternativeSet *common.IPSet
-	Hosts                   *hosts.Hosts
-	Cache                   *cache.Cache
+	DomainTTLMap            map[string]uint32 `yaml:"-" json:"-"`
+	DomainPrimaryList       matcher.Matcher   `yaml:"-" json:"-"`
+	DomainAlternativeList   matcher.Matcher   `yaml:"-" json:"-"`
+	IPNetworkPrimarySet     *common.IPSet     `yaml:"-" json:"-"`
+	IPNetworkAlternativeSet *common.IPSet     `yaml:"-" json:"-"`
+	Hosts                   *hosts.Hosts      `yaml:"-" json:"-"`
+	Cache                   *cache.Cache      `yaml:"-" json:"-"`
 }
 
 // New config with config file and do some other initiate works

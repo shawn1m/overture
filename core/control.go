@@ -6,7 +6,9 @@
 package core
 
 import (
+	"encoding/json"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -50,7 +52,9 @@ func Start() {
 	dispatcher.Init()
 
 	srv = inbound.NewServer(conf.BindAddress, conf.DebugHTTPAddress, dispatcher, conf.RejectQType, conf.DohEnabled)
+	srv.HTTPMux.HandleFunc("/reload/config", ReloadConfigHandler)
 	srv.HTTPMux.HandleFunc("/reload", ReloadHandler)
+	srv.HTTPMux.HandleFunc("/config", ConfigHandler)
 
 	go srv.Run()
 }
@@ -62,6 +66,30 @@ func Stop() {
 
 // ReloadHandler is passed to http.Server for handle "/reload" request
 func ReloadHandler(w http.ResponseWriter, r *http.Request) {
+	conf = config.NewConfig(conf.FilePath)
+	Reload()
+	io.WriteString(w, "Reloaded")
+}
+
+func ConfigHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+	jsonBinary, _ := json.Marshal(conf)
+	io.WriteString(w, string(jsonBinary))
+}
+
+func ReloadConfigHandler(w http.ResponseWriter, r *http.Request) {
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	err = json.Unmarshal(b, &conf)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
 	Reload()
 	io.WriteString(w, "Reloaded")
 }
@@ -72,6 +100,5 @@ func Reload() {
 	Stop()
 	// Have to wait seconds (may be waiting for server shutdown completly) or we will get config parse ERROR. Unknown reason.
 	time.Sleep(time.Second)
-	conf = config.NewConfig(conf.FilePath)
 	Start()
 }

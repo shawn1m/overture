@@ -7,9 +7,9 @@ import (
 )
 
 type EDNSClientSubnetType struct {
-	Policy     string `yaml:"policy"`
-	ExternalIP string `yaml:"externalIP"`
-	NoCookie   bool   `yaml:"noCookie"`
+	Policy     string `yaml:"policy" json:"policy"`
+	ExternalIP string `yaml:"externalIP" json:"externalIP"`
+	NoCookie   bool   `yaml:"noCookie"json:"noCookie"`
 }
 
 func SetEDNSClientSubnet(m *dns.Msg, ip string, isNoCookie bool) {
@@ -35,7 +35,7 @@ func SetEDNSClientSubnet(m *dns.Msg, ip string, isNoCookie bool) {
 			nes.Family = 1         // 1 for IPv4 source address, 2 for IPv6
 			nes.SourceNetmask = 24 // 24 for IPV4, 56 for IPv6
 		} else {
-			nes.Family = 2          // 1 for IPv4 source address, 2 for IPv6
+			nes.Family = 2         // 1 for IPv4 source address, 2 for IPv6
 			nes.SourceNetmask = 56 // 24 for IPV4, 56 for IPv6
 		}
 		nes.SourceScope = 0
