@@ -1,7 +1,6 @@
 image:
-  - Ubuntu
-  - macOS
-stack: go 1.15.15
+  - Visual Studio 2022
+stack: go 1.18.2
 
 for:
 -
